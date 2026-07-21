@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[DEMO — fictional data] Crane Productivity — July 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+  :root{
+    --navy:#0b2545; --navy2:#10264f; --accent:#0aa2c0; --gf:#0aa2c0; --bf:#e08a1e;
+    --bg:#f3f5f9; --card:#ffffff; --border:#e4e8f0; --text:#1c2536; --muted:#6b7688;
+    --green:#16a34a; --red:#dc2626; --amber:#d97706;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+       font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;}
+  header{padding:30px 40px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;}
+  header .eyebrow{font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:#9fb3d9;font-weight:600}
+  header h1{margin:6px 0 4px;font-size:26px;font-weight:700;letter-spacing:.2px}
+  header p{margin:0;color:#c3cfe6;font-size:13px}
+  .wrap{max-width:1200px;margin:0 auto;padding:32px 40px 60px}
+
+  .hero{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:8px}
+  .hero-card{background:var(--card);border:1px solid var(--border);border-radius:16px;
+             padding:26px 28px;box-shadow:0 1px 3px rgba(16,24,40,.06);position:relative;overflow:hidden}
+  .hero-card::before{content:"";position:absolute;top:0;left:0;right:0;height:5px}
+  .hero-card.gf::before{background:var(--gf)}
+  .hero-card.bf::before{background:var(--bf)}
+  .hero-card .area-tag{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;
+             letter-spacing:.6px;text-transform:uppercase;padding:3px 10px;border-radius:20px}
+  .hero-card.gf .area-tag{background:rgba(37,99,235,.1);color:var(--gf)}
+  .hero-card.bf .area-tag{background:rgba(224,138,30,.12);color:var(--bf)}
+  .hero-card .metric-lbl{margin-top:14px;font-size:13px;color:var(--muted);font-weight:600}
+  .hero-card .metric-val{font-size:44px;font-weight:800;line-height:1.1;margin-top:4px;letter-spacing:-.5px}
+  .hero-card .metric-val span{font-size:18px;font-weight:600;color:var(--muted);margin-left:4px}
+  .hero-card .metric-foot{margin-top:14px;display:flex;gap:18px;font-size:12px;color:var(--muted)}
+  .hero-card .metric-foot b{color:var(--text);font-size:13px}
+
+  .section-title{display:flex;align-items:center;gap:10px;margin:38px 0 4px}
+  .section-title .bar{width:4px;height:18px;border-radius:2px;background:var(--accent)}
+  .section-title h2{margin:0;font-size:16px;font-weight:700;letter-spacing:.2px}
+  .section-title .tag{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .section-note{font-size:12px;color:var(--muted);margin:2px 0 0}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:16px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;
+        padding:20px 22px 22px;box-shadow:0 1px 3px rgba(16,24,40,.05)}
+  .card.full{grid-column:1/-1}
+  .card h3{margin:0 0 2px;font-size:14px;font-weight:700}
+  .card .desc{color:var(--muted);font-size:12px;margin:0 0 16px}
+  .chart-box{position:relative;height:300px}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:right;padding:9px 12px;border-bottom:1px solid var(--border)}
+  th:first-child,td:first-child{text-align:left}
+  th:nth-child(2),td:nth-child(2){text-align:left}
+  th{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;
+     background:#f8fafc}
+  tbody tr:hover{background:#f8fafc}
+  tbody tr.gap td{background:#f8fafc;color:var(--muted);font-style:italic;text-align:center}
+  .pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700}
+  .pill.gf{background:rgba(37,99,235,.1);color:var(--gf)}
+  .pill.bf{background:rgba(224,138,30,.12);color:var(--bf)}
+  .pill.complete{background:rgba(22,163,74,.12);color:var(--green)}
+  .pill.partial{background:rgba(217,119,6,.12);color:var(--amber)}
+  .legend-note{font-size:11px;color:var(--muted);margin-top:12px}
+  footer{color:var(--muted);font-size:12px;text-align:center;padding:28px}
+  @media(max-width:820px){.grid,.hero{grid-template-columns:1fr}.wrap{padding:20px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Orion Reporting · Site Productivity</div>
+  <h1>Crane Productivity — July 2026</h1>
+  <p>Till Date: 01–15 Jul 2026 · GF &amp; BF areas · productivity shown per crane deployed</p>
+</header>
+<div class="wrap">
+
+  <div class="section-title"><div class="bar"></div><h2>Crane Productivity Till Date</h2><span class="tag">GF vs BF · tons per crane</span></div>
+  <div class="hero" id="hero"></div>
+
+  <div class="section-title"><div class="bar"></div><h2>Day-wise Performance — July 2026</h2></div>
+  <div class="grid">
+    <div class="card full">
+      <h3>Erection Tonnage — Day-wise</h3>
+      <p class="desc">Tons erected per day, GF vs BF</p>
+      <div class="chart-box"><canvas id="craneTon"></canvas></div>
+    </div>
+    <div class="card full">
+      <h3>Productivity — Day-wise (per crane)</h3>
+      <p class="desc">Tons erected ÷ number of cranes deployed, per day</p>
+      <div class="chart-box"><canvas id="craneProd"></canvas></div>
+    </div>
+
+    <div class="card full">
+      <h3>Day-wise Detail</h3>
+      <p class="desc">Erection tons and productivity (per crane) by date and area</p>
+      <div style="overflow:auto"><table id="craneTbl"></table></div>
+      <p class="legend-note">05-Jul, 12-Jul and 16-Jul-2026 have no entries in the source file (no report submitted those days). BF recorded 0 t on 15-Jul. Data through 15-Jul-2026; note GF figures for 27-Jun–11-Jul were revised in the latest sheet versus the previous update.</p>
+    </div>
+  </div>
+
+  <div class="section-title"><div class="bar"></div><h2>Monthly Trend</h2><span class="tag">Feb – Jul 2026</span></div>
+  <p class="section-note">Feb-26 and May-26 have the most complete daily coverage in the source files; Apr-26 and Jun-26 have only partial reporting (few days on file) so month-over-month comparisons involving them should be read with caution.</p>
+  <div class="grid">
+    <div class="card full">
+      <h3>Total Tons Erected by Month</h3>
+      <p class="desc">GF vs BF, monthly total</p>
+      <div class="chart-box"><canvas id="monthTon"></canvas></div>
+    </div>
+    <div class="card full">
+      <h3>Productivity by Month (per crane)</h3>
+      <p class="desc">Monthly total tons ÷ crane-entries recorded that month, GF vs BF</p>
+      <div class="chart-box"><canvas id="monthProd"></canvas></div>
+    </div>
+    <div class="card full">
+      <h3>Monthly Summary</h3>
+      <div style="overflow:auto"><table id="monthTbl"></table></div>
+    </div>
+  </div>
+</div>
+<footer>Source: demo dataset · dashboard is self-contained (Chart.js via CDN)</footer>
+
+<script id="data" type="application/json">{"daily":[{"date":"2026-02-02","area":"BF","erectionTon":28.6,"avgTon":3.8},{"date":"2026-02-02","area":"GF","erectionTon":15.8,"avgTon":1.8},{"date":"2026-02-03","area":"BF","erectionTon":20.5,"avgTon":2.7},{"date":"2026-02-03","area":"GF","erectionTon":15.2,"avgTon":2.6},{"date":"2026-02-04","area":"BF","erectionTon":17.5,"avgTon":2.9},{"date":"2026-02-04","area":"GF","erectionTon":10.9,"avgTon":2.2},{"date":"2026-02-05","area":"BF","erectionTon":21.5,"avgTon":3.1},{"date":"2026-02-05","area":"GF","erectionTon":7.4,"avgTon":1.1},{"date":"2026-02-06","area":"BF","erectionTon":25.7,"avgTon":3.6},{"date":"2026-02-06","area":"GF","erectionTon":8.8,"avgTon":1.2},{"date":"2026-02-07","area":"BF","erectionTon":26.3,"avgTon":3.1},{"date":"2026-02-07","area":"GF","erectionTon":24.1,"avgTon":2.8},{"date":"2026-02-09","area":"BF","erectionTon":19.6,"avgTon":3.2},{"date":"2026-02-09","area":"GF","erectionTon":14.8,"avgTon":2.5},{"date":"2026-02-10","area":"BF","erectionTon":18.6,"avgTon":3.6},{"date":"2026-02-10","area":"GF","erectionTon":19.6,"avgTon":2.5},{"date":"2026-02-11","area":"BF","erectionTon":30.8,"avgTon":3.2},{"date":"2026-02-11","area":"GF","erectionTon":13.0,"avgTon":1.7},{"date":"2026-02-12","area":"BF","erectionTon":27.0,"avgTon":3.1},{"date":"2026-02-12","area":"GF","erectionTon":17.1,"avgTon":2.1},{"date":"2026-02-13","area":"BF","erectionTon":27.8,"avgTon":3.3},{"date":"2026-02-13","area":"GF","erectionTon":29.5,"avgTon":3.6},{"date":"2026-02-14","area":"BF","erectionTon":19.4,"avgTon":2.7},{"date":"2026-02-14","area":"GF","erectionTon":11.9,"avgTon":1.9},{"date":"2026-02-16","area":"BF","erectionTon":2,"avgTon":0.9},{"date":"2026-02-16","area":"GF","erectionTon":2.0,"avgTon":0.7},{"date":"2026-02-17","area":"BF","erectionTon":10,"avgTon":1.8},{"date":"2026-02-17","area":"GF","erectionTon":6.7,"avgTon":1.9},{"date":"2026-02-18","area":"BF","erectionTon":10.4,"avgTon":2.2},{"date":"2026-02-18","area":"GF","erectionTon":4.5,"avgTon":1.1},{"date":"2026-02-19","area":"BF","erectionTon":29.2,"avgTon":3.4},{"date":"2026-02-19","area":"GF","erectionTon":14.9,"avgTon":2.4},{"date":"2026-02-20","area":"BF","erectionTon":17.7,"avgTon":3.4},{"date":"2026-02-20","area":"GF","erectionTon":18.0,"avgTon":2.3},{"date":"2026-02-21","area":"BF","erectionTon":10.5,"avgTon":2.2},{"date":"2026-02-21","area":"GF","erectionTon":6.5,"avgTon":1.4},{"date":"2026-02-23","area":"BF","erectionTon":9.2,"avgTon":2.1},{"date":"2026-02-23","area":"GF","erectionTon":5.9,"avgTon":1.3},{"date":"2026-02-24","area":"BF","erectionTon":11.5,"avgTon":2.5},{"date":"2026-02-24","area":"GF","erectionTon":8.1,"avgTon":1.6},{"date":"2026-02-25","area":"BF","erectionTon":13.3,"avgTon":2.6},{"date":"2026-02-25","area":"GF","erectionTon":10.8,"avgTon":2.4},{"date":"2026-02-26","area":"BF","erectionTon":13.0,"avgTon":2.7},{"date":"2026-02-26","area":"GF","erectionTon":14.1,"avgTon":2.8},{"date":"2026-02-27","area":"BF","erectionTon":17.0,"avgTon":3.9},{"date":"2026-02-27","area":"GF","erectionTon":11.3,"avgTon":2.1},{"date":"2026-02-28","area":"BF","erectionTon":17.9,"avgTon":3.6},{"date":"2026-02-28","area":"GF","erectionTon":11.9,"avgTon":2.1},{"date":"2026-03-02","area":"BF","erectionTon":15.2,"avgTon":3.7},{"date":"2026-03-02","area":"GF","erectionTon":15.0,"avgTon":1.9},{"date":"2026-03-03","area":"BF","erectionTon":10.7,"avgTon":2.2},{"date":"2026-03-03","area":"GF","erectionTon":9.5,"avgTon":1.7},{"date":"2026-03-04","area":"BF","erectionTon":11.2,"avgTon":2.0},{"date":"2026-03-04","area":"GF","erectionTon":6.2,"avgTon":1.5},{"date":"2026-03-05","area":"BF","erectionTon":13.9,"avgTon":2.5},{"date":"2026-03-05","area":"GF","erectionTon":10.3,"avgTon":1.9},{"date":"2026-03-06","area":"BF","erectionTon":18.1,"avgTon":3.1},{"date":"2026-03-06","area":"GF","erectionTon":6.2,"avgTon":1.2},{"date":"2026-03-07","area":"BF","erectionTon":13.8,"avgTon":2.2},{"date":"2026-03-07","area":"GF","erectionTon":6.6,"avgTon":1.6},{"date":"2026-03-09","area":"BF","erectionTon":14.8,"avgTon":2.5},{"date":"2026-03-09","area":"GF","erectionTon":9.0,"avgTon":2.8},{"date":"2026-03-10","area":"BF","erectionTon":13.8,"avgTon":2.3},{"date":"2026-03-10","area":"GF","erectionTon":9.4,"avgTon":2.3},{"date":"2026-03-11","area":"BF","erectionTon":8.4,"avgTon":1.2},{"date":"2026-03-11","area":"GF","erectionTon":7.1,"avgTon":1.9},{"date":"2026-03-12","area":"BF","erectionTon":9.6,"avgTon":1.8},{"date":"2026-03-12","area":"GF","erectionTon":13.5,"avgTon":2.3},{"date":"2026-03-13","area":"BF","erectionTon":10.9,"avgTon":1.5},{"date":"2026-03-13","area":"GF","erectionTon":9.9,"avgTon":1.3},{"date":"2026-03-14","area":"BF","erectionTon":8.7,"avgTon":1.3},{"date":"2026-03-14","area":"GF","erectionTon":12.7,"avgTon":1.7},{"date":"2026-03-16","area":"BF","erectionTon":6.3,"avgTon":1.1},{"date":"2026-03-16","area":"GF","erectionTon":1.5,"avgTon":0.8},{"date":"2026-03-26","area":"BF","erectionTon":9.7,"avgTon":1.6},{"date":"2026-03-26","area":"GF","erectionTon":0.6,"avgTon":0.4},{"date":"2026-03-28","area":"BF","erectionTon":10.2,"avgTon":2.4},{"date":"2026-03-28","area":"GF","erectionTon":11,"avgTon":3.2},{"date":"2026-03-30","area":"BF","erectionTon":13.2,"avgTon":1.8},{"date":"2026-03-30","area":"GF","erectionTon":29.4,"avgTon":4.3},{"date":"2026-04-25","area":"BF","erectionTon":6.8,"avgTon":2.1},{"date":"2026-04-25","area":"GF","erectionTon":7.4,"avgTon":1.5},{"date":"2026-04-27","area":"BF","erectionTon":1.3,"avgTon":1.6},{"date":"2026-04-27","area":"GF","erectionTon":6.1,"avgTon":1.7},{"date":"2026-04-28","area":"BF","erectionTon":2.3,"avgTon":2.3},{"date":"2026-04-28","area":"GF","erectionTon":6.1,"avgTon":2.2},{"date":"2026-04-29","area":"BF","erectionTon":2,"avgTon":2.2},{"date":"2026-04-29","area":"GF","erectionTon":3.8,"avgTon":1.2},{"date":"2026-04-30","area":"BF","erectionTon":3.3,"avgTon":3.7},{"date":"2026-04-30","area":"GF","erectionTon":5.5,"avgTon":0.8},{"date":"2026-05-01","area":"BF","erectionTon":2.4,"avgTon":2.7},{"date":"2026-05-01","area":"GF","erectionTon":4.7,"avgTon":1.4},{"date":"2026-05-02","area":"BF","erectionTon":3.1,"avgTon":2.6},{"date":"2026-05-02","area":"GF","erectionTon":6.5,"avgTon":1.6},{"date":"2026-05-04","area":"BF","erectionTon":3.3,"avgTon":2.7},{"date":"2026-05-04","area":"GF","erectionTon":4.5,"avgTon":1.1},{"date":"2026-05-05","area":"BF","erectionTon":2.9,"avgTon":2.9},{"date":"2026-05-05","area":"GF","erectionTon":8.3,"avgTon":1.8},{"date":"2026-05-06","area":"BF","erectionTon":2.0,"avgTon":1.8},{"date":"2026-05-06","area":"GF","erectionTon":5.6,"avgTon":1.5},{"date":"2026-05-07","area":"BF","erectionTon":2.3,"avgTon":2.9},{"date":"2026-05-07","area":"GF","erectionTon":7.0,"avgTon":1.7},{"date":"2026-05-08","area":"BF","erectionTon":2.9,"avgTon":2.7},{"date":"2026-05-08","area":"GF","erectionTon":4.0,"avgTon":1.7},{"date":"2026-05-09","area":"BF","erectionTon":1.5,"avgTon":1.8},{"date":"2026-05-09","area":"GF","erectionTon":3.2,"avgTon":1.3},{"date":"2026-05-11","area":"BF","erectionTon":2.0,"avgTon":2.4},{"date":"2026-05-11","area":"GF","erectionTon":4.1,"avgTon":1.1},{"date":"2026-05-12","area":"BF","erectionTon":1.5,"avgTon":1.5},{"date":"2026-05-12","area":"GF","erectionTon":6.0,"avgTon":1.9},{"date":"2026-05-13","area":"BF","erectionTon":2.0,"avgTon":2.6},{"date":"2026-05-13","area":"GF","erectionTon":4.8,"avgTon":2.2},{"date":"2026-05-14","area":"BF","erectionTon":2.4,"avgTon":2.5},{"date":"2026-05-14","area":"GF","erectionTon":3.4,"avgTon":0.8},{"date":"2026-05-15","area":"BF","erectionTon":1.6,"avgTon":1.5},{"date":"2026-05-15","area":"GF","erectionTon":3.7,"avgTon":1.4},{"date":"2026-05-16","area":"BF","erectionTon":2.4,"avgTon":2.8},{"date":"2026-05-16","area":"GF","erectionTon":6.4,"avgTon":1.3},{"date":"2026-05-18","area":"BF","erectionTon":2.3,"avgTon":2.3},{"date":"2026-05-18","area":"GF","erectionTon":3.1,"avgTon":1.2},{"date":"2026-05-19","area":"BF","erectionTon":1.9,"avgTon":2.0},{"date":"2026-05-19","area":"GF","erectionTon":3.0,"avgTon":1.3},{"date":"2026-05-20","area":"BF","erectionTon":2.4,"avgTon":2.5},{"date":"2026-05-20","area":"GF","erectionTon":2.0,"avgTon":1.1},{"date":"2026-05-21","area":"BF","erectionTon":2.6,"avgTon":3.1},{"date":"2026-05-21","area":"GF","erectionTon":5.1,"avgTon":1.7},{"date":"2026-05-22","area":"BF","erectionTon":2.6,"avgTon":2.1},{"date":"2026-05-22","area":"GF","erectionTon":2.3,"avgTon":1.0},{"date":"2026-05-23","area":"BF","erectionTon":2.3,"avgTon":3.1},{"date":"2026-05-23","area":"GF","erectionTon":3.3,"avgTon":1.3},{"date":"2026-05-25","area":"BF","erectionTon":3,"avgTon":3.1},{"date":"2026-05-25","area":"GF","erectionTon":4.9,"avgTon":1.1},{"date":"2026-05-29","area":"BF","erectionTon":4.6,"avgTon":5.0},{"date":"2026-05-29","area":"GF","erectionTon":2.1,"avgTon":1.3},{"date":"2026-06-18","area":"BF","erectionTon":2.9,"avgTon":1.5},{"date":"2026-06-18","area":"GF","erectionTon":3.9,"avgTon":0.9},{"date":"2026-06-19","area":"BF","erectionTon":3.5,"avgTon":1.9},{"date":"2026-06-19","area":"GF","erectionTon":6.8,"avgTon":1.5},{"date":"2026-06-20","area":"BF","erectionTon":2.3,"avgTon":1.1},{"date":"2026-06-20","area":"GF","erectionTon":11,"avgTon":2.4},{"date":"2026-06-22","area":"BF","erectionTon":3.3,"avgTon":1.1},{"date":"2026-06-22","area":"GF","erectionTon":8.8,"avgTon":2.1},{"date":"2026-06-23","area":"BF","erectionTon":2.4,"avgTon":1.2},{"date":"2026-06-23","area":"GF","erectionTon":9.5,"avgTon":1.9},{"date":"2026-06-24","area":"BF","erectionTon":1.6,"avgTon":0.9},{"date":"2026-06-24","area":"GF","erectionTon":10.8,"avgTon":1.4},{"date":"2026-06-25","area":"BF","erectionTon":1.5,"avgTon":0.8},{"date":"2026-06-25","area":"GF","erectionTon":8.6,"avgTon":1.5},{"date":"2026-06-26","area":"BF","erectionTon":0.9,"avgTon":1.1},{"date":"2026-06-26","area":"GF","erectionTon":19.4,"avgTon":2.5},{"date":"2026-06-27","area":"BF","erectionTon":3.9,"avgTon":2.4},{"date":"2026-06-27","area":"GF","erectionTon":9.1,"avgTon":1.9},{"date":"2026-06-29","area":"BF","erectionTon":2.0,"avgTon":2.1},{"date":"2026-06-29","area":"GF","erectionTon":8.7,"avgTon":1.9},{"date":"2026-06-30","area":"BF","erectionTon":5.6,"avgTon":5.8},{"date":"2026-06-30","area":"GF","erectionTon":12.2,"avgTon":1.9},{"date":"2026-07-01","area":"BF","erectionTon":8.2,"avgTon":4.5},{"date":"2026-07-01","area":"GF","erectionTon":10.4,"avgTon":1.6},{"date":"2026-07-02","area":"BF","erectionTon":2.2,"avgTon":2.3},{"date":"2026-07-02","area":"GF","erectionTon":10.1,"avgTon":1.5},{"date":"2026-07-03","area":"BF","erectionTon":4.8,"avgTon":2.3},{"date":"2026-07-03","area":"GF","erectionTon":13.1,"avgTon":2.5},{"date":"2026-07-04","area":"BF","erectionTon":4.9,"avgTon":2.4},{"date":"2026-07-04","area":"GF","erectionTon":8.8,"avgTon":2.4},{"date":"2026-07-06","area":"BF","erectionTon":7.6,"avgTon":2.7},{"date":"2026-07-06","area":"GF","erectionTon":7.1,"avgTon":1.6},{"date":"2026-07-07","area":"BF","erectionTon":23.0,"avgTon":15.2},{"date":"2026-07-07","area":"GF","erectionTon":8.1,"avgTon":1.5},{"date":"2026-07-08","area":"BF","erectionTon":3.5,"avgTon":2.1},{"date":"2026-07-08","area":"GF","erectionTon":10.3,"avgTon":1.7},{"date":"2026-07-09","area":"BF","erectionTon":5.2,"avgTon":2.3},{"date":"2026-07-09","area":"GF","erectionTon":9.2,"avgTon":2.4},{"date":"2026-07-10","area":"BF","erectionTon":3.8,"avgTon":1.3},{"date":"2026-07-10","area":"GF","erectionTon":6.7,"avgTon":2.1},{"date":"2026-07-11","area":"BF","erectionTon":5.3,"avgTon":2.4},{"date":"2026-07-11","area":"GF","erectionTon":9.1,"avgTon":2.4},{"date":"2026-07-13","area":"BF","erectionTon":8.5,"avgTon":2.8},{"date":"2026-07-13","area":"GF","erectionTon":8.0,"avgTon":2.7},{"date":"2026-07-14","area":"BF","erectionTon":4.3,"avgTon":4.1},{"date":"2026-07-14","area":"GF","erectionTon":11.6,"avgTon":2.6},{"date":"2026-07-15","area":"BF","erectionTon":0,"avgTon":0.0},{"date":"2026-07-15","area":"GF","erectionTon":9.2,"avgTon":1.7}],"monthly":[{"month":"Feb-26","GF":{"total":265.8,"entries":132,"days":20,"prod":1.8},"BF":{"total":423.9,"entries":138,"days":26,"prod":2.8}},{"month":"Mar-26","GF":{"total":161.8,"entries":71,"days":15,"prod":1.7},"BF":{"total":179.5,"entries":77,"days":17,"prod":2.2}},{"month":"Apr-26","GF":{"total":25.6,"entries":21,"days":6,"prod":1.2},"BF":{"total":17.5,"entries":7,"days":5,"prod":2.5}},{"month":"May-26","GF":{"total":92.8,"entries":72,"days":23,"prod":1.6},"BF":{"total":52.5,"entries":25,"days":24,"prod":2.7}},{"month":"Jun-26","GF":{"total":100.0,"entries":54,"days":9,"prod":1.6},"BF":{"total":26.0,"entries":22,"days":10,"prod":1.4}},{"month":"Jul-26","GF":{"total":107.9,"entries":70,"days":15,"prod":2.2},"BF":{"total":83.2,"entries":28,"days":12,"prod":2.9}}]}</script>
+<script>
+const RAW = JSON.parse(document.getElementById('data').textContent);
+const D = RAW.daily.filter(r=>r.date>='2026-07-01');  // July, till date
+const MON = RAW.monthly;
+const C = {gf:'#0aa2c0', bf:'#e08a1e', grid:'#e4e8f0', txt:'#6b7688'};
+Chart.register(ChartDataLabels);
+Chart.defaults.color = C.txt;
+Chart.defaults.font.family = "Segoe UI,-apple-system,Roboto,sans-serif";
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.datalabels.display = false; // opt-in per chart below
+const gridOpt = {grid:{color:C.grid},ticks:{color:C.txt}};
+const baseScales = {x:gridOpt, y:{...gridOpt, beginAtZero:true}};
+const num = n => (n==null?'—':(Math.round(n*100)/100).toLocaleString());
+const barLabels = suffix => ({
+  display:true, anchor:'end', align:'top', offset:2,
+  color:'#1c2536', font:{size:10, weight:'700'},
+  formatter:v=> v==null?'':num(v)+(suffix||'')
+});
+const lineLabels = suffix => ({
+  display:true, align:'top', offset:6,
+  color:'#1c2536', font:{size:10, weight:'700'},
+  formatter:v=> v==null?'':num(v)+(suffix||'')
+});
+
+function uniqDates(arr){return [...new Set(arr.map(d=>d.date))].sort();}
+function seriesByArea(rows,area,field,dates){
+  const m={}; rows.filter(r=>r.area===area).forEach(r=>m[r.date]=r[field]);
+  return dates.map(d=> d in m ? m[d] : null);
+}
+function fmtDate(d){const [y,m,dd]=d.split('-');const mon=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1];return dd+'-'+mon;}
+
+/* ---- Hero productivity cards (GF & BF, per crane, till date) ---- */
+(function(){
+  const gf=D.filter(r=>r.area==='GF'), bf=D.filter(r=>r.area==='BF');
+  // per-crane productivity = total tons / total crane entries recorded (matches source's own "Average FTD (Ton)" method)
+  const gfEntries = RAW.monthly.find(m=>m.month==='Jul-26').GF;
+  const bfEntries = RAW.monthly.find(m=>m.month==='Jul-26').BF;
+  const cards=[
+    {cls:'gf', area:'GF', prod:gfEntries.prod, total:gfEntries.total, cranes:gfEntries.entries, days:gfEntries.days},
+    {cls:'bf', area:'BF', prod:bfEntries.prod, total:bfEntries.total, cranes:bfEntries.entries, days:bfEntries.days},
+  ];
+  document.getElementById('hero').innerHTML = cards.map(k=>`
+    <div class="hero-card ${k.cls}">
+      <span class="area-tag">${k.area} Area</span>
+      <div class="metric-lbl">Crane Productivity — Till Date</div>
+      <div class="metric-val">${num(k.prod)}<span>t / crane</span></div>
+      <div class="metric-foot">
+        <div>Total erected<br><b>${num(k.total)} t</b></div>
+        <div>Crane entries<br><b>${k.cranes}</b></div>
+        <div>Working days<br><b>${k.days}</b></div>
+      </div>
+    </div>`).join('');
+})();
+
+/* ---- Day-wise erection ---- */
+(function(){
+  const dates=uniqDates(D);
+  new Chart(craneTon,{type:'bar',data:{labels:dates.map(fmtDate),datasets:[
+    {label:'GF',data:seriesByArea(D,'GF','erectionTon',dates),backgroundColor:C.gf,borderRadius:4,datalabels:barLabels(' t')},
+    {label:'BF',data:seriesByArea(D,'BF','erectionTon',dates),backgroundColor:C.bf,borderRadius:4,datalabels:barLabels(' t')}
+  ]},options:{maintainAspectRatio:false,scales:baseScales,layout:{padding:{top:16}},plugins:{tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${num(c.raw)} t`}}}}});
+})();
+
+/* ---- Day-wise productivity (per crane) ---- */
+(function(){
+  const dates=uniqDates(D);
+  new Chart(craneProd,{type:'line',data:{labels:dates.map(fmtDate),datasets:[
+    {label:'GF',data:seriesByArea(D,'GF','avgTon',dates),borderColor:C.gf,backgroundColor:C.gf,tension:.3,spanGaps:true,pointRadius:4,datalabels:lineLabels()},
+    {label:'BF',data:seriesByArea(D,'BF','avgTon',dates),borderColor:C.bf,backgroundColor:C.bf,tension:.3,spanGaps:true,pointRadius:4,datalabels:lineLabels()}
+  ]},options:{maintainAspectRatio:false,scales:baseScales,layout:{padding:{top:16}},plugins:{tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${num(c.raw)} t/crane`}}}}});
+})();
+
+/* ---- Day-wise detail table ---- */
+(function(){
+  const dates=uniqDates(D);
+  const rows=[];
+  let prevDate=null;
+  dates.forEach(d=>{
+    if(prevDate){
+      const p=new Date(prevDate), c=new Date(d);
+      const gapDays=Math.round((c-p)/86400000);
+      if(gapDays>1){
+        for(let i=1;i<gapDays;i++){
+          const gd=new Date(p); gd.setDate(gd.getDate()+i);
+          rows.push({gap:true,date:gd.toISOString().slice(0,10)});
+        }
+      }
+    }
+    D.filter(r=>r.date===d).sort((a,b)=>a.area.localeCompare(b.area)).forEach(r=>rows.push(r));
+    prevDate=d;
+  });
+  document.getElementById('craneTbl').innerHTML =
+    `<thead><tr><th>Date</th><th>Area</th><th>Erection (t)</th><th>Productivity (t/crane)</th></tr></thead><tbody>`+
+    rows.map(r=> r.gap
+      ? `<tr class="gap"><td colspan="4">${fmtDate(r.date)} — no report submitted</td></tr>`
+      : `<tr><td>${fmtDate(r.date)}</td><td><span class="pill ${r.area.toLowerCase()}">${r.area}</span></td>
+         <td>${num(r.erectionTon)}</td><td>${num(r.avgTon)}</td></tr>`
+    ).join('')+
+    `</tbody>`;
+})();
+
+/* ---- Monthly trend charts ---- */
+(function(){
+  const labels = MON.map(m=>m.month);
+  new Chart(monthTon,{type:'bar',data:{labels,datasets:[
+    {label:'GF',data:MON.map(m=>m.GF.total),backgroundColor:C.gf,borderRadius:4,datalabels:barLabels(' t')},
+    {label:'BF',data:MON.map(m=>m.BF.total),backgroundColor:C.bf,borderRadius:4,datalabels:barLabels(' t')}
+  ]},options:{maintainAspectRatio:false,scales:baseScales,layout:{padding:{top:16}},plugins:{tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${num(c.raw)} t`}}}}});
+
+  new Chart(monthProd,{type:'line',data:{labels,datasets:[
+    {label:'GF',data:MON.map(m=>m.GF.prod),borderColor:C.gf,backgroundColor:C.gf,tension:.3,pointRadius:5,datalabels:lineLabels()},
+    {label:'BF',data:MON.map(m=>m.BF.prod),borderColor:C.bf,backgroundColor:C.bf,tension:.3,pointRadius:5,datalabels:lineLabels()}
+  ]},options:{maintainAspectRatio:false,scales:baseScales,layout:{padding:{top:16}},plugins:{tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${num(c.raw)} t/crane`}}}}});
+})();
+
+/* ---- Monthly summary table ---- */
+(function(){
+  const completeness = m => {
+    const days = Math.max(m.GF.days, m.BF.days);
+    return days>=18 ? {cls:'complete',lbl:'Complete'} : {cls:'partial',lbl:'Partial'};
+  };
+  document.getElementById('monthTbl').innerHTML =
+    `<thead><tr><th>Month</th><th>Coverage</th><th>GF Total (t)</th><th>GF t/crane</th><th>BF Total (t)</th><th>BF t/crane</th><th>Days Reported</th></tr></thead><tbody>`+
+    MON.map(m=>{
+      const c=completeness(m);
+      const days=Math.max(m.GF.days,m.BF.days);
+      return `<tr><td>${m.month}</td><td><span class="pill ${c.cls}">${c.lbl}</span></td>
+        <td>${num(m.GF.total)}</td><td>${num(m.GF.prod)}</td>
+        <td>${num(m.BF.total)}</td><td>${num(m.BF.prod)}</td><td>${days}</td></tr>`;
+    }).join('')+
+    `</tbody>`;
+})();
+</script>
+</body>
+</html>

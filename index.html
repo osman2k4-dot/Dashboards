@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Controls Dashboards — Demo Portfolio</title>
+<meta name="description" content="Interactive HTML dashboards for construction & EPC projects — daily progress, productivity, plot-plan progress maps. Demo portfolio with fictional data.">
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#111827;--muted:#6b7280;--line:#e5e7eb;
+ --primary:#1a56db;--primary-dark:#12399b;--navy:#10264f;--cyan:#0aa2c0;--orange:#e08a1e;--green:#16a34a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.55}
+.hero{background:linear-gradient(135deg,var(--navy) 0%,#143a73 55%,var(--primary) 100%);color:#fff;padding:56px 24px 48px}
+.wrap{max-width:1080px;margin:0 auto}
+.hero .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#9adeec;font-weight:700;margin-bottom:12px}
+.hero h1{font-size:34px;font-weight:800;line-height:1.2;max-width:720px}
+.hero p{margin-top:14px;font-size:16px;color:#cfe0f5;max-width:680px}
+.hero .pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
+.pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:6px 14px;font-size:12.5px;font-weight:600}
+.note{background:#fff7ec;border:1px solid #f3ddb8;color:#8a5a12;font-size:13px;padding:12px 18px;border-radius:10px;margin:26px auto 0;max-width:1080px}
+main{padding:34px 24px 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;box-shadow:0 1px 6px rgba(16,38,79,.05);transition:transform .12s, box-shadow .12s}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(16,38,79,.10)}
+.card .tag{align-self:flex-start;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:99px;margin-bottom:12px}
+.t-map{background:#e2eafc;color:var(--primary)}
+.t-prod{background:#d9f3ea;color:#0b7a53}
+.t-daily{background:#fdf0e0;color:#b06a10}
+.card h2{font-size:17px;font-weight:750;margin-bottom:6px}
+.card p{color:var(--muted);font-size:13.5px;flex:1}
+.card .open{margin-top:16px;align-self:flex-start;background:var(--primary);color:#fff;text-decoration:none;font-weight:700;font-size:13.5px;padding:9px 18px;border-radius:9px}
+.card .open:hover{background:var(--primary-dark)}
+.star{position:relative}
+.star::after{content:"★ Most popular with management";position:absolute;top:14px;right:16px;font-size:10.5px;font-weight:700;color:var(--orange)}
+.how{max-width:1080px;margin:34px auto 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 26px}
+.how h3{font-size:16px;margin-bottom:10px}
+.how p{color:var(--muted);font-size:14px}
+footer{padding:26px 24px 40px;text-align:center;color:var(--muted);font-size:12.5px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">Project Controls · Interactive Dashboards</div>
+    <h1>Site data your management will actually open.</h1>
+    <p>Single-file HTML dashboards built for live EPC construction projects — daily progress, craft productivity, and progress mapped directly on the plot layout. No Power BI license, no server, no IT ticket. One file, any browser, even on a phone.</p>
+    <div class="pills">
+      <span class="pill">Built by a Project Controls professional</span>
+      <span class="pill">P6 · EVM · Daily reporting</span>
+      <span class="pill">Chart.js · Zero dependencies on site</span>
+    </div>
+  </div>
+</header>
+
+<div class="note wrap">⚠ All dashboards below are demos on the fictional "Orion Project" with dummy data. Structure, logic and interactivity are identical to what runs on a live oil &amp; gas EPC site daily.</div>
+
+<main class="wrap">
+  <div class="grid">
+
+    <div class="card star">
+      <span class="tag t-map">Plot-plan progress</span>
+      <h2>Piping Progress Map</h2>
+      <p>Erection, welding and fit-up progress shown as live bubbles on the site layout — red to green by completion. Numbers say how much is behind; the map shows <em>where</em>.</p>
+      <a class="open" href="demo-piping-progress-map.html">Open demo →</a>
+    </div>
+
+    <div class="card">
+      <span class="tag t-map">Plot-plan progress</span>
+      <h2>Steel Structure Dashboard</h2>
+      <p>Unit-wise erection with received / erected / balance tonnage, plus every structure drawn on the plot layout and colored by erection status. Excel import built in.</p>
+      <a class="open" href="demo-steel-structure.html">Open demo →</a>
+    </div>
+
+    <div class="card">
+      <span class="tag t-prod">Craft productivity</span>
+      <h2>Welder &amp; Fabricator Productivity</h2>
+      <p>Person-wise dia-inch per day in a 30-day matrix, fit-up vs welding gap, and productivity rankings — the view that changes behaviour on site.</p>
+      <a class="open" href="demo-welder-productivity.html">Open demo →</a>
+    </div>
+
+    <div class="card">
+      <span class="tag t-daily">Daily / weekly reporting</span>
+      <h2>Equipment Installation</h2>
+      <p>Rotary &amp; stationary equipment through the delivery → installation funnel, earned tonnage vs accelerated plan, drill-down to every tag.</p>
+      <a class="open" href="demo-equipment-weekly.html">Open demo →</a>
+    </div>
+
+    <div class="card">
+      <span class="tag t-prod">Craft productivity</span>
+      <h2>Crane Productivity</h2>
+      <p>Tons per crane-day, GF vs BF, day-wise and monthly trends — makes idle crane-days visible before they become a cost claim.</p>
+      <a class="open" href="demo-crane-productivity.html">Open demo →</a>
+    </div>
+
+    <div class="card">
+      <span class="tag t-prod">Craft productivity</span>
+      <h2>Scaffolding Dashboard</h2>
+      <p>Erection, modification and dismantling volumes with m³ per scaffolder-day by activity, unit-wise registers and daily logs.</p>
+      <a class="open" href="demo-scaffolding.html">Open demo →</a>
+    </div>
+
+    <div class="card">
+      <span class="tag t-daily">Daily / weekly reporting</span>
+      <h2>E&amp;I Dashboard</h2>
+      <p>Cable laying plan vs actual by day, commodity register (tray, glanding, terminations, instruments) and area-wise completion.</p>
+      <a class="open" href="demo-ei-dashboard.html">Open demo →</a>
+    </div>
+
+    <div class="card">
+      <span class="tag t-daily">Daily / weekly reporting</span>
+      <h2>Civil Works Dashboard</h2>
+      <p>Concrete m³ — structural vs non-structural, planned cumulative vs actual, and month-by-month plan to completion.</p>
+      <a class="open" href="demo-civil-works.html">Open demo →</a>
+    </div>
+
+    <div class="card">
+      <span class="tag t-daily">Daily / weekly reporting</span>
+      <h2>Reconstruction Daily Progress</h2>
+      <p>Day-works style daily dashboard: activity-wise progress, erection trend, manpower and equipment, plus today's activities and areas of concern.</p>
+      <a class="open" href="demo-reconstruction.html">Open demo →</a>
+    </div>
+
+  </div>
+
+  <div class="how">
+    <h3>How these work</h3>
+    <p>Each dashboard is one self-contained HTML file. Site data (daily reports, Excel registers, P6 exports) is processed into embedded JSON, charts render with Chart.js, and the file can be emailed, opened offline, or dropped on a shared drive. Several accept a fresh Excel drop to refresh themselves — no rebuild needed. If your project runs on Excel exports and PowerPoint decks, this is the upgrade path.</p>
+  </div>
+</main>
+
+<footer>Demo portfolio · All project names, people, tags and figures are fictional · Built with Chart.js &amp; vanilla JavaScript</footer>
+
+</body>
+</html>

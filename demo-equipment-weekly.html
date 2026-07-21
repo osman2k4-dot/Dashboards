@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[DEMO — fictional data] Equipment Installation — Live Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--navy:#0b2545;--navy2:#10264f;--accent:#0aa2c0;--gf:#0aa2c0;--bf:#e08a1e;
+--bg:#f3f5f9;--card:#fff;--border:#e4e8f0;--text:#1c2536;--muted:#6b7688;
+--green:#16a34a;--red:#dc2626;--amber:#d97706;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;}
+header{padding:26px 40px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;}
+header .eyebrow{font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:#9fb3d9;font-weight:600}
+header h1{margin:6px 0 4px;font-size:24px;font-weight:700}
+header p{margin:0;color:#c3cfe6;font-size:12.5px}
+.wrap{max-width:1200px;margin:0 auto;padding:24px 40px 60px}
+.drop{border:2px dashed #c3ccda;border-radius:14px;background:#fff;padding:16px 20px;margin-bottom:20px;
+display:flex;align-items:center;gap:16px;transition:.15s}
+.drop.over{border-color:var(--accent);background:#eff4ff}
+.drop .ic{font-size:22px}
+.drop .t{font-size:13px;font-weight:600}
+.drop .s{font-size:12px;color:var(--muted)}
+.drop label{margin-left:auto;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;
+padding:8px 16px;border-radius:8px;cursor:pointer}
+.drop input{display:none}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;
+box-shadow:0 1px 3px rgba(16,24,40,.06);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent)}
+.kpi.g::before{background:var(--green)}.kpi.a::before{background:var(--amber)}.kpi.r::before{background:var(--muted)}
+.kpi .l{font-size:12px;color:var(--muted);font-weight:600}
+.kpi .v{font-size:34px;font-weight:800;line-height:1.1;margin-top:6px;letter-spacing:-.5px}
+.kpi .v span{font-size:15px;font-weight:600;color:var(--muted)}
+.kpi .f{margin-top:6px;font-size:12px;color:var(--muted)}
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}
+.hero-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 24px;
+box-shadow:0 1px 3px rgba(16,24,40,.06);position:relative;overflow:hidden}
+.hero-card::before{content:"";position:absolute;top:0;left:0;right:0;height:5px}
+.hero-card.gf::before{background:var(--gf)}.hero-card.bf::before{background:var(--bf)}
+.area-tag{display:inline-flex;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+padding:3px 10px;border-radius:20px}
+.hero-card.gf .area-tag{background:rgba(37,99,235,.1);color:var(--gf)}
+.hero-card.bf .area-tag{background:rgba(224,138,30,.12);color:var(--bf)}
+.hero-card .mv{font-size:40px;font-weight:800;margin-top:12px;letter-spacing:-.5px}
+.hero-card .mv span{font-size:16px;font-weight:600;color:var(--muted)}
+.hero-card .ml{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:2px}
+.bar{height:8px;border-radius:5px;background:#eef1f6;margin-top:14px;overflow:hidden}
+.bar>i{display:block;height:100%}
+.hero-card.gf .bar>i{background:var(--gf)}.hero-card.bf .bar>i{background:var(--bf)}
+.foot{margin-top:14px;display:flex;gap:22px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.foot b{color:var(--text);font-size:13px}
+.section-title{display:flex;align-items:center;gap:10px;margin:34px 0 4px}
+.section-title .b{width:4px;height:18px;border-radius:2px;background:var(--accent)}
+.section-title h2{margin:0;font-size:16px;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px;
+box-shadow:0 1px 3px rgba(16,24,40,.05)}
+.card.full{grid-column:1/-1}
+.card h3{margin:0 0 2px;font-size:14px;font-weight:700}
+.card .desc{color:var(--muted);font-size:12px;margin:0 0 14px}
+.chart-box{position:relative;height:290px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0 6px}
+.controls button{border:1px solid var(--border);background:#fff;color:var(--text);font-size:12px;font-weight:600;
+padding:6px 12px;border-radius:20px;cursor:pointer}
+.controls button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.controls input{margin-left:auto;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;min-width:200px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:right;padding:8px 12px;border-bottom:1px solid var(--border)}
+th:nth-child(1),td:nth-child(1),th:nth-child(2),td:nth-child(2),th:nth-child(3),td:nth-child(3){text-align:left}
+td.c,th.c{text-align:center}
+th{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;background:#f8fafc;
+position:sticky;top:0}
+tbody tr:hover{background:#f8fafc}
+.pill{padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.pill.gf{background:rgba(37,99,235,.1);color:var(--gf)}.pill.bf{background:rgba(224,138,30,.12);color:var(--bf)}
+.sb{padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.sb.inst{background:rgba(22,163,74,.12);color:var(--green)}
+.sb.prog{background:rgba(217,119,6,.12);color:var(--amber)}
+.sb.del{background:rgba(37,99,235,.1);color:var(--accent)}
+.sb.nd{background:#eef1f6;color:var(--muted)}
+td.rm{text-align:left;color:var(--muted);font-size:12px;max-width:280px;white-space:normal}
+.twrap{max-height:520px;overflow:auto}
+footer{max-width:1200px;margin:0 auto;padding:0 40px 40px;color:var(--muted);font-size:11.5px}
+</style></head><body>
+<header>
+<div class="eyebrow">NorthGulf Energy Orion &nbsp;&bull;&nbsp; Equipment Installation</div>
+<h1>Equipment Weekly Report &mdash; Rotary &amp; Stationary (GF &amp; BF)</h1>
+<p id="meta"></p>
+</header>
+<div class="wrap">
+<div class="drop" id="drop">
+<div class="ic">&#128196;</div>
+<div><div class="t">Live update</div><div class="s">Drop the latest &ldquo;Equipment Status Update&rdquo; Excel file here to refresh &mdash; everything recalculates in your browser.</div></div>
+<label>Choose file<input type="file" id="file" accept=".xlsx,.xlsm"></label>
+</div>
+
+<div class="kpis">
+<div class="kpi"><div class="l">Total Equipment (BOQ)</div><div class="v" id="k_boq">&ndash;</div><div class="f" id="k_boqf"></div></div>
+<div class="kpi g"><div class="l">Installed</div><div class="v" id="k_inst"></div><div class="f" id="k_instf"></div></div>
+<div class="kpi a"><div class="l">Delivered to Site</div><div class="v" id="k_del"></div><div class="f" id="k_delf"></div></div>
+<div class="kpi r"><div class="l">Not Delivered</div><div class="v" id="k_nd"></div><div class="f" id="k_ndf"></div></div>
+</div>
+
+<div class="hero">
+<div class="hero-card gf"><span class="area-tag">GF &middot; Greenfield</span>
+<div class="mv" id="gf_mv"></div><div class="ml" id="gf_ml"></div>
+<div class="bar"><i id="gf_bar"></i></div>
+<div class="foot" id="gf_foot"></div></div>
+<div class="hero-card bf"><span class="area-tag">BF &middot; Brownfield</span>
+<div class="mv" id="bf_mv"></div><div class="ml" id="bf_ml"></div>
+<div class="bar"><i id="bf_bar"></i></div>
+<div class="foot" id="bf_foot"></div></div>
+</div>
+
+<div class="section-title"><span class="b"></span><h2>Progress Breakdown</h2></div>
+<div class="grid">
+<div class="card"><h3>Delivery &rarr; Installation Funnel</h3><p class="desc">Full BOQ moving through the pipeline</p><div class="chart-box"><canvas id="funnel"></canvas></div></div>
+<div class="card"><h3>Status by Field (GF vs BF)</h3><p class="desc">Installed / delivered / not delivered per area</p><div class="chart-box"><canvas id="field"></canvas></div></div>
+<div class="card"><h3>Rotary vs Stationary</h3><p class="desc">Total vs installed by equipment type</p><div class="chart-box"><canvas id="type"></canvas></div></div>
+<div class="card"><h3>By Equipment Class</h3><p class="desc">Total vs installed for top categories</p><div class="chart-box"><canvas id="cls"></canvas></div></div>
+</div>
+
+<div class="section-title"><span class="b"></span><h2>Plan vs Actual &mdash; Accelerated Schedule (Earned Tonnage)</h2></div>
+<p class="section-note" id="pa_note" style="font-size:12px;color:var(--muted);margin:2px 0 0"></p>
+<div class="grid">
+<div class="card"><h3>Stationary Equipment</h3><p class="desc">Monthly (bars) &amp; cumulative (lines) &mdash; plan vs achieved MT, Jun&ndash;Dec 26</p><div class="chart-box"><canvas id="paS"></canvas></div></div>
+<div class="card"><h3>Rotary Equipment</h3><p class="desc">Monthly (bars) &amp; cumulative (lines) &mdash; plan vs achieved MT, Jun&ndash;Dec 26</p><div class="chart-box"><canvas id="paR"></canvas></div></div>
+<div class="card full"><h3>Total Equipment (Stationary + Rotary)</h3><p class="desc">Monthly (bars) &amp; cumulative (lines) &mdash; plan vs achieved MT, Jun&ndash;Dec 26</p><div class="chart-box"><canvas id="paT"></canvas></div></div>
+</div>
+
+<div class="section-title"><span class="b"></span><h2>Equipment List <span id="tcount" style="font-size:12px;color:var(--muted);font-weight:600"></span></h2></div>
+<div class="controls">
+<button data-f="all" class="on">All</button>
+<button data-f="Installed">Installed</button>
+<button data-f="prog">In-Progress</button>
+<button data-f="Delivered">Delivered</button>
+<button data-f="Not Delivered">Not Delivered</button>
+<input id="search" placeholder="Search tag or description...">
+</div>
+<div class="grid"><div class="card full"><div class="twrap"><table>
+<thead><tr><th>#</th><th>Tag No.</th><th>Description</th><th class="c">Field</th><th class="c">Type</th><th class="c">Class</th><th>Weight (MT)</th><th class="c">Civil Rdy</th><th class="c">Status</th><th>Remarks</th></tr></thead>
+<tbody id="tbody"></tbody></table></div></div></div>
+</div>
+<footer>Live dashboard &mdash; drop a newer &ldquo;Equipment Status Update&rdquo; file anytime to refresh. Total BOQ is read from the file&rsquo;s <b>Dashboard Summary</b> sheet; the equipment list itemises every numbered row in the <b>Equipment Erection Data</b> sheet (including items without a tag number yet).</footer>
+
+<script>
+const INITIAL = {"src":"demo-data.xlsx","date":"20260717","boq":159,"items":[{"sn":1,"tag":"259-V-814","desc":"Absorbent Drain Drum","field":"GF","type":"S","cls":"Vessels","weight":8.7,"civil":"YES","status":"Not Delivered","prog":9.1,"remarks":"","amon":""},{"sn":2,"tag":"259-V-821","desc":"Condensate Flash Drum","field":"GF","type":"S","cls":"Vessels","weight":58.3,"civil":"YES","status":"Not Delivered","prog":11.7,"remarks":"","amon":""},{"sn":3,"tag":"259-V-828","desc":"Reflux Drum","field":"GF","type":"S","cls":"Vessels","weight":64.8,"civil":"YES","status":"Not Delivered","prog":9.1,"remarks":"Backfilling & Access pending","amon":""},{"sn":4,"tag":"259-V-842","desc":"Reclaimer Reflux Drum","field":"GF","type":"S","cls":"Vessels","weight":16.1,"civil":"YES","status":"Not Delivered","prog":9.3,"remarks":"Chipping & Backfilling pending","amon":"2026-07"},{"sn":5,"tag":"259-V-849","desc":"Reboiler Condensate drum","field":"GF","type":"S","cls":"Vessels","weight":31.3,"civil":"YES","status":"Not Delivered","prog":8.2,"remarks":"","amon":""},{"sn":6,"tag":"259-V-856","desc":"Reclaimer reboiler condensate drum","field":"GF","type":"S","cls":"Vessels","weight":1.1,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"Chipping & Backfilling pending","amon":""},{"sn":7,"tag":"259-V-863","desc":"Degraded absorbent drum","field":"GF","type":"S","cls":"Vessels","weight":5.7,"civil":"YES","status":"Not Delivered","prog":8.9,"remarks":"","amon":""},{"sn":8,"tag":"250-V-947","desc":"Absorbent drain drum","field":"BF","type":"S","cls":"Vessels","weight":6.9,"civil":"YES","status":"Not Delivered","prog":8.2,"remarks":"Inspection to raise","amon":""},{"sn":9,"tag":"251-V-947","desc":"Absorbent drain drum","field":"BF","type":"S","cls":"Vessels","weight":6.3,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":10,"tag":"252-V-947","desc":"Absorbent drain drum","field":"BF","type":"S","cls":"Vessels","weight":6.7,"civil":"2026-06-03 00:00:00","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":11,"tag":"253-V-947","desc":"Absorbent drain drum","field":"BF","type":"S","cls":"Vessels","weight":5.7,"civil":"YES","status":"Not Delivered","prog":9.3,"remarks":"Inspection to raise","amon":""},{"sn":12,"tag":"215-V-807","desc":"LP CO2 Compressor 1st Stage Suction Scrubber","field":"GF","type":"S","cls":"Vessels","weight":50.6,"civil":"YES","status":"Not Delivered","prog":10.3,"remarks":"Backfilling & Access pending","amon":""},{"sn":13,"tag":"215-V-898","desc":"HP CO2 Compressor 1st Stage Suction Scrubber","field":"GF","type":"S","cls":"Vessels","weight":119.2,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"Backfilling & Access pending","amon":""},{"sn":14,"tag":"215-V-884","desc":"Glycol Drain Drum","field":"GF","type":"S","cls":"Vessels","weight":14.7,"civil":"YES","status":"Not Delivered","prog":10.8,"remarks":"Backfilling & Access pending","amon":""},{"sn":15,"tag":"215-V-933","desc":"Closed Drain Drum","field":"GF","type":"S","cls":"Vessels","weight":29.9,"civil":"YES","status":"Not Delivered","prog":9.6,"remarks":"Backfilling & Access pending","amon":""},{"sn":16,"tag":"259-V-807","desc":"CO2 Stripper","field":"GF","type":"S","cls":"Stripper","weight":220.3,"civil":"YES","status":"Installed","prog":105.7,"remarks":"","amon":"2026-01"},{"sn":17,"tag":"250-V-940","desc":"CO2 Absorber","field":"BF","type":"S","cls":"Absorber","weight":219.3,"civil":"YES","status":"Installed","prog":86.5,"remarks":"","amon":"2026-06"},{"sn":18,"tag":"251-V-940","desc":"CO2 Absorber","field":"BF","type":"S","cls":"Absorber","weight":263.9,"civil":"YES","status":"Installed","prog":75.2,"remarks":"","amon":"2026-02"},{"sn":19,"tag":"252-V-940","desc":"CO2 Absorber","field":"BF","type":"S","cls":"Absorber","weight":281.3,"civil":"YES","status":"Installed","prog":91.3,"remarks":"","amon":"2026-04"},{"sn":20,"tag":"253-V-940","desc":"CO2 Absorber","field":"BF","type":"S","cls":"Absorber","weight":262.5,"civil":"YES","status":"Installed","prog":86.7,"remarks":"","amon":"2026-05"},{"sn":21,"tag":"259-F-807","desc":"Mechanical Filter","field":"GF","type":"S","cls":"Filter","weight":0.9,"civil":"YES","status":"Installed","prog":87.0,"remarks":"","amon":"2025-09"},{"sn":22,"tag":"259-F-814","desc":"Carbon bed filter","field":"GF","type":"S","cls":"Filter","weight":45.9,"civil":"YES","status":"Installed","prog":100.2,"remarks":"","amon":"2025-10"},{"sn":23,"tag":"259-F-821","desc":"Carbon After filter","field":"GF","type":"S","cls":"Filter","weight":0.7,"civil":"YES","status":"Installed","prog":111.0,"remarks":"","amon":"2025-09"},{"sn":24,"tag":"259-F-828","desc":"Drained absorbent filter","field":"GF","type":"S","cls":"Filter","weight":0.4,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"At structure (After tank installation)","amon":""},{"sn":25,"tag":"250-F-821","desc":"Drained absorbent filter","field":"BF","type":"S","cls":"Filter","weight":0.6,"civil":"","status":"Delivered","prog":0.0,"remarks":"Structure Not ready","amon":""},{"sn":26,"tag":"251-F-821","desc":"Drained absorbent filter","field":"BF","type":"S","cls":"Filter","weight":0.5,"civil":"","status":"Delivered","prog":0.0,"remarks":"Structure Not ready","amon":""},{"sn":27,"tag":"252-F-821","desc":"Drained absorbent filter","field":"BF","type":"S","cls":"Filter","weight":0.4,"civil":"","status":"Delivered","prog":0.0,"remarks":"Structure Not ready","amon":""},{"sn":28,"tag":"253-F-821","desc":"Drained absorbent filter","field":"BF","type":"S","cls":"Filter","weight":0.5,"civil":"","status":"Delivered","prog":0.0,"remarks":"Structure Not ready","amon":""},{"sn":29,"tag":"259-E-807A","desc":"Lean Rich Absorbent Heat Exchanger","field":"GF","type":"S","cls":"HE","weight":71.7,"civil":"YES","status":"Installed","prog":102.1,"remarks":"","amon":"2026-02"},{"sn":30,"tag":"259-E-807B","desc":"Lean Rich Absorbent Heat Exchanger","field":"GF","type":"S","cls":"HE","weight":66.9,"civil":"YES","status":"Installed","prog":104.5,"remarks":"","amon":"2026-02"},{"sn":31,"tag":"259-E-807C","desc":"Lean Rich Absorbent Heat Exchanger","field":"GF","type":"S","cls":"HE","weight":68.2,"civil":"YES","status":"Installed","prog":99.6,"remarks":"","amon":"2026-02"},{"sn":32,"tag":"259-E-807D","desc":"Lean Rich Absorbent Heat Exchanger","field":"GF","type":"S","cls":"HE","weight":52.6,"civil":"YES","status":"Installed","prog":110.7,"remarks":"","amon":"2026-02"},{"sn":33,"tag":"259-E-814","desc":"Lean Absorbent Cooler","field":"GF","type":"S","cls":"Fin Fan Cooler","weight":55.6,"civil":"YES","status":"Delivered","prog":50.1,"remarks":"Structure Not ready","amon":"2026-06"},{"sn":34,"tag":"259-E-821A","desc":"Stripper Reboiler","field":"GF","type":"S","cls":"Other","weight":36.3,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"Str. Not Released","amon":""},{"sn":35,"tag":"259-E-821B","desc":"Stripper Reboiler","field":"GF","type":"S","cls":"Other","weight":30.2,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"Str. Not Released","amon":""},{"sn":36,"tag":"259-E-821C","desc":"Stripper Reboiler","field":"GF","type":"S","cls":"Other","weight":32.6,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"Str. Not Released","amon":""},{"sn":37,"tag":"259-E-821D","desc":"Stripper Reboiler","field":"GF","type":"S","cls":"Other","weight":32.8,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"Str. Not Released","amon":""},{"sn":38,"tag":"259-E-828","desc":"Overhead Condenser","field":"GF","type":"S","cls":"Other","weight":392.1,"civil":"YES","status":"Installed","prog":86.9,"remarks":"","amon":"2026-06"},{"sn":39,"tag":"259-E-835","desc":"Reclaimer Preheater","field":"GF","type":"S","cls":"Other","weight":2.3,"civil":"","status":"Delivered","prog":0.0,"remarks":"Foundation not yet released,","amon":""},{"sn":40,"tag":"259-E-842","desc":"Reclaimer Reboiler","field":"GF","type":"S","cls":"Other","weight":3.0,"civil":"","status":"Delivered","prog":0.0,"remarks":"Part of 259-V-835","amon":""},{"sn":41,"tag":"259-E-849","desc":"Reclaimer Condenser","field":"GF","type":"S","cls":"Other","weight":2.2,"civil":"","status":"Delivered","prog":0.0,"remarks":"Structure Not ready","amon":""},{"sn":42,"tag":"250-E-912","desc":"Water Wash Cooler","field":"BF","type":"S","cls":"Fin Fan Cooler","weight":137.1,"civil":"","status":"Delivered","prog":10.5,"remarks":"Structure Not ready","amon":""},{"sn":43,"tag":"251-E-912","desc":"Water Wash Cooler","field":"BF","type":"S","cls":"Fin Fan Cooler","weight":111.6,"civil":"","status":"Delivered","prog":8.7,"remarks":"Structure Not ready","amon":""},{"sn":44,"tag":"252-E-912","desc":"Water Wash Cooler","field":"BF","type":"S","cls":"Fin Fan Cooler","weight":119.9,"civil":"","status":"Delivered","prog":10.9,"remarks":"Structure Not ready","amon":""},{"sn":45,"tag":"253-E-912","desc":"Water Wash Cooler","field":"BF","type":"S","cls":"Fin Fan Cooler","weight":122.3,"civil":"","status":"Delivered","prog":10.2,"remarks":"Structure Not ready","amon":""},{"sn":46,"tag":"250-E-919","desc":"Inter cooler","field":"BF","type":"S","cls":"Fin Fan Cooler","weight":136.2,"civil":"","status":"Delivered","prog":0.0,"remarks":"Structure Not ready","amon":""},{"sn":47,"tag":"251-E-919","desc":"Inter cooler","field":"BF","type":"S","cls":"Fin Fan Cooler","weight":151.4,"civil":"YES","status":"Installed","prog":85.0,"remarks":"","amon":"2026-06"},{"sn":48,"tag":"252-E-919","desc":"Inter cooler","field":"BF","type":"S","cls":"Fin Fan Cooler","weight":176.6,"civil":"","status":"Delivered","prog":0.0,"remarks":"Structure Not ready","amon":""},{"sn":49,"tag":"253-E-919","desc":"Inter cooler","field":"BF","type":"S","cls":"Fin Fan Cooler","weight":152.8,"civil":"","status":"Delivered","prog":0.0,"remarks":"Structure Not ready","amon":""},{"sn":50,"tag":"259-ME-814","desc":"Thermal Reclaimer Vaccum System","field":"GF","type":"S","cls":"Misc","weight":10.2,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":51,"tag":"259ME102-J-101","desc":"Steam Ejector","field":"GF","type":"S","cls":"Misc","weight":1.7,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"Work Not started","amon":""},{"sn":52,"tag":"259ME102-E-101","desc":"Condenser","field":"GF","type":"S","cls":"Misc","weight":5.4,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"Work Not started","amon":""},{"sn":53,"tag":"259ME102-V-101","desc":"Hot Well","field":"GF","type":"S","cls":"Misc","weight":3.5,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"Work Not started","amon":""},{"sn":54,"tag":"259ME102-P-101","desc":"Liquid Ring Vacuum Pump","field":"GF","type":"R","cls":"Pump","weight":7.4,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"Work Not started","amon":""},{"sn":55,"tag":"259ME102-E-102","desc":"Liquid Ring Pump Cooler","field":"GF","type":"S","cls":"Cooler","weight":0.1,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"Work Not started","amon":""},{"sn":56,"tag":"259ME102-SP-101","desc":"Liquid Ring Pump Separator","field":"GF","type":"S","cls":"Other","weight":0.0,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"Work Not started","amon":""},{"sn":57,"tag":"259-ME-821","desc":"Static Mixer","field":"GF","type":"S","cls":"Other","weight":0.1,"civil":"","status":"Delivered","prog":0.0,"remarks":"Work Not started","amon":""},{"sn":58,"tag":"259-ME-828","desc":"Anti foam Injection Package","field":"GF","type":"R","cls":"Other","weight":6.9,"civil":"","status":"Delivered","prog":0.0,"remarks":"Work Not started","amon":""},{"sn":59,"tag":"259ME104-TK-101","desc":"Chemical Storage Tank","field":"GF","type":"S","cls":"Other","weight":1.2,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":60,"tag":"259ME104-P-101A","desc":"Chemical Injection Pump","field":"GF","type":"R","cls":"Pump","weight":0.1,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":61,"tag":"259ME104-P-101B","desc":"Chemical Injection Pump","field":"GF","type":"R","cls":"Pump","weight":0.2,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":62,"tag":"259ME104-P-102","desc":"Chemical unloading pump","field":"GF","type":"R","cls":"Pump","weight":0.2,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":63,"tag":"250-ME-821","desc":"Anti foam Injection Package","field":"BF","type":"R","cls":"Other","weight":7.5,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":64,"tag":"251-ME-821","desc":"Anti foam Injection Package","field":"BF","type":"R","cls":"Other","weight":5.5,"civil":"YES","status":"Delivered","prog":8.2,"remarks":"","amon":"2026-05"},{"sn":65,"tag":"252-ME-821","desc":"Anti foam Injection Package","field":"BF","type":"R","cls":"Other","weight":6.6,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":66,"tag":"253-ME-821","desc":"Anti foam Injection Package","field":"BF","type":"R","cls":"Other","weight":6.1,"civil":"YES","status":"Delivered","prog":8.7,"remarks":"","amon":""},{"sn":67,"tag":"250-ME-821","desc":"Chemical Storage Tank","field":"BF","type":"S","cls":"Other","weight":1.1,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":68,"tag":"251-ME-821","desc":"Chemical Storage Tank","field":"BF","type":"S","cls":"Other","weight":1.3,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":69,"tag":"252-ME-821","desc":"Chemical Storage Tank","field":"BF","type":"S","cls":"Other","weight":1.3,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":70,"tag":"253-ME-821","desc":"Chemical Storage Tank","field":"BF","type":"S","cls":"Other","weight":1.0,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":71,"tag":"250-ME-821","desc":"Chemical Injection Pump","field":"BF","type":"R","cls":"Other","weight":0.8,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":72,"tag":"250-ME-821","desc":"Chemical Injection Pump","field":"BF","type":"R","cls":"Other","weight":0.6,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":73,"tag":"251-ME-821","desc":"Chemical Injection Pump","field":"BF","type":"R","cls":"Other","weight":0.7,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":74,"tag":"251-ME-821","desc":"Chemical Injection Pump","field":"BF","type":"R","cls":"Other","weight":0.7,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":75,"tag":"252-ME-821","desc":"Chemical Injection Pump","field":"BF","type":"R","cls":"Other","weight":0.7,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":76,"tag":"252-ME-821","desc":"Chemical Injection Pump","field":"BF","type":"R","cls":"Other","weight":0.6,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":77,"tag":"253-ME-821","desc":"Chemical Injection Pump","field":"BF","type":"R","cls":"Other","weight":0.8,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":78,"tag":"253-ME-821","desc":"Chemical Injection Pump","field":"BF","type":"R","cls":"Other","weight":0.8,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":79,"tag":"250-ME-821","desc":"Chemical unloading Pump","field":"BF","type":"R","cls":"Other","weight":0.6,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":80,"tag":"259-P-807 A","desc":"Lean absorbent pump","field":"GF","type":"R","cls":"Pump","weight":12.5,"civil":"YES","status":"Delivered","prog":9.5,"remarks":"No access due to material storage","amon":""},{"sn":81,"tag":"259-P-807 B","desc":"Lean absorbent pump","field":"GF","type":"R","cls":"Pump","weight":16.4,"civil":"YES","status":"Not Delivered","prog":11.4,"remarks":"No access due to material storage","amon":""},{"sn":82,"tag":"259-P-807 C","desc":"Lean absorbent pump","field":"GF","type":"R","cls":"Pump","weight":15.7,"civil":"YES","status":"Not Delivered","prog":10.5,"remarks":"No access due to material storage","amon":""},{"sn":83,"tag":"259-P-814 A","desc":"Absorber feed pump","field":"GF","type":"R","cls":"Pump","weight":18.1,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"Backfilling & Access pending","amon":""},{"sn":84,"tag":"259-P-814 B","desc":"Absorber feed pump","field":"GF","type":"R","cls":"Pump","weight":16.0,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"Backfilling & Access pending","amon":""},{"sn":85,"tag":"259-P-814 C","desc":"Absorber feed pump","field":"GF","type":"R","cls":"Pump","weight":13.2,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"Backfilling & Access pending","amon":""},{"sn":86,"tag":"259-P-821 A","desc":"Reflux pump","field":"GF","type":"R","cls":"Pump","weight":2.4,"civil":"YES","status":"Installed","prog":87.3,"remarks":"","amon":"2026-02"},{"sn":87,"tag":"259-P-821 B","desc":"Reflux pump","field":"GF","type":"R","cls":"Pump","weight":2.5,"civil":"YES","status":"Installed","prog":73.8,"remarks":"","amon":"2026-02"},{"sn":88,"tag":"259-P-828 A","desc":"Condensate pump","field":"GF","type":"R","cls":"Pump","weight":9.8,"civil":"YES","status":"Delivered","prog":11.5,"remarks":"No access due to material storage","amon":""},{"sn":89,"tag":"259-P-828 B","desc":"Condensate pump","field":"GF","type":"R","cls":"Pump","weight":10.1,"civil":"YES","status":"Not Delivered","prog":9.9,"remarks":"No access due to material storage","amon":""},{"sn":90,"tag":"259-P-835","desc":"Drained absorbent pump","field":"GF","type":"R","cls":"Pump","weight":1.0,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":91,"tag":"259-P-842","desc":"Absorbent make up pump","field":"GF","type":"R","cls":"Pump","weight":2.3,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":92,"tag":"259-P-849 A","desc":"Reclaimer reflux pump","field":"GF","type":"R","cls":"Pump","weight":1.6,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":93,"tag":"259-P-849 B","desc":"Reclaimer reflux pump","field":"GF","type":"R","cls":"Pump","weight":1.6,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":94,"tag":"259-P-856 A","desc":"Reclaimer bottom pump","field":"GF","type":"R","cls":"Pump","weight":2.0,"civil":"YES","status":"Installed","prog":70.4,"remarks":"Backfilling & Access Pending","amon":"2026-06"},{"sn":95,"tag":"259-P-856 B","desc":"Reclaimer bottom pump","field":"GF","type":"R","cls":"Pump","weight":1.8,"civil":"YES","status":"Installed","prog":71.6,"remarks":"Backfilling & Access Pending","amon":"2026-06"},{"sn":96,"tag":"259-P-863","desc":"Degraded absorbent pump","field":"GF","type":"R","cls":"Pump","weight":2.3,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":97,"tag":"250-P-884 A","desc":"Rich absorbent pump","field":"BF","type":"R","cls":"Pump","weight":13.6,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":98,"tag":"250-P-884 B","desc":"Rich absorbent pump","field":"BF","type":"R","cls":"Pump","weight":17.8,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":99,"tag":"251-P-884 A","desc":"Rich absorbent pump","field":"BF","type":"R","cls":"Pump","weight":13.2,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":100,"tag":"251-P-884 B","desc":"Rich absorbent pump","field":"BF","type":"R","cls":"Pump","weight":12.9,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":101,"tag":"252-P-884 A","desc":"Rich absorbent pump","field":"BF","type":"R","cls":"Pump","weight":12.9,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":102,"tag":"252-P-884 B","desc":"Rich absorbent pump","field":"BF","type":"R","cls":"Pump","weight":13.8,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":103,"tag":"253-P-884 A","desc":"Rich absorbent pump","field":"BF","type":"R","cls":"Pump","weight":17.3,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":104,"tag":"253-P-884 B","desc":"Rich absorbent pump","field":"BF","type":"R","cls":"Pump","weight":14.7,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":105,"tag":"250-P-891 A","desc":"Water wash pump","field":"BF","type":"R","cls":"Pump","weight":9.3,"civil":"YES","status":"Installed","prog":76.5,"remarks":"","amon":"2026-03"},{"sn":106,"tag":"250-P-891 B","desc":"Water wash pump","field":"BF","type":"R","cls":"Pump","weight":8.7,"civil":"YES","status":"Installed","prog":67.4,"remarks":"","amon":"2026-03"},{"sn":107,"tag":"251-P-891 A","desc":"Water wash pump","field":"BF","type":"R","cls":"Pump","weight":8.5,"civil":"YES","status":"Installed","prog":93.5,"remarks":"","amon":"2026-03"},{"sn":108,"tag":"251-P-891 B","desc":"Water wash pump","field":"BF","type":"R","cls":"Pump","weight":8.0,"civil":"YES","status":"Installed","prog":80.1,"remarks":"","amon":"2026-03"},{"sn":109,"tag":"252-P-891 A","desc":"Water wash pump","field":"BF","type":"R","cls":"Pump","weight":9.7,"civil":"YES","status":"Delivered","prog":90.5,"remarks":"","amon":"2026-07"},{"sn":110,"tag":"252-P-891 B","desc":"Water wash pump","field":"BF","type":"R","cls":"Pump","weight":8.3,"civil":"YES","status":"Delivered","prog":73.4,"remarks":"","amon":"2026-07"},{"sn":111,"tag":"253-P-891 A","desc":"Water wash pump","field":"BF","type":"R","cls":"Pump","weight":8.4,"civil":"YES","status":"Installed","prog":77.1,"remarks":"","amon":"2026-01"},{"sn":112,"tag":"253-P-891 B","desc":"Water wash pump","field":"BF","type":"R","cls":"Pump","weight":9.1,"civil":"YES","status":"Installed","prog":93.1,"remarks":"","amon":"2026-01"},{"sn":113,"tag":"250-P-898 A","desc":"Intercooler Pump","field":"BF","type":"R","cls":"Pump","weight":17.0,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":114,"tag":"250-P-898 B","desc":"Intercooler Pump","field":"BF","type":"R","cls":"Pump","weight":12.5,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":115,"tag":"251-P-898 A","desc":"Intercooler Pump","field":"BF","type":"R","cls":"Pump","weight":16.3,"civil":"YES","status":"Not Delivered","prog":11.4,"remarks":"","amon":"2026-05"},{"sn":116,"tag":"251-P-898 B","desc":"Intercooler Pump","field":"BF","type":"R","cls":"Pump","weight":15.0,"civil":"YES","status":"Not Delivered","prog":10.3,"remarks":"","amon":"2026-05"},{"sn":117,"tag":"252-P-898 A","desc":"Intercooler Pump","field":"BF","type":"R","cls":"Pump","weight":12.4,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":118,"tag":"252-P-898 B","desc":"Intercooler Pump","field":"BF","type":"R","cls":"Pump","weight":17.5,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":119,"tag":"253-P-898 A","desc":"Intercooler Pump","field":"BF","type":"R","cls":"Pump","weight":17.1,"civil":"YES","status":"Delivered","prog":11.7,"remarks":"Cleared","amon":"2026-07"},{"sn":120,"tag":"253-P-898 B","desc":"Intercooler Pump","field":"BF","type":"R","cls":"Pump","weight":13.8,"civil":"YES","status":"Not Delivered","prog":8.6,"remarks":"","amon":"2026-05"},{"sn":121,"tag":"250-P-905","desc":"Drained absorbent pump","field":"BF","type":"R","cls":"Pump","weight":1.0,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"Will be installed on 250-V-947","amon":""},{"sn":122,"tag":"251-P-905","desc":"Drained absorbent pump","field":"BF","type":"R","cls":"Pump","weight":1.2,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":123,"tag":"252-P-905","desc":"Drained absorbent pump","field":"BF","type":"R","cls":"Pump","weight":1.2,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"","amon":""},{"sn":124,"tag":"253-P-905","desc":"Drained absorbent pump","field":"BF","type":"R","cls":"Pump","weight":1.2,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"Will be installed on 253-V-947","amon":""},{"sn":125,"tag":"215-P-807 A","desc":"Sour Water Pump","field":"GF","type":"R","cls":"Pump","weight":0.8,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":126,"tag":"215-P-807 B","desc":"Sour Water Pump","field":"GF","type":"R","cls":"Pump","weight":0.8,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":127,"tag":"215-C-807-CMP-0001","desc":"Electrical Synchronous motor driver","field":"GF","type":"R","cls":"Compressor","weight":49.5,"civil":"YES","status":"Installed","prog":87.3,"remarks":"","amon":"2026-06"},{"sn":128,"tag":"215-C101-CMP-0003","desc":"Lube Oil System","field":"GF","type":"R","cls":"Other","weight":46.5,"civil":"YES","status":"Installed","prog":71.9,"remarks":"","amon":"2026-06"},{"sn":129,"tag":"215ME104-E-101","desc":"LP CO2 Compressor 1st stage discharge cooler","field":"GF","type":"S","cls":"Compressor","weight":50.1,"civil":"YES","status":"Installed","prog":83.9,"remarks":"","amon":"2026-01"},{"sn":130,"tag":"215ME104-E-102","desc":"LP CO2 Compressor 2nd stage discharge cooler","field":"GF","type":"S","cls":"Compressor","weight":50.4,"civil":"YES","status":"Installed","prog":68.8,"remarks":"","amon":"2026-01"},{"sn":131,"tag":"215ME104-E-103","desc":"LP CO2 Compressor 3rd stage discharge cooler","field":"GF","type":"S","cls":"Compressor","weight":35.5,"civil":"YES","status":"Installed","prog":80.7,"remarks":"","amon":"2026-01"},{"sn":132,"tag":"215ME104-E-105","desc":"LP CO2 Compressor 4th stage discharge cooler","field":"GF","type":"S","cls":"Compressor","weight":39.1,"civil":"YES","status":"Installed","prog":76.8,"remarks":"","amon":"2026-01"},{"sn":133,"tag":"215ME104-E-106","desc":"Bypass Cooler 1","field":"GF","type":"S","cls":"Compressor","weight":13.5,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"Structure Not Installed. After compressor grouting","amon":""},{"sn":134,"tag":"215-E-828","desc":"LP CO2 Compressor Discharge cooler","field":"GF","type":"S","cls":"Compressor","weight":356.7,"civil":"","status":"Delivered","prog":0.0,"remarks":"Structure Not ready","amon":""},{"sn":135,"tag":"215ME104-C-101","desc":"HP CO2 Compressor (4 stages)","field":"GF","type":"R","cls":"Other","weight":59.4,"civil":"","status":"Installed","prog":93.2,"remarks":"","amon":"2026-04"},{"sn":136,"tag":"215ME104-E-111","desc":"HP CO2 Compressor 6th stage discharge cooler","field":"GF","type":"S","cls":"Compressor","weight":36.8,"civil":"YES","status":"Installed","prog":91.1,"remarks":"","amon":"2026-01"},{"sn":137,"tag":"215-E-898","desc":"HP CO2 Compressor Discharge cooler","field":"GF","type":"S","cls":"Compressor","weight":97.1,"civil":"","status":"Delivered","prog":0.0,"remarks":"Structure Not ready","amon":""},{"sn":138,"tag":"215ME104-E-115","desc":"Bypass Cooler 2","field":"GF","type":"S","cls":"Compressor","weight":7.3,"civil":"YES","status":"Delivered","prog":0.0,"remarks":"Structure Not Installed. After compressor grouting","amon":""},{"sn":139,"tag":"215-ME-842","desc":"Portable Oil purification Unit","field":"GF","type":"S","cls":"Other","weight":464.9,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":140,"tag":"215-P-856","desc":"Closed Loop Cooling Water Start-up Pump","field":"GF","type":"R","cls":"Pump","weight":0.6,"civil":"","status":"Delivered","prog":0.0,"remarks":"foundation not started","amon":""},{"sn":141,"tag":"215-P-891 A","desc":"Closed Loop Cooling Water Circulation Pump","field":"GF","type":"R","cls":"Pump","weight":19.4,"civil":"YES","status":"Not Delivered","prog":9.7,"remarks":"Cleared","amon":""},{"sn":142,"tag":"215-P-891 B","desc":"Closed Loop Cooling Water Circulation Pump","field":"GF","type":"R","cls":"Pump","weight":16.7,"civil":"YES","status":"Not Delivered","prog":10.6,"remarks":"Cleared","amon":""},{"sn":143,"tag":"215-P-891 C","desc":"Closed Loop Cooling Water Circulation Pump","field":"GF","type":"R","cls":"Pump","weight":21.1,"civil":"YES","status":"Not Delivered","prog":9.0,"remarks":"Cleared","amon":""},{"sn":144,"tag":"215-E-919","desc":"Closed Loop Circulating Cooling Water Cooler","field":"GF","type":"S","cls":"Fin Fan Cooler","weight":645.7,"civil":"YES","status":"Installed","prog":56.5,"remarks":"Partially installation on going( 13 str. Frame installed. 24 Tube bundels installed","amon":"2026-04"},{"sn":145,"tag":"215ME101-V-104","desc":"(215-V-828) TEG Inlet KOD","field":"GF","type":"S","cls":"Other","weight":13.2,"civil":"YES","status":"Not Delivered","prog":10.7,"remarks":"Backfilling & Access pending","amon":""},{"sn":146,"tag":"215ME101-V-105","desc":"(215-V-835) Glycol Contactor","field":"GF","type":"S","cls":"Other","weight":25.1,"civil":"YES","status":"Not Delivered","prog":11.1,"remarks":"Backfilling & Access pending","amon":""},{"sn":147,"tag":"215ME101-E-109","desc":"Lean Glycol Cooler","field":"GF","type":"S","cls":"Cooler","weight":10.9,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":148,"tag":"215ME101-V-106","desc":"(215-V-842)Glycol Flash Drum","field":"GF","type":"S","cls":"Other","weight":3.6,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":149,"tag":"215ME101-F-101 A","desc":"(215-F-807 A) Glycol Particle Filter","field":"GF","type":"S","cls":"Other","weight":1.0,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":150,"tag":"215ME101-F-101 B","desc":"(215-F-807 B) Glycol Particle Filter","field":"GF","type":"S","cls":"Other","weight":1.0,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":151,"tag":"215ME101-F-102","desc":"Glycol Carbon Filter","field":"GF","type":"S","cls":"Other","weight":1.8,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":152,"tag":"215ME101-E-106","desc":"Glycol Reflux Condenser","field":"GF","type":"S","cls":"Other","weight":1.6,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":153,"tag":"215ME101-E-107","desc":"Lean/Rich Glycol Exchanger","field":"GF","type":"S","cls":"Other","weight":1.1,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":154,"tag":"215ME101-E-108","desc":"Glycol Reboiler","field":"GF","type":"S","cls":"Other","weight":4.3,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":155,"tag":"215ME101-V-107","desc":"Glycol Still Column","field":"GF","type":"S","cls":"Other","weight":1.4,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":156,"tag":"215ME101-V-108","desc":"Glycol Stripping Column","field":"GF","type":"S","cls":"Other","weight":1.4,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":157,"tag":"215ME101-V-109","desc":"Glycol Surge Drum","field":"GF","type":"S","cls":"Other","weight":2.5,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":158,"tag":"215ME101-P-103 A","desc":"Glycol Circulation Pump","field":"GF","type":"R","cls":"Pump","weight":0.5,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":159,"tag":"215ME101-P-103 B","desc":"Glycol Circulation Pump","field":"GF","type":"R","cls":"Pump","weight":0.5,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":160,"tag":"215ME101-F-103","desc":"Glycol Make-up Filter","field":"GF","type":"S","cls":"Other","weight":0.5,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":161,"tag":"215ME101-E-110","desc":"Glycol Still Second Condenser","field":"GF","type":"S","cls":"Other","weight":0.6,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":162,"tag":"215ME101-V-110","desc":"Spent Stripping Gas KO Drum","field":"GF","type":"S","cls":"Other","weight":0.4,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":163,"tag":"215ME101-V-111","desc":"LP Condensate Flash Drum","field":"GF","type":"S","cls":"Other","weight":0.5,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":164,"tag":"215-P-835","desc":"Glycol Drain Pump","field":"GF","type":"R","cls":"Pump","weight":0.5,"civil":"","status":"Delivered","prog":0.0,"remarks":"Vertical will be installed on 215-V-884","amon":""},{"sn":165,"tag":"215-ME-807","desc":"TEG Dehydration Unit","field":"GF","type":"S","cls":"Other","weight":414.1,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":166,"tag":"215-ME-814","desc":"TEG- Antifoam injection Package","field":"GF","type":"R","cls":"Other","weight":152.2,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":167,"tag":"215-ME-821","desc":"TEG- pH Control injection Package","field":"GF","type":"R","cls":"Other","weight":133.0,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":168,"tag":"215-ME-856","desc":"TEG - Desuperheater","field":"GF","type":"S","cls":"Other","weight":409.8,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":169,"tag":"215-P-828 A","desc":"Water Condensate Transfer Pump","field":"GF","type":"R","cls":"Pump","weight":0.0,"civil":"","status":"Not Delivered","prog":11.7,"remarks":"","amon":"2026-05"},{"sn":170,"tag":"215-P-828 B","desc":"Water Condensate Transfer Pump","field":"GF","type":"R","cls":"Pump","weight":0.0,"civil":"","status":"Not Delivered","prog":9.5,"remarks":"","amon":"2026-05"},{"sn":171,"tag":"215-ME-835","desc":"Flow Metering Skid","field":"GF","type":"S","cls":"Skid","weight":69.2,"civil":"YES","status":"Not Delivered","prog":91.5,"remarks":"Backfilling & access required","amon":"2026-06"},{"sn":172,"tag":"259-V-835","desc":"Thermal Reclaimer","field":"GF","type":"S","cls":"Vessels","weight":13.7,"civil":"YES","status":"Installed","prog":83.8,"remarks":"","amon":""},{"sn":173,"tag":"215-P-884 A","desc":"Closed Drain pump","field":"GF","type":"R","cls":"Pump","weight":2.0,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":174,"tag":"215-P-884 B","desc":"Closed Drain pump","field":"GF","type":"R","cls":"Pump","weight":2.3,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":175,"tag":"215-S-807","desc":"Vent stack","field":"GF","type":"S","cls":"Other","weight":411.8,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":176,"tag":"215-ME-849","desc":"HP Steam Desuperheater","field":"GF","type":"S","cls":"Other","weight":359.8,"civil":"YES","status":"Not Delivered","prog":0.0,"remarks":"Backfilling & access required","amon":""},{"sn":177,"tag":"262-ME-807-F01 J","desc":"Activated Carbon Filter","field":"BF","type":"S","cls":"Filter","weight":17.2,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":178,"tag":"262-ME-807-F01 K","desc":"Activated Carbon Filter","field":"BF","type":"S","cls":"Filter","weight":12.9,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":179,"tag":"215-Y-807","desc":"EOT Crane in CO2 Compressor Shelter","field":"GF","type":"R","cls":"Crane","weight":27.2,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":180,"tag":"\u2014","desc":"Reclaimer Reboiler Desuperheater","field":"GF","type":"S","cls":"Other","weight":51.1,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""},{"sn":181,"tag":"\u2014","desc":"Closed Loop Cooling Water Makeup Tank","field":"GF","type":"S","cls":"Other","weight":53.5,"civil":"","status":"Not Delivered","prog":0.0,"remarks":"","amon":""}]};
+const COL={tag:5,desc:6,field:8,type:9,cls:10,weight:12,civil:17,remarks:19,status:26,prog:35,ads:33,adf:34};
+const TYPE={S:"Stationary",R:"Rotary"};
+let charts={}, state=null, filter="all";
+
+function toNum(v){const n=parseFloat(v);return isNaN(n)?0:n;}
+function ymFrom(v){if(v==null||v==="")return "";const d=v instanceof Date?v:new Date(v);return isNaN(d)?"":d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");}
+
+function parseWorkbook(ab){
+  const wb=XLSX.read(ab,{type:"array",cellDates:true});
+  const ws=wb.Sheets["Equipment Erection Data"];
+  if(!ws) throw new Error("Sheet 'Equipment Erection Data' not found");
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+  const items=[];
+  for(let i=4;i<rows.length;i++){
+    const r=rows[i]||[];
+    const sn=r[1], tagRaw=r[COL.tag];
+    if(sn==null||String(sn).trim()===""||isNaN(parseFloat(sn)))continue; // keep every numbered equipment row
+    const tag=(tagRaw==null||String(tagRaw).trim()==="")?"—":String(tagRaw).trim();
+    let cls=r[COL.cls]; cls=(cls==null||String(cls).trim()===""||String(cls).trim()==="None")?"Other":String(cls).trim();
+    items.push({sn:parseInt(sn),tag:tag,desc:r[COL.desc]?String(r[COL.desc]).trim():"",
+      field:r[COL.field]?String(r[COL.field]).trim():"",type:r[COL.type]?String(r[COL.type]).trim():"",
+      cls:cls,weight:toNum(r[COL.weight]),civil:r[COL.civil]?String(r[COL.civil]).trim():"",
+      status:r[COL.status]?String(r[COL.status]).trim():"",prog:toNum(r[COL.prog]),
+      amon:ymFrom(r[COL.adf]!=null?r[COL.adf]:r[COL.ads]),remarks:r[COL.remarks]?String(r[COL.remarks]).trim():""});
+  }
+  let boq=null;
+  const ds=wb.Sheets["Dashboard Summary"];
+  if(ds){const dr=XLSX.utils.sheet_to_json(ds,{header:1,defval:null});
+    for(const row of dr){if(row&&row[2]&&String(row[2]).trim()==="Total BOQ"&&row[3]!=null){boq=parseInt(parseFloat(row[3]));}}}
+  return {src:"(loaded file)",date:null,boq:boq,items:items};
+}
+
+function fmt(n){return n.toLocaleString(undefined,{maximumFractionDigits:0});}
+function pct(a,b){return b?Math.round(a/b*100):0;}
+
+function render(p){
+  state=p;
+  const it=p.items, total=it.length;
+  const boq=(p.boq&&p.boq>=total)?p.boq:total;
+  const inst=it.filter(i=>i.status==="Installed").length;
+  const del=it.filter(i=>i.status==="Delivered").length;
+  const nd=it.filter(i=>i.status==="Not Delivered").length;
+  const tw=it.reduce((s,i)=>s+i.weight,0);
+  const instW=it.filter(i=>i.status==="Installed").reduce((s,i)=>s+i.weight,0);
+
+  document.getElementById("meta").textContent =
+    "Source: "+p.src+(p.date?"  ·  Data as of "+p.date.slice(6,8)+"/"+p.date.slice(4,6)+"/"+p.date.slice(0,4):"")+
+    "  ·  "+total+" of "+boq+" BOQ itemised";
+
+  document.getElementById("k_boq").textContent=boq;
+  document.getElementById("k_boqf").textContent=fmt(tw)+" MT total weight";
+  document.getElementById("k_inst").innerHTML=inst+' <span>/ '+boq+'</span>';
+  document.getElementById("k_instf").textContent=pct(inst,boq)+"% complete · "+fmt(instW)+" MT erected";
+  document.getElementById("k_del").innerHTML=(del+inst)+' <span>/ '+boq+'</span>';
+  document.getElementById("k_delf").textContent=pct(del+inst,boq)+"% delivered";
+  document.getElementById("k_nd").textContent=nd;
+  document.getElementById("k_ndf").textContent=pct(nd,boq)+"% pending delivery";
+
+  const F={};["GF","BF"].forEach(f=>{const s=it.filter(i=>i.field===f);
+    F[f]={t:s.length,i:s.filter(x=>x.status==="Installed").length,d:s.filter(x=>x.status==="Delivered").length,
+    n:s.filter(x=>x.status==="Not Delivered").length,w:s.reduce((a,x)=>a+x.weight,0)};});
+  setHero("gf",F.GF);setHero("bf",F.BF);
+
+  const R=it.filter(i=>i.type==="R"),S=it.filter(i=>i.type==="S");
+  const clsMap={};it.forEach(i=>{const c=clsMap[i.cls]||(clsMap[i.cls]={t:0,i:0});c.t++;if(i.status==="Installed")c.i++;});
+  const clsSorted=Object.entries(clsMap).sort((a,b)=>b[1].t-a[1].t).slice(0,8);
+
+  drawFunnel([boq,del+inst,inst]);
+  drawField([F.GF.i,F.BF.i],[F.GF.d,F.BF.d],[F.GF.n,F.BF.n]);
+  drawType([R.length,S.length],[R.filter(i=>i.status==="Installed").length,S.filter(i=>i.status==="Installed").length]);
+  drawCls(clsSorted.map(c=>c[0]),clsSorted.map(c=>c[1].t),clsSorted.map(c=>c[1].i));
+  drawPlanActual(it);
+  renderTable();
+}
+
+function setHero(id,d){
+  document.getElementById(id+"_mv").innerHTML=d.i+' <span>/ '+d.t+' installed</span>';
+  document.getElementById(id+"_ml").textContent=pct(d.i,d.t)+"% of "+id.toUpperCase()+" equipment erected";
+  document.getElementById(id+"_bar").style.width=pct(d.i,d.t)+"%";
+  document.getElementById(id+"_foot").innerHTML=
+    "<span>Delivered <b>"+d.d+"</b></span><span>Not delivered <b>"+d.n+"</b></span><span>Weight <b>"+fmt(d.w)+" MT</b></span>";
+}
+
+function statusMeta(i){
+  if(i.status==="Installed")return["inst","Installed"];
+  if(i.prog>0&&i.prog<100)return["prog",Math.round(i.prog)+"%"];
+  if(i.status==="Delivered")return["del","Delivered"];
+  return["nd","Not Delivered"];
+}
+function civilMeta(v){
+  const s=(v||"").toUpperCase();
+  if(s==="YES"||s==="Y")return["inst","Ready"];
+  if(s==="NO"||s==="N")return["nd","Pending"];
+  if(s==="")return["nd","\u2014"];
+  return["del",v];
+}
+
+function renderTable(){
+  const q=(document.getElementById("search").value||"").toLowerCase();
+  let rows=state.items.filter(i=>{
+    if(filter==="prog"){if(!(i.prog>0&&i.prog<100&&i.status!=="Installed"))return false;}
+    else if(filter!=="all"){if(i.status!==filter)return false;}
+    if(q&&!(i.tag.toLowerCase().includes(q)||i.desc.toLowerCase().includes(q)||(i.remarks||"").toLowerCase().includes(q)))return false;
+    return true;
+  });
+  const order={Installed:0,Delivered:1,"Not Delivered":2};
+  rows.sort((a,b)=>(order[a.status]==null?3:order[a.status])-(order[b.status]==null?3:order[b.status])||b.prog-a.prog||a.sn-b.sn);
+  const tb=document.getElementById("tbody");
+  tb.innerHTML=rows.map((i,n)=>{const m=statusMeta(i);const tc=i.field==="GF"?"gf":"bf";const cv=civilMeta(i.civil);
+    return "<tr><td>"+i.sn+"</td><td>"+esc(i.tag)+"</td><td>"+esc(i.desc)+
+      "</td><td class='c'><span class='pill "+tc+"'>"+esc(i.field)+"</span></td><td class='c'>"+
+      (TYPE[i.type]||esc(i.type))+"</td><td class='c'>"+esc(i.cls)+"</td><td>"+i.weight.toFixed(1)+
+      "</td><td class='c'><span class='sb "+cv[0]+"'>"+cv[1]+"</span></td>"+
+      "<td class='c'><span class='sb "+m[0]+"'>"+m[1]+"</span></td>"+
+      "<td class='rm'>"+esc(i.remarks||"")+"</td></tr>";}).join("");
+  document.getElementById("tcount").textContent="("+rows.length+" of "+state.items.length+" shown)";
+}
+function esc(s){return String(s).replace(/[&<>]/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[m];});}
+
+const MUT="#6b7688",GRID="rgba(0,0,0,.06)";
+Chart.defaults.font.family='"Segoe UI",sans-serif';Chart.defaults.color=MUT;
+if(window.ChartDataLabels){Chart.register(ChartDataLabels);Chart.defaults.set("plugins.datalabels",{display:false});}
+function fresh(id){if(charts[id])charts[id].destroy();return document.getElementById(id);}
+function drawFunnel(d){charts.funnel=new Chart(fresh("funnel"),{type:"bar",data:{labels:["Total BOQ","Delivered","Installed"],
+  datasets:[{data:d,backgroundColor:["#10264f","#0aa2c0","#16a34a"],borderRadius:6,barThickness:56}]},
+  options:{indexAxis:"y",plugins:{legend:{display:false}},scales:{x:{grid:{color:GRID},beginAtZero:true},y:{grid:{display:false}}}}});}
+function drawField(i,d,n){charts.field=new Chart(fresh("field"),{type:"bar",data:{labels:["GF","BF"],datasets:[
+  {label:"Installed",data:i,backgroundColor:"#16a34a",borderRadius:4},
+  {label:"Delivered",data:d,backgroundColor:"#d97706",borderRadius:4},
+  {label:"Not delivered",data:n,backgroundColor:"#c3ccda",borderRadius:4}]},
+  options:{plugins:{legend:{position:"bottom"}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:GRID},beginAtZero:true}}}});}
+function drawType(t,i){charts.type=new Chart(fresh("type"),{type:"bar",data:{labels:["Rotary","Stationary"],datasets:[
+  {label:"Total",data:t,backgroundColor:"#c3ccda",borderRadius:4},
+  {label:"Installed",data:i,backgroundColor:"#0aa2c0",borderRadius:4}]},
+  options:{plugins:{legend:{position:"bottom"}},scales:{x:{grid:{display:false}},y:{grid:{color:GRID},beginAtZero:true}}}});}
+function drawCls(l,t,i){charts.cls=new Chart(fresh("cls"),{type:"bar",data:{labels:l,datasets:[
+  {label:"Total",data:t,backgroundColor:"#c3ccda",borderRadius:4},
+  {label:"Installed",data:i,backgroundColor:"#16a34a",borderRadius:4}]},
+  options:{indexAxis:"y",plugins:{legend:{position:"bottom"}},scales:{x:{grid:{color:GRID},beginAtZero:true},y:{grid:{display:false}}}}});}
+
+const PLAN={labels:["Jun-26","Jul-26","Aug-26","Sep-26","Oct-26","Nov-26","Dec-26"],
+  keys:["2026-06","2026-07","2026-08","2026-09","2026-10","2026-11","2026-12"],
+  S:[100,200,250,850,1050,1086,1100],R:[50,50,50,50,50,130,133]};
+function cumsum(a){let s=0;return a.map(function(v){s+=v;return s;});}
+function sumArr(a){return a.reduce(function(x,y){return x+y;},0);}
+function drawPlanActual(items){
+  const act={S:{},R:{}},tot={S:0,R:0};
+  items.forEach(function(i){
+    if(i.type==="S"||i.type==="R"){tot[i.type]+=i.weight;}
+    if(i.type!=="S"&&i.type!=="R")return;
+    const e=i.weight*(i.prog||0)/100;if(e<=0)return;
+    if(i.amon&&i.amon>="2026-06"&&i.amon<="2026-12"){act[i.type][i.amon]=(act[i.type][i.amon]||0)+e;}});
+  const cut=state.date?state.date.slice(0,4)+"-"+state.date.slice(4,6):(new Date()).toISOString().slice(0,7);
+  const baseS=Math.round(tot.S-sumArr(PLAN.S)),baseR=Math.round(tot.R-sumArr(PLAN.R));
+  document.getElementById("pa_note").innerHTML=
+    "Total scope <b>"+fmt(tot.S+tot.R)+" MT</b> (Stationary "+fmt(tot.S)+" · Rotary "+fmt(tot.R)+"). "+
+    "Completed by end-May 2026 (baseline): <b>Stationary "+fmt(baseS)+" MT</b> · <b>Rotary "+fmt(baseR)+" MT</b>. "+
+    "Jun–Dec plan balance: Stationary "+fmt(sumArr(PLAN.S))+" · Rotary "+fmt(sumArr(PLAN.R))+" MT. "+
+    "Bars = monthly, lines = cumulative (baseline + progress). Actual = earned tonnage (weight × % complete).";
+  drawCombo("paS","S",act,tot,cut);drawCombo("paR","R",act,tot,cut);drawCombo("paT","T",act,tot,cut);
+}
+function drawCombo(cid,type,act,tot,cut){
+  const planM = type==="T" ? PLAN.keys.map(function(k,x){return PLAN.S[x]+PLAN.R[x];}) : PLAN[type];
+  const base = type==="T" ? ((tot.S-sumArr(PLAN.S))+(tot.R-sumArr(PLAN.R))) : (tot[type]-sumArr(PLAN[type]));
+  const planC = cumsum(planM).map(function(v){return Math.round(base+v);});
+  const am = function(k){ return type==="T" ? (act.S[k]||0)+(act.R[k]||0) : (act[type][k]||0); };
+  const actM = PLAN.keys.map(function(k){ return k<=cut ? Math.round(am(k)) : null; });
+  let s=0; const actC = PLAN.keys.map(function(k){ s+=am(k); return k<=cut ? Math.round(base+s) : null; });
+  const col = type==="R" ? "#e08a1e" : (type==="T" ? "#1a56db" : "#0aa2c0");
+  charts[cid]=new Chart(fresh(cid),{data:{labels:PLAN.labels,datasets:[
+    {type:"bar",label:"Monthly plan",data:planM,backgroundColor:"#c3ccda",yAxisID:"y1",order:2},
+    {type:"bar",label:"Monthly actual",data:actM,backgroundColor:col,yAxisID:"y1",order:3},
+    {type:"line",label:"Cumulative plan",data:planC,borderColor:"#10264f",backgroundColor:"rgba(18,49,101,.06)",borderWidth:2,tension:.25,fill:true,pointRadius:2,yAxisID:"y",order:1},
+    {type:"line",label:"Cumulative actual",data:actC,borderColor:col,borderWidth:2,borderDash:[5,4],tension:.25,spanGaps:false,pointRadius:2,yAxisID:"y",order:0}]},
+    options:{plugins:{legend:{position:"bottom",labels:{boxWidth:12,font:{size:11}}},
+      datalabels:{display:function(c){var v=c.dataset.data[c.dataIndex];if(v==null)return false;return c.dataset.type==="bar"?v>0:true;},anchor:function(c){return c.dataset.type==="bar"?"end":"center";},align:function(c){return c.dataset.type==="bar"?"end":"top";},offset:function(c){return c.dataset.type==="bar"?1:5;},rotation:function(c){return c.dataset.type==="bar"?-90:0;},color:function(c){return c.dataset.type==="bar"?(c.datasetIndex===0?"#6b7688":c.dataset.backgroundColor):c.dataset.borderColor;},font:{size:9,weight:"700"},formatter:function(v){return v;}}},
+      scales:{x:{grid:{display:false}},
+        y:{position:"left",grid:{color:GRID},beginAtZero:true,title:{display:true,text:"Cumulative MT"}},
+        y1:{position:"right",grid:{display:false},beginAtZero:true,title:{display:true,text:"Monthly MT"}}}}});
+}
+
+document.querySelectorAll(".controls button").forEach(function(b){b.onclick=function(){
+  document.querySelectorAll(".controls button").forEach(function(x){x.classList.remove("on");});
+  b.classList.add("on");filter=b.dataset.f;renderTable();};});
+document.getElementById("search").oninput=renderTable;
+
+const drop=document.getElementById("drop");
+function loadFile(file){const rd=new FileReader();
+  rd.onload=function(e){try{render(parseWorkbook(e.target.result));drop.querySelector(".s").textContent="Loaded: "+file.name;}
+  catch(err){alert("Could not read file: "+err.message);}};rd.readAsArrayBuffer(file);}
+document.getElementById("file").onchange=function(e){if(e.target.files[0])loadFile(e.target.files[0]);};
+["dragenter","dragover"].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.add("over");});});
+["dragleave","drop"].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.remove("over");});});
+drop.addEventListener("drop",function(e){if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
+
+render(INITIAL);
+</script>
+</body></html>

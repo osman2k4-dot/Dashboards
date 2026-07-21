@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[DEMO — fictional data] Civil Works Dashboard — GF &amp; BF</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --navy:#0b2545; --steel:#143a73; --accent:#c8961e;
+    --bg:#eef1f5; --card:#ffffff; --ink:#1b2733; --muted:#5b6b7b;
+    --line:#dce3ea; --gf:#143a73; --bf:#b5651d;
+    --good:#1f9d55; --warn:#c99700; --mid:#e08a1e; --bad:#c0392b;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px}
+  .band{background:linear-gradient(100deg,var(--navy),var(--steel));color:#fff;
+    border-bottom:4px solid var(--accent)}
+  .band .inner{max-width:1240px;margin:0 auto;padding:22px 28px;display:flex;
+    flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px}
+  .brand{display:flex;align-items:center;gap:16px}
+  .logo{width:46px;height:46px;border-radius:8px;background:var(--accent);
+    display:flex;align-items:center;justify-content:center;font-weight:800;
+    color:var(--navy);font-size:18px;letter-spacing:.5px}
+  .brand h1{margin:0;font-size:21px;font-weight:700;letter-spacing:.3px}
+  .brand .tag{font-size:12px;color:#b9c8db;margin-top:3px;text-transform:uppercase;
+    letter-spacing:.14em}
+  .meta{text-align:right;font-size:12px;color:#cdd9e6;line-height:1.7}
+  .meta b{color:#fff}
+  .wrap{max-width:1240px;margin:0 auto;padding:24px 28px 40px}
+  .tabs{display:flex;gap:0;margin:0 0 20px;border-bottom:2px solid var(--line)}
+  .tab{background:transparent;border:none;border-bottom:3px solid transparent;
+    color:var(--muted);padding:11px 22px;cursor:pointer;font-weight:700;font-size:14px;
+    margin-bottom:-2px}
+  .tab.active{color:var(--navy);border-bottom-color:var(--accent)}
+  .tab.gf.active{color:var(--gf);border-bottom-color:var(--gf)}
+  .tab.bf.active{color:var(--bf);border-bottom-color:var(--bf)}
+  .view{display:none} .view.active{display:block}
+  .controls{display:flex;flex-wrap:wrap;gap:18px;margin-bottom:18px;align-items:center}
+  .toggle{display:flex;gap:6px;align-items:center}
+  .toggle .lab{font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--muted);font-weight:700;margin-right:2px}
+  .toggle button{background:var(--card);border:1px solid var(--line);color:var(--muted);
+    padding:7px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px}
+  .toggle button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:16px;margin-bottom:24px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:18px 20px;box-shadow:0 1px 2px rgba(11,37,69,.05);
+    border-top:3px solid var(--accent)}
+  .kpi .lbl{color:var(--muted);font-size:11px;text-transform:uppercase;
+    letter-spacing:.08em;font-weight:700}
+  .kpi .val{font-size:28px;font-weight:800;margin-top:8px;color:var(--navy)}
+  .kpi .unit{font-size:13px;color:var(--muted);font-weight:600}
+  .grid2{display:grid;grid-template-columns:1.35fr 1fr;gap:22px;margin-bottom:24px}
+  @media(max-width:920px){.grid2{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:20px;box-shadow:0 1px 2px rgba(11,37,69,.05)}
+  .card h3{margin:0 0 16px;font-size:14px;color:var(--navy);text-transform:uppercase;
+    letter-spacing:.06em;border-left:3px solid var(--accent);padding-left:10px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{background:var(--navy);color:#fff;font-weight:600;font-size:11px;
+    text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:10px}
+  thead th.num{text-align:right}
+  tbody td{padding:9px 10px;border-bottom:1px solid var(--line)}
+  tbody tr:nth-child(even){background:#f7f9fc}
+  .tag-s{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;
+    background:#e7eef7;color:#143a73;margin-left:6px;text-transform:uppercase;letter-spacing:.04em}
+  .tag-p{background:#f6ecdb;color:#b5651d}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .bar{position:relative;height:20px;background:#eef1f5;border-radius:4px;
+    overflow:hidden;min-width:96px;border:1px solid var(--line)}
+  .bar>span{position:absolute;left:0;top:0;bottom:0}
+  .bar>em{position:absolute;right:6px;top:0;bottom:0;display:flex;align-items:center;
+    font-style:normal;font-size:11px;font-weight:800;color:var(--ink)}
+  footer{color:var(--muted);font-size:12px;margin-top:26px;padding-top:16px;
+    border-top:1px solid var(--line)}
+  .chartbox{height:320px}
+</style>
+</head>
+<body>
+<div class="band">
+  <div class="inner">
+    <div class="brand">
+      <div class="logo">Orion</div>
+      <div>
+        <h1>Civil Works Progress Dashboard</h1>
+        <div class="tag">Green Field &amp; Brown Field</div>
+      </div>
+    </div>
+    <div class="meta" id="meta"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab ov active" data-view="ov">Overall</button>
+    <button class="tab gf" data-view="gf">GF — Green Field</button>
+    <button class="tab bf" data-view="bf">BF — Brown Field</button>
+    <button class="tab pl" data-view="plan">Plan vs Actual</button>
+  </div>
+
+  <!-- OVERALL -->
+  <section class="view active" id="view-ov">
+    <div class="kpis" id="ov-kpis"></div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Structural vs Non-Structural Concrete</h3>
+        <table><thead><tr>
+          <th>Project</th><th>Concrete</th><th class="num">Total m³</th><th class="num">Achieved</th>
+          <th class="num">Balance</th><th>Progress</th>
+        </tr></thead><tbody id="ov-rows"></tbody></table>
+      </div>
+      <div class="card">
+        <h3>Completion by Concrete Type</h3>
+        <div class="chartbox"><canvas id="ov-chart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GF -->
+  <section class="view" id="view-gf">
+    <div class="controls">
+      <div class="toggle" data-src="gf">
+        <span class="lab">View</span>
+        <button class="active" data-s="overall">Overall Summary</button>
+        <button data-s="summary">GF Summary (balance)</button>
+      </div>
+      <div class="toggle" data-cat="gf">
+        <span class="lab">Concrete</span>
+        <button class="active" data-c="all">All</button>
+        <button data-c="structure">Structural</button>
+        <button data-c="paving">Non-Structural</button>
+      </div>
+    </div>
+    <div class="kpis" id="gf-kpis"></div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Progress by Area</h3>
+        <table><thead><tr>
+          <th>Area</th><th class="num">Total m³</th><th class="num">Achieved</th>
+          <th class="num">Balance</th><th>Progress</th><th>Planned Finish</th>
+        </tr></thead><tbody id="gf-rows"></tbody></table>
+      </div>
+      <div class="card">
+        <h3>Completion by Area</h3>
+        <div class="chartbox"><canvas id="gf-chart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BF -->
+  <section class="view" id="view-bf">
+    <div class="controls">
+      <div class="toggle" data-cat="bf">
+        <span class="lab">Concrete</span>
+        <button class="active" data-c="all">All</button>
+        <button data-c="structure">Structural</button>
+        <button data-c="paving">Non-Structural</button>
+      </div>
+    </div>
+    <div class="kpis" id="bf-kpis"></div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Progress by Unit / Structure</h3>
+        <table><thead><tr>
+          <th>Structure</th><th class="num">Total m³</th><th class="num">Actual</th>
+          <th class="num">Balance</th><th>Progress</th><th>Planned Finish</th>
+        </tr></thead><tbody id="bf-rows"></tbody></table>
+      </div>
+      <div class="card">
+        <h3>Completion by Structure</h3>
+        <div class="chartbox"><canvas id="bf-chart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLAN vs ACTUAL -->
+  <section class="view" id="view-plan">
+    <div class="controls">
+      <div class="toggle" data-plan="type">
+        <span class="lab">Concrete</span>
+        <button class="active" data-t="structure">Structural</button>
+        <button data-t="paving">Non-Structural</button>
+        <button data-t="all">Total</button>
+      </div>
+    </div>
+    <div id="plan-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:22px"></div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Planned Cumulative vs Actual (m³)</h3>
+        <div class="chartbox" style="height:360px"><canvas id="plan-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Plan by Month (m³)</h3>
+        <table><thead><tr>
+          <th>Month</th><th class="num">Total /mo</th><th class="num">Cum Total</th>
+          <th class="num">Cum GF</th><th class="num">Cum BF</th>
+        </tr></thead><tbody id="plan-rows"></tbody></table>
+        <div id="plan-note" style="margin-top:12px;font-size:12px;color:var(--muted);line-height:1.6"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer id="footer"></footer>
+</div>
+
+<script>
+const DATA = {"generated":"14 Jul 2026, 07:05","gf":{"file":"demo-data.xlsx","date":"09 Jul 2026","overall_rows":[{"area":"Area 1","unit":"259","total":10172.6,"achieved":11291.0,"balance":256.7,"pct":1.0,"finish":"22 May 2026"},{"area":"Area 2","unit":"259","total":9724.9,"achieved":10319.5,"balance":188.2,"pct":0.8,"finish":"29 Apr 2026"},{"area":"Area 3","unit":"259","total":2113.1,"achieved":1926.1,"balance":297.7,"pct":1.0,"finish":"14 Jul 2026"},{"area":"Area 4","unit":"259","total":583.0,"achieved":205.3,"balance":365.2,"pct":0.4,"finish":"15 Jun 2026"},{"area":"AOC and FWL","unit":"259","total":623.2,"achieved":134.4,"balance":255.5,"pct":0.2,"finish":"21 Jun 2026"},{"area":"Paving and Road","unit":"259","total":7504.1,"achieved":76.8,"balance":8549.2,"pct":0.0,"finish":"26 Sep 2026"},{"area":"Precast","unit":"259","total":3168.6,"achieved":2463.2,"balance":633.5,"pct":0.9,"finish":"29 Jul 2026"}],"overall_totals":{"total":29289.5,"achieved":27795.9,"balance":10938.7,"pct":0.6},"summary_rows":[{"area":"Area 1","unit":"259","total":2435.4,"achieved":1981.7,"balance":204.8,"pct":0.9,"finish":"22 May 2026"},{"area":"Area 2","unit":"259","total":757.3,"achieved":657.1,"balance":174.8,"pct":0.8,"finish":"29 Apr 2026"},{"area":"Area 3","unit":"259","total":1276.2,"achieved":894.5,"balance":266.9,"pct":0.6,"finish":"14 Jul 2026"},{"area":"Area 4","unit":"259","total":531.6,"achieved":243.4,"balance":293.1,"pct":0.5,"finish":"15 Jun 2026"},{"area":"AOC and FWL","unit":"259","total":639.5,"achieved":130.9,"balance":587.9,"pct":0.2,"finish":"21 Jun 2026"},{"area":"Paving and Road","unit":"259","total":8056.4,"achieved":72.0,"balance":6771.9,"pct":0.0,"finish":"26 Sep 2026"},{"area":"Precast","unit":"259","total":938.7,"achieved":0.0,"balance":1044.1,"pct":0.0,"finish":"29 Jul 2026"}],"summary_totals":{"total":12857.8,"achieved":4036.6,"balance":10113.1,"pct":0.3}},"bf":{"file":"demo-data.xlsx","date":"07 Jul 2026","rows":[{"unit":"214","structure":"Unit 214 New","total":317.3,"achieved":389.6,"balance":0.0,"pct":0.9,"finish":"Completed"},{"unit":"214","structure":"Unit 214 Existing","total":151.8,"achieved":185.2,"balance":0.0,"pct":1.1,"finish":"Completed"},{"unit":"214","structure":"Unit 214 Paving","total":55.4,"achieved":0.0,"balance":52.6,"pct":0.0,"finish":"04 Sep 2026"},{"unit":"262","structure":"Unit 262New","total":1013.7,"achieved":1056.7,"balance":0.0,"pct":1.0,"finish":"Completed"},{"unit":"262","structure":"Unit 262 Existing","total":274.9,"achieved":15.4,"balance":348.8,"pct":0.1,"finish":"30 Sep 2026"},{"unit":"262","structure":"Unit 262 Paving","total":97.0,"achieved":0.0,"balance":78.1,"pct":0.0,"finish":"30 Oct 2026"},{"unit":"250","structure":"Unit 250","total":2328.6,"achieved":2091.4,"balance":352.5,"pct":0.9,"finish":"25 Nov 2026"},{"unit":"250","structure":"Unit 250 Paving","total":498.4,"achieved":0.0,"balance":294.1,"pct":0.0,"finish":"04 May 2027"},{"unit":"251","structure":"Unit 251","total":2180.8,"achieved":2007.5,"balance":357.5,"pct":0.9,"finish":"22 Sep 2026"},{"unit":"251","structure":"Unit 251 Paving","total":438.4,"achieved":0.0,"balance":479.3,"pct":0.0,"finish":"08 May 2027"},{"unit":"252","structure":"Unit 252","total":2213.4,"achieved":2142.2,"balance":455.7,"pct":0.9,"finish":"10 Dec 2026"},{"unit":"252","structure":"Unit 252 Paving","total":645.3,"achieved":0.0,"balance":483.8,"pct":0.0,"finish":"17 May 2027"},{"unit":"253","structure":"Unit 253","total":1884.7,"achieved":2114.3,"balance":221.1,"pct":0.8,"finish":"30 Aug 2026"},{"unit":"253","structure":"Unit 253 Paving","total":511.9,"achieved":9.1,"balance":513.9,"pct":0.0,"finish":"30 Mar 2027"},{"unit":"277","structure":"Unit 277 NS","total":10596.8,"achieved":8444.5,"balance":0.0,"pct":1.1,"finish":"15 Jul 2026"},{"unit":"277","structure":"Unit 277 EW","total":219.4,"achieved":231.3,"balance":0.0,"pct":0.8,"finish":"Completed"},{"unit":"500","structure":"500 AOC","total":161.7,"achieved":96.6,"balance":66.0,"pct":0.4,"finish":"30 Sep 2026"}],"totals":{"total":19573.6,"achieved":19692.0,"balance":3736.1,"pct":0.9}}};
+const fmt = n => n==null ? "–" : n.toLocaleString(undefined,{maximumFractionDigits:0});
+const pctColor = p => p>=0.9 ? "#1f9d55" : p>=0.5 ? "#c99700" : p>=0.15 ? "#e08a1e" : "#c0392b";
+const filt = (rows,c) => c==="all" ? rows : rows.filter(r=>r.cat===c);
+const totOf = rows => {const T=rows.reduce((a,r)=>a+r.total,0),A=rows.reduce((a,r)=>a+r.achieved,0);
+  return {total:T,achieved:A,balance:T-A,pct:T?A/T:0};};
+const catTag = c => c==="paving" ? '<span class="tag-s tag-p">Non-Structural</span>'
+                                 : '<span class="tag-s">Structural</span>';
+// Classify every row: anything named Paving or Road = non-structural concrete.
+(function tagCats(){
+  const cls = n => { n=(n||"").toLowerCase(); return (n.indexOf("paving")>-1||n.indexOf("road")>-1)?"paving":"structure"; };
+  const fix = a => { if(a) a.forEach(r=>{ r.cat = cls(r.area||r.structure); }); };
+  if(DATA.gf){ fix(DATA.gf.overall_rows); fix(DATA.gf.summary_rows); }
+  if(DATA.bf){ fix(DATA.bf.rows); }
+})();
+
+function bar(pct){
+  const p = Math.max(0, Math.min(1, pct||0));
+  return `<div class="bar"><span style="width:${(p*100).toFixed(1)}%;background:${pctColor(p)}"></span>`+
+         `<em>${(p*100).toFixed(0)}%</em></div>`;
+}
+function kpi(lbl,val,unit){
+  return `<div class="kpi"><div class="lbl">${lbl}</div>`+
+         `<div class="val">${val} <span class="unit">${unit||""}</span></div></div>`;
+}
+function renderKpis(el,t,label){
+  el.innerHTML =
+    kpi((label||"Overall")+" Complete",(t.pct*100).toFixed(1)+"%","") +
+    kpi("Total Concrete",fmt(t.total),"m³") +
+    kpi("Achieved",fmt(t.achieved),"m³") +
+    kpi("Balance",fmt(t.balance),"m³");
+}
+function renderRows(el, rows, keyName){
+  el.innerHTML = rows.map(r=>`<tr>
+    <td>${r[keyName]}${r.unit?` <span style="color:var(--muted)">(${r.unit})</span>`:""}${catTag(r.cat)}</td>
+    <td class="num">${fmt(r.total)}</td>
+    <td class="num">${fmt(r.achieved)}</td>
+    <td class="num">${fmt(r.balance)}</td>
+    <td>${bar(r.pct)}</td>
+    <td>${r.finish||""}</td>
+  </tr>`).join("");
+}
+let gfChart, bfChart, ovChart;
+function drawChart(canvasId, existing, rows, keyName){
+  const ctx = document.getElementById(canvasId);
+  if(existing) existing.destroy();
+  return new Chart(ctx,{
+    type:"bar",
+    data:{labels:rows.map(r=>r[keyName]),
+      datasets:[{data:rows.map(r=>+(r.pct*100).toFixed(1)),
+        backgroundColor:rows.map(r=>pctColor(r.pct)),borderRadius:4,borderWidth:0}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x+"%"}}},
+      scales:{x:{max:100,ticks:{color:"#5b6b7b",callback:v=>v+"%"},grid:{color:"#e7ecf2"}},
+        y:{ticks:{color:"#1b2733",font:{weight:"600"}},grid:{display:false}}}}
+  });
+}
+
+let ovCat="all", gfSrc="overall", gfCat="all", bfCat="all";
+
+function renderOverall(){
+  const g=DATA.gf, b=DATA.bf;
+  const mk = rows => ({s:totOf(rows.filter(r=>r.cat==="structure")),
+                       n:totOf(rows.filter(r=>r.cat==="paving")), t:totOf(rows)});
+  const G = g ? mk(g.overall_rows) : null;
+  const B = b ? mk(b.rows) : null;
+  const comb = totOf((g?g.overall_rows:[]).concat(b?b.rows:[]));
+  renderKpis(document.getElementById("ov-kpis"), comb, "Combined");
+  const line=(proj,lab,t,bold)=>{
+    const bs = bold ? ' style="font-weight:800;background:#f0f4f9"' : '';
+    return `<tr><td${bs}>${proj}</td><td${bs}>${lab}</td>`+
+      `<td class="num"${bs}>${fmt(t.total)}</td><td class="num"${bs}>${fmt(t.achieved)}</td>`+
+      `<td class="num"${bs}>${fmt(t.balance)}</td><td>${bar(t.pct)}</td></tr>`;
+  };
+  let html="";
+  if(G){ html+=line("GF — Green Field","Structural",G.s,false)
+              +line("","Non-Structural",G.n,false)
+              +line("","GF Total",G.t,true); }
+  if(B){ html+=line("BF — Brown Field","Structural",B.s,false)
+              +line("","Non-Structural",B.n,false)
+              +line("","BF Total",B.t,true); }
+  html+=line("Combined","All Concrete",comb,true);
+  document.getElementById("ov-rows").innerHTML = html;
+  const cr=[];
+  if(G){cr.push({k:"GF Structural",pct:G.s.pct});cr.push({k:"GF Non-Struct",pct:G.n.pct});}
+  if(B){cr.push({k:"BF Structural",pct:B.s.pct});cr.push({k:"BF Non-Struct",pct:B.n.pct});}
+  ovChart = drawChart("ov-chart", ovChart, cr, "k");
+}
+function renderGF(){
+  const g=DATA.gf; if(!g){document.getElementById("view-gf").innerHTML="<p>No GF file found.</p>";return;}
+  const src = gfSrc==="overall" ? g.overall_rows : g.summary_rows;
+  const rows = filt(src, gfCat);
+  renderKpis(document.getElementById("gf-kpis"), totOf(rows));
+  renderRows(document.getElementById("gf-rows"), rows, "area");
+  gfChart = drawChart("gf-chart", gfChart, rows, "area");
+}
+function renderBF(){
+  const b=DATA.bf; if(!b){document.getElementById("view-bf").innerHTML="<p>No BF file found.</p>";return;}
+  const rows = filt(b.rows, bfCat);
+  renderKpis(document.getElementById("bf-kpis"), totOf(rows));
+  renderRows(document.getElementById("bf-rows"), rows, "structure");
+  bfChart = drawChart("bf-chart", bfChart, rows, "structure");
+}
+
+document.querySelectorAll(".toggle[data-cat]").forEach(t=>{
+  const which=t.dataset.cat;
+  t.querySelectorAll("button").forEach(btn=>{
+    btn.onclick=()=>{
+      t.querySelectorAll("button").forEach(x=>x.classList.remove("active"));
+      btn.classList.add("active");
+      const c=btn.dataset.c;
+      if(which==="ov"){ovCat=c;renderOverall();}
+      else if(which==="gf"){gfCat=c;renderGF();}
+      else{bfCat=c;renderBF();}
+    };
+  });
+});
+document.querySelectorAll('.toggle[data-src="gf"] button').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('.toggle[data-src="gf"] button').forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active"); gfSrc=btn.dataset.s; renderGF();
+  };
+});
+// ---- Plan vs Actual ----
+let planChart, planType="structure", planView="cum", planProj="total";
+const PROJ_LABEL = {total:"Total", gf:"GF", bf:"BF"};
+const MONTHLY_STRUCT = {total:1432, gf:859, bf:573};
+const CUR_MONTH = "Jul-26";
+function projSums(cat){
+  const g=DATA.gf?DATA.gf.overall_rows:[], b=DATA.bf?DATA.bf.rows:[];
+  const S = rows => ({tot:rows.filter(r=>r.cat===cat).reduce((a,r)=>a+r.total,0),
+                      ach:rows.filter(r=>r.cat===cat).reduce((a,r)=>a+r.achieved,0)});
+  const gf=S(g), bf=S(b);
+  return {gf, bf, total:{tot:gf.tot+bf.tot, ach:gf.ach+bf.ach}};
+}
+function planModel(type){
+  const MS=["May-26","Jun-26","Jul-26","Aug-26","Sep-26"];
+  const MA=["May-26","Jun-26","Jul-26","Aug-26","Sep-26","Oct-26","Nov-26","Dec-26","Jan-27","Feb-27","Mar-27","Apr-27"];
+  const S=projSums("structure"), N=projSums("paving");
+  const structCum=(p,months)=>{const base=S[p].tot-MONTHLY_STRUCT[p]*4;
+    return months.map(m=>{const si=MS.indexOf(m); return si>=0 ? base+MONTHLY_STRUCT[p]*si : S[p].tot;});};
+  const NSM=["Oct-26","Nov-26","Dec-26","Jan-27","Feb-27","Mar-27","Apr-27"];
+  const nsCum=(p,months)=>{const step=N[p].tot/NSM.length;
+    return months.map(m=>{const k=NSM.indexOf(m); return k<0 ? 0 : step*(k+1);});};
+  let months, cum={total:[],gf:[],bf:[]}, actual;
+  if(type==="structure"){
+    months=MS; ["total","gf","bf"].forEach(p=>cum[p]=structCum(p,months));
+    actual={total:S.total.ach, gf:S.gf.ach, bf:S.bf.ach};
+  } else if(type==="paving"){
+    months=MA; ["total","gf","bf"].forEach(p=>cum[p]=nsCum(p,months));
+    actual={total:N.total.ach, gf:N.gf.ach, bf:N.bf.ach};
+  } else {
+    months=MA; ["total","gf","bf"].forEach(p=>{const sc=structCum(p,months),nc=nsCum(p,months);
+      cum[p]=months.map((m,i)=>sc[i]+nc[i]);});
+    actual={total:S.total.ach+N.total.ach, gf:S.gf.ach+N.gf.ach, bf:S.bf.ach+N.bf.ach};
+  }
+  const mo={total:[],gf:[],bf:[]};
+  ["total","gf","bf"].forEach(p=>cum[p].forEach((v,i)=>mo[p].push(i===0?0:v-cum[p][i-1])));
+  return {months, cum, mo, actual};
+}
+function renderPlan(){
+  const pm = planModel(planType), ci = pm.months.indexOf(CUR_MONTH);
+  const colors={total:"#0b2545", gf:"#143a73", bf:"#b5651d"};
+  const names={total:"Total (GF + BF)", gf:"GF — Green Field", bf:"BF — Brown Field"};
+  // Summary cards: GF, BF, Total
+  const card=(p)=>{
+    const pd=pm.cum[p][ci], ac=pm.actual[p], vv=ac-pd;
+    const ratio=pd>0?ac/pd:(ac>0?1:0);
+    const col=vv>=0?"#1f9d55":(ratio>=0.9?"#e08a1e":"#c0392b");
+    const w=pd>0?Math.max(2,Math.min(100,ratio*100)):(ac>0?100:2);
+    const pctText=pd>0?Math.round(ratio*100)+"% of plan-to-date":(ac>0?"ahead — no plan yet":"not started");
+    const rs='style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#5b6b7b"';
+    return `<div style="background:#fff;border:1px solid #dce3ea;border-top:3px solid ${colors[p]};border-radius:10px;padding:16px 18px">
+      <div style="font-weight:800;color:#0b2545;margin-bottom:8px;font-size:14px">${names[p]}</div>
+      <div ${rs}><span>Planned to ${CUR_MONTH}</span><b style="color:#1b2733">${fmt(pd)} m³</b></div>
+      <div ${rs}><span>Actual to date</span><b style="color:#1b2733">${fmt(ac)} m³</b></div>
+      <div ${rs}><span>Variance</span><b style="color:${col}">${vv>=0?"+":""}${fmt(vv)} m³</b></div>
+      <div style="height:9px;background:#eef1f5;border-radius:5px;overflow:hidden;margin-top:12px;border:1px solid #dce3ea"><span style="display:block;height:100%;width:${w}%;background:${col}"></span></div>
+      <div style="font-size:12px;color:#5b6b7b;margin-top:6px;text-align:right">${pctText}</div>
+    </div>`;
+  };
+  document.getElementById("plan-cards").innerHTML = card("gf")+card("bf")+card("total");
+  // S-curve: plan lines + actual points
+  if(planChart) planChart.destroy();
+  const ds=[];
+  ["total","gf","bf"].forEach(p=>ds.push({label:p.toUpperCase()+" Plan",data:pm.cum[p],
+    borderColor:colors[p],backgroundColor:colors[p],tension:.15,pointRadius:0,borderWidth:2,fill:false}));
+  ["total","gf","bf"].forEach(p=>ds.push({label:p.toUpperCase()+" Actual",
+    data:pm.months.map((_,i)=>i===ci?pm.actual[p]:null),borderColor:colors[p],
+    backgroundColor:"#fff",pointStyle:"rectRot",pointRadius:7,pointBorderWidth:3,showLine:false}));
+  planChart=new Chart(document.getElementById("plan-chart"),{type:"line",data:{labels:pm.months,datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:"index"},
+      plugins:{legend:{labels:{color:"#1b2733",boxWidth:12,font:{size:11}}},
+        tooltip:{callbacks:{label:c=>c.dataset.label+": "+(c.parsed.y==null?"–":Math.round(c.parsed.y).toLocaleString())}}},
+      scales:{x:{ticks:{color:"#5b6b7b"},grid:{color:"#e7ecf2"}},
+        y:{ticks:{color:"#5b6b7b",callback:v=>v.toLocaleString()},grid:{color:"#e7ecf2"}}}}});
+  // Monthly plan table
+  document.getElementById("plan-rows").innerHTML = pm.months.map((mo,i)=>{
+    const cur = i===ci ? ' style="font-weight:800;background:#f0f4f9"' : '';
+    return `<tr><td${cur}>${mo}</td><td class="num"${cur}>${i===0?"–":fmt(pm.mo.total[i])}</td>`+
+      `<td class="num"${cur}>${fmt(pm.cum.total[i])}</td>`+
+      `<td class="num"${cur}>${fmt(pm.cum.gf[i])}</td><td class="num"${cur}>${fmt(pm.cum.bf[i])}</td></tr>`;
+  }).join("");
+  document.getElementById("plan-note").innerHTML =
+    (planType==="structure"
+      ? `Structural plan: 1,432 m³/mo (GF 859 + BF 573), Jun–Sep 26, reaching 100% at Sep-26. Work before Jun-26 counted complete by end-May-26. ◆ marks actual to date.`
+      : planType==="paving"
+      ? `Non-structural plan: starts Oct-26, balance spread equally Oct-26 → Apr-27 (7 months). ◆ marks actual to date.`
+      : `Total = Structural + Non-Structural combined (structural completes Sep-26; non-structural starts Oct-26, ends Apr-27). ◆ marks actual to date.`);
+}
+document.querySelectorAll('.toggle[data-plan="type"] button').forEach(btn=>{
+  btn.onclick=()=>{document.querySelectorAll('.toggle[data-plan="type"] button').forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active"); planType=btn.dataset.t; renderPlan();};
+});
+document.querySelectorAll(".tab").forEach(t=>{
+  t.onclick=()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    document.getElementById("view-"+t.dataset.view).classList.add("active");
+    if(t.dataset.view==="bf" && !bfChart) renderBF();
+    if(t.dataset.view==="plan" && !planChart) renderPlan();
+    setTimeout(()=>{ if(ovChart)ovChart.resize(); if(gfChart)gfChart.resize(); if(bfChart)bfChart.resize(); if(planChart)planChart.resize(); },50);
+  };
+});
+
+const gd = DATA.gf ? DATA.gf.date : "n/a";
+const bd = DATA.bf ? DATA.bf.date : "n/a";
+document.getElementById("meta").innerHTML =
+  `GF data: <b>${gd}</b> &nbsp;•&nbsp; BF data: <b>${bd}</b><br>Generated <b>${DATA.generated}</b>`;
+document.getElementById("footer").innerHTML =
+  `Sources: ${DATA.gf?DATA.gf.file:"—"} &nbsp;|&nbsp; ${DATA.bf?DATA.bf.file:"—"}`+
+  `<br>Auto-rebuilt daily from the newest files in this “To DP” folder. `+
+  `Non-Structural Concrete = anything marked Paving or Road; Structural Concrete = all other works.`;
+renderOverall();
+renderGF();
+</script>
+</body>
+</html>
