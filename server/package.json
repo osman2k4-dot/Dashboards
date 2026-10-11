@@ -1,0 +1,21 @@
+{
+  "name": "progress-diary-server",
+  "version": "1.0.0",
+  "description": "Keeps the site progress workbook on SharePoint up to date and writes the daily diary from it.",
+  "private": true,
+  "type": "commonjs",
+  "main": "server.js",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "GRAPH_MOCK=1 node server.js",
+    "init-workbook": "node scripts/init-workbook.js",
+    "test": "node test/run.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
+    "express": "^4.19.2"
+  }
+}

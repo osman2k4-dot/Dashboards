@@ -31,6 +31,10 @@ textarea{width:100%;resize:vertical;min-height:72px}
 .btn.excel{background:var(--excel)}
 .btn.excel:hover{background:#0b5f31}
 .btn:disabled{opacity:.5;cursor:not-allowed}
+.server-mode .local-only,.local-mode .server-only{display:none!important}
+.server-mode .master input,.server-mode .master select{background:#f3f4f6;color:var(--muted)}
+.server-mode .master .btn{display:none}
+.hd span.ro{color:#b06a10;font-weight:600}
 
 /* App bar */
 .appbar{background:linear-gradient(135deg,var(--navy) 0%,#143a73 55%,var(--primary) 100%);color:#fff;padding:14px 20px 0}
@@ -323,7 +327,15 @@ td.mine{background:#f5f8ff}
         <div class="step"><div class="n">Step 4</div><h3>Daily diary is produced</h3><p>The <b>Daily Diary</b> sheet and the diary page here are generated from the same log. Nobody writes the diary by hand.</p></div>
       </div>
       <div class="linkbox">
-        <div class="card">
+        <div class="card server-only">
+          <div class="hd"><h3>SharePoint workbook</h3><span>Updated by the progress server</span></div>
+          <div class="bd stack" style="gap:12px">
+            <div class="linkstate on" id="spState"><div class="dot"></div><div><b id="spFile">—</b><span id="spMsg"></span></div></div>
+            <div class="inline"><a class="btn excel" id="spOpen" href="#" target="_blank" rel="noopener">Open workbook in SharePoint</a><button class="btn ghost" id="spRefresh">Refresh from SharePoint</button><button class="btn ghost" id="spDiary">Write this day's diary now</button></div>
+            <p style="font-size:12.5px;color:var(--muted)">Every change here is sent to the server, which replaces your area's rows for the day in the log tables. The Daily Diary sheet is rewritten a few seconds after the last change and again at the daily cut-off.</p>
+          </div>
+        </div>
+        <div class="card local-only">
           <div class="hd"><h3>Linked workbook</h3><span>Auto-saves on every change</span></div>
           <div class="bd stack" style="gap:12px">
             <div class="linkstate" id="linkState"><div class="dot"></div><div><b>Not linked</b><span id="linkMsg">Link a workbook and every entry is written to it automatically.</span></div></div>
@@ -359,8 +371,16 @@ td.mine{background:#f5f8ff}
   <!-- SETUP -->
   <section class="panel setup" id="panel-setup" hidden>
     <div class="setup-grid">
-      <div class="note">This prototype is loaded with fictional example data and stores everything in this browser plus the linked Excel file. For several planners entering at the same time from different laptops, the next step is a shared store (a database or the workbook on SharePoint/OneDrive with a small sync service).</div>
+      <div class="note local-only">Not connected to a server: this browser holds fictional example data plus whatever you link or import. For several planners entering at the same time, connect to the progress server below so the workbook on SharePoint becomes the master.</div>
       <div class="card">
+        <div class="hd"><h3>SharePoint sync</h3><span id="apiStatus">Not connected · data stays in this browser</span></div>
+        <div class="bd stack" style="gap:10px">
+          <div class="mp-grid"><label>Server URL <input type="text" id="apiUrl" placeholder="https://progress.yourcompany.com — empty = this site"></label><label>Access key <input type="password" id="apiKey" placeholder="APP_KEY from the server" autocomplete="off"></label></div>
+          <div class="inline"><button class="btn" id="apiConnect">Connect</button><button class="btn ghost server-only" id="apiDisconnect">Disconnect</button></div>
+          <p style="font-size:12.5px;color:var(--muted)">When connected, the app loads everything from the workbook on SharePoint and sends each entry to it. Activities, areas, trades and equipment are then maintained in the workbook's tables, not here.</p>
+        </div>
+      </div>
+      <div class="card master">
         <div class="hd"><h3>Project</h3></div>
         <div class="bd mp-grid">
           <label>Project name <input type="text" id="pName"></label>
@@ -372,12 +392,12 @@ td.mine{background:#f5f8ff}
           <label>Rest day(s) <select id="pRest"></select></label>
         </div>
       </div>
-      <div class="card">
+      <div class="card master">
         <div class="hd"><h3>Areas &amp; area planners</h3><span>One line per area; the planner's name is pre-filled when they pick the area</span></div>
         <div class="tablewrap"><table id="areaSetup"><thead><tr><th>Area</th><th>Area planner</th><th></th></tr></thead><tbody></tbody></table></div>
         <div class="bd inline"><input type="text" id="newArea" placeholder="Area name, e.g. Area 440 – Utilities"><input type="text" id="newAreaBy" placeholder="Planner name"><button class="btn small ghost" id="addArea">Add area</button></div>
       </div>
-      <div class="card">
+      <div class="card master">
         <div class="hd"><h3>Activities &amp; scope</h3><button class="btn small" id="addAct">+ Add activity</button></div>
         <div class="tablewrap"><table id="actTable">
           <thead><tr><th>Discipline</th><th>Activity</th><th>Unit</th><th class="num">Scope qty</th><th class="num">Weight</th><th>Plan start</th><th>Plan finish</th><th></th></tr></thead>
@@ -385,19 +405,20 @@ td.mine{background:#f5f8ff}
         </table></div>
         <div class="bd" style="color:var(--muted);font-size:12.5px">Weight is the activity's share of overall progress (man-hours or cost). Plan dates give the straight-line planned curve for each activity.</div>
       </div>
-      <div class="card">
+      <div class="card master">
         <div class="hd"><h3>Manpower trades</h3></div>
         <div class="bd stack" style="gap:10px"><div class="taglist" id="tradeList"></div><div class="inline"><input type="text" id="newTrade" placeholder="Add a trade, e.g. Insulator"><button class="btn small ghost" id="addTrade">Add</button></div></div>
       </div>
-      <div class="card">
+      <div class="card master">
         <div class="hd"><h3>Equipment list</h3></div>
         <div class="bd stack" style="gap:10px"><div class="taglist" id="eqList"></div><div class="inline"><input type="text" id="newEq" placeholder="Add equipment, e.g. Hydrotest pump"><button class="btn small ghost" id="addEq">Add</button></div></div>
       </div>
       <div class="card">
         <div class="hd"><h3>Backup &amp; reset</h3></div>
         <div class="bd stack" style="gap:10px">
-          <div class="inline"><button class="btn ghost" id="copyBackup">Copy all data as JSON</button><button class="btn ghost" id="restoreBtn">Restore from pasted JSON</button><button class="btn danger" id="resetBtn">Reset to example data</button></div>
-          <textarea id="backupBox" placeholder="Paste a JSON backup here, then click Restore." style="min-height:90px;font-family:var(--mono);font-size:12px"></textarea>
+          <div class="inline"><button class="btn ghost" id="copyBackup">Copy all data as JSON</button><button class="btn ghost local-only" id="restoreBtn">Restore from pasted JSON</button><button class="btn danger local-only" id="resetBtn">Reset to example data</button></div>
+          <textarea class="local-only" id="backupBox" placeholder="Paste a JSON backup here, then click Restore." style="min-height:90px;font-family:var(--mono);font-size:12px"></textarea>
+          <p class="server-only" style="font-size:12.5px;color:var(--muted)">The JSON copy is useful to seed a new workbook (server: <code>node scripts/init-workbook.js --seed backup.json</code>).</p>
         </div>
       </div>
     </div>
@@ -600,11 +621,11 @@ function renderEntry(){
   eq.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>{const en=areaOf(entry(curDate,true),curArea,true);if(inp.value==='')delete en.equip[inp.dataset.eq];else en.equip[inp.dataset.eq]=Number(inp.value);$('eqTotal').textContent=fmtN(sum(en.equip));$('eqSite').textContent=`· site total ${fmtN(siteSum(state.entries[curDate],'equip'))}`;touch();}));
 }
 function refreshDiscHeaders(){document.querySelectorAll('#qtyTable tr.disc').forEach(tr=>{const acts=state.activities.filter(a=>a.discipline===tr.dataset.disc);tr.querySelector('.pct').textContent=`${pct(actualPct(curDate,acts))} · plan ${pct(planPct(curDate,acts))}`;});$('qtyHint').textContent=`Site overall ${pct(actualPct(curDate))} vs plan ${pct(planPct(curDate))}`;}
-function touch(){const chip=$('entryChip');const ar=areaOf(state.entries[curDate],curArea);if(areaHasContent(ar)){chip.textContent=curDate<today?'Filed':'Entered';chip.className='chip ok';}scheduleSave();}
+function touch(){const chip=$('entryChip');const ar=areaOf(state.entries[curDate],curArea);if(areaHasContent(ar)){chip.textContent=curDate<today?'Filed':'Entered';chip.className='chip ok';}scheduleSave();queueSync();}
 $('area').addEventListener('change',()=>{curArea=$('area').value;try{localStorage.setItem(STORE_KEY+'-area',curArea);}catch(e){}renderEntry();});
 ['wxAm','wxPm','temp','hours'].forEach(id=>$(id).addEventListener('input',()=>{const en=entry(curDate,true);en[id]=id==='temp'?($(id).value===''?'':Number($(id).value)):$(id).value;touch();}));
 ['by','delays','hse','lookahead'].forEach(id=>$(id).addEventListener('input',()=>{const en=areaOf(entry(curDate,true),curArea,true);en[id]=$(id).value;touch();}));
-$('copyYesterday').addEventListener('click',()=>{const y=lastWorkingDayBefore(curDate,state.entries);const ya=y&&state.entries[y].areas[curArea];if(!ya){toast('No previous entry for this area to copy from');return;}const en=areaOf(entry(curDate,true),curArea,true);en.manpower={...ya.manpower};en.equip={...ya.equip};if(!en.by)en.by=ya.by;const e=state.entries[curDate];if(!e.hours)e.hours=state.entries[y].hours;save();renderEntry();toast('Copied from '+y);});
+$('copyYesterday').addEventListener('click',()=>{const y=lastWorkingDayBefore(curDate,state.entries);const ya=y&&state.entries[y].areas[curArea];if(!ya){toast('No previous entry for this area to copy from');return;}const en=areaOf(entry(curDate,true),curArea,true);en.manpower={...ya.manpower};en.equip={...ya.equip};if(!en.by)en.by=ya.by;const e=state.entries[curDate];if(!e.hours)e.hours=state.entries[y].hours;save();queueSync();renderEntry();toast('Copied from '+y);});
 
 /* ---------- Diary ---------- */
 function diaryModel(date){
@@ -735,6 +756,57 @@ function renderDash(){
     return `<tr><td><b>${esc(a.name)}</b></td><td>${esc((ar&&ar.by)||a.by||'—')}</td><td class="num">${nAct}</td><td class="num">${ar?fmtN(sum(ar.manpower)):'–'}</td><td class="num">${ar?fmtN(sum(ar.equip)):'–'}</td><td>${has?'<span class="chip ok">Entered</span>':(isWeekend(curDate)?'<span class="chip warn">Rest day</span>':(curDate>today?'<span class="chip">Future</span>':'<span class="chip bad">Awaiting entry</span>'))}</td></tr>`;}).join('');
 }
 
+/* ---------- SharePoint sync (progress server) ---------- */
+// When a server URL is set, the workbook on SharePoint is the master: state is loaded from it and every
+// change to (date, area) is sent as one PUT. Changes are batched 1.5 s after the last keystroke.
+const API_STORE=STORE_KEY+'-api';
+let api={url:'',key:''};try{api={...api,...(JSON.parse(localStorage.getItem(API_STORE)||'null')||{})};}catch(e){}
+let serverMeta=null;
+const sync={pending:new Map(),timer:null,inflight:false,status:'idle',last:null,error:''};
+const serverMode=()=>!!api.url;
+async function apiFetch(path,opts={}){
+  const r=await fetch(api.url.replace(/\/$/,'')+path,{...opts,headers:{'Content-Type':'application/json','X-Api-Key':api.key||'',...(opts.headers||{})}});
+  let j=null;try{j=await r.json();}catch(e){}
+  if(!r.ok||!(j&&j.ok))throw new Error((j&&j.error)||('HTTP '+r.status));return j;
+}
+function setSyncStatus(s,msg){sync.status=s;sync.error=msg||'';if(s==='synced')sync.last=new Date();setLinkUI();}
+async function loadFromServer({fresh=false}={}){
+  setSyncStatus('loading');
+  const j=await apiFetch('/api/state'+(fresh?'?fresh=1':''));
+  state=j.state;serverMeta={file:j.file,lastWrite:j.lastWrite};applyRestDays();
+  try{localStorage.setItem(STORE_KEY,JSON.stringify(state));}catch(e){}
+  setSyncStatus('synced');renderAll();
+}
+function queueSync(){if(!serverMode())return;sync.pending.set(curDate+'|'+curArea,{date:curDate,area:curArea});clearTimeout(sync.timer);sync.timer=setTimeout(flushSync,1500);setSyncStatus('pending');}
+async function flushSync(){
+  if(!serverMode()||sync.inflight||!sync.pending.size)return;
+  const items=[...sync.pending.values()];sync.pending.clear();sync.inflight=true;setSyncStatus('saving');
+  try{
+    for(const it of items){
+      const e=state.entries[it.date];const ar=(e&&e.areas[it.area])||blankArea('');
+      const body={...ar,wxAm:e?e.wxAm:'',wxPm:e?e.wxPm:'',temp:e?e.temp:'',hours:e?e.hours:''};
+      const j=await apiFetch(`/api/entries/${it.date}/${encodeURIComponent(it.area)}`,{method:'PUT',body:JSON.stringify(body)});
+      if(serverMeta)serverMeta.lastWrite=j.lastWrite;
+    }
+    setSyncStatus('synced');
+  }catch(err){
+    items.forEach(it=>{if(!sync.pending.has(it.date+'|'+it.area))sync.pending.set(it.date+'|'+it.area,it);});
+    setSyncStatus('error',err.message);clearTimeout(sync.timer);sync.timer=setTimeout(flushSync,15000);
+  }finally{sync.inflight=false;if(sync.pending.size&&sync.status!=='error'){clearTimeout(sync.timer);sync.timer=setTimeout(flushSync,1500);}}
+}
+$('apiConnect').addEventListener('click',async()=>{
+  const url=($('apiUrl').value.trim()||(location.protocol.startsWith('http')?location.origin:'')).replace(/\/$/,'');
+  if(!url){toast('Enter the server URL');return;}
+  const prev=api;api={url,key:$('apiKey').value.trim()};
+  try{const h=await apiFetch('/api/health');try{localStorage.setItem(API_STORE,JSON.stringify(api));}catch(e){}await loadFromServer({fresh:true});toast(`Connected · ${h.file.name}`);}
+  catch(e){api=prev;setSyncStatus('idle');toast('Could not connect: '+e.message);}
+});
+$('apiDisconnect').addEventListener('click',()=>{api={url:'',key:''};try{localStorage.removeItem(API_STORE);}catch(e){}serverMeta=null;sync.pending.clear();setSyncStatus('idle');renderAll();toast('Disconnected. Data stays in this browser.');});
+$('spRefresh').addEventListener('click',()=>loadFromServer({fresh:true}).then(()=>toast('Refreshed from SharePoint')).catch(e=>toast('Refresh failed: '+e.message)));
+$('spDiary').addEventListener('click',async()=>{try{await flushSync();const j=await apiFetch(`/api/diary/${curDate}/write`,{method:'POST'});toast(`Daily Diary sheet written · ${j.ref}`);}catch(e){toast('Could not write the diary: '+e.message);}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flushSync();});
+setInterval(()=>{if(!serverMode()||sync.pending.size||sync.inflight||document.hidden)return;const f=document.activeElement;if(activeTab==='entry'&&f&&f.closest&&f.closest('#panel-entry'))return;loadFromServer().catch(()=>{});},120000);
+
 /* ---------- Excel workbook ---------- */
 const XLSX_MIME='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 let fileHandle=null,wbTimer=null,lastWrite=null;
@@ -818,7 +890,20 @@ function buildWorkbook(){
 function workbookBytes(){return XLSX.write(buildWorkbook(),{bookType:'xlsx',type:'array',cellDates:true});}
 function slug(){return (state.project.name||'project').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
 function setLinkUI(){
-  const on=!!fileHandle;const pill=$('linkPill');pill.className='linkpill'+(on?' on':'');
+  document.body.classList.toggle('server-mode',serverMode());document.body.classList.toggle('local-mode',!serverMode());
+  const pill=$('linkPill');
+  if(serverMode()){
+    const t=sync.last?sync.last.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';
+    const msg={idle:'SharePoint · connected',loading:'SharePoint · loading…',pending:'SharePoint · change pending',saving:'SharePoint · saving…',synced:'SharePoint · synced'+(t?' '+t:''),error:'SharePoint · not saved: '+sync.error}[sync.status]||'SharePoint';
+    pill.className='linkpill'+(sync.status==='synced'||sync.status==='idle'?' on':'');pill.textContent=msg;
+    const f=serverMeta&&serverMeta.file;$('spFile').textContent=f?f.name:'Workbook';$('spOpen').href=f?f.webUrl:'#';
+    $('spMsg').textContent=(serverMeta&&serverMeta.lastWrite?`Last write to the workbook ${new Date(serverMeta.lastWrite).toLocaleString('en-GB')}. `:'')+(sync.status==='error'?'Changes are kept here and retried every 15 s.':'');
+    $('spState').className='linkstate'+(sync.status==='error'?'':' on');
+    $('apiStatus').textContent=`Connected to ${api.url}`;
+    return;
+  }
+  $('apiStatus').textContent='Not connected · data stays in this browser';
+  const on=!!fileHandle;pill.className='linkpill'+(on?' on':'');
   pill.textContent=on?`Excel linked: ${fileHandle.name}${lastWrite?' · updated '+lastWrite:''}`:'Excel workbook not linked';
   const ls=$('linkState');ls.className='linkstate'+(on?' on':'');
   ls.querySelector('b').textContent=on?`Linked to ${fileHandle.name}`:'Not linked';
@@ -892,6 +977,10 @@ function renderSetup(){
   $('tradeList').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{state.trades.splice(Number(b.dataset.i),1);save();renderSetup();}));
   $('eqList').innerHTML=state.equipment.map((t,i)=>`<span>${esc(t)}<button data-i="${i}" aria-label="Remove ${esc(t)}">×</button></span>`).join('');
   $('eqList').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{state.equipment.splice(Number(b.dataset.i),1);save();renderSetup();}));
+  $('apiUrl').value=api.url;$('apiKey').value=api.key;
+  document.querySelectorAll('#panel-setup .master input,#panel-setup .master select').forEach(el=>{el.disabled=serverMode();});
+  document.querySelectorAll('#panel-setup .master .hd span.ro').forEach(el=>el.remove());
+  if(serverMode())document.querySelectorAll('#panel-setup .master .hd').forEach(h=>{const s=document.createElement('span');s.className='ro';s.textContent='Maintained in the workbook on SharePoint';h.appendChild(s);});
 }
 [['pName','name'],['pClient','client'],['pContractor','contractor'],['pLocation','location'],['pStart','start'],['pPrefix','prefix']].forEach(([id,k])=>$(id).addEventListener('input',()=>{state.project[k]=$(id).value;scheduleSave();renderHeader();}));
 $('pRest').addEventListener('change',()=>{state.project.restDays=$('pRest').value;applyRestDays();save();renderHeader();});
@@ -907,6 +996,7 @@ $('resetBtn').addEventListener('click',function(){if(!this.dataset.sure){this.te
 function renderAll(){renderHeader();renderEntry();if(activeTab==='diary')renderDiary();if(activeTab==='dash')renderDash();if(activeTab==='setup')renderSetup();if(activeTab==='excel')renderExcel();setLinkUI();}
 try{curArea=localStorage.getItem(STORE_KEY+'-area');}catch(e){}
 renderAll();
+if(serverMode())loadFromServer().catch(e=>setSyncStatus('error',e.message));
 let savedTab='entry';try{savedTab=localStorage.getItem(STORE_KEY+'-tab')||'entry';}catch(e){}
 showTab(['entry','diary','dash','excel','setup'].includes(savedTab)?savedTab:'entry');
 })();
