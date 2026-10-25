@@ -94,14 +94,15 @@
   <div class="kpi"><div class="lbl">Days to 1 March 2027</div><div class="val" id="kDays">&ndash;</div><div class="sub" id="kWeeks"></div></div>
   <div class="kpi"><div class="lbl">Study weeks done</div><div class="val" id="kWk">0 <span class="unit">/ 18</span></div><div class="bar"><i id="bWk"></i></div></div>
   <div class="kpi"><div class="lbl">Milestones done</div><div class="val" id="kMs">0 <span class="unit">/ 12</span></div><div class="bar"><i id="bMs"></i></div></div>
-  <div class="kpi"><div class="lbl">Hours logged</div><div class="val" id="kHrs">0 <span class="unit">/ 180 h</span></div><div class="bar"><i id="bHrs"></i></div></div>
+  <div class="kpi"><div class="lbl">Hours logged</div><div class="val" id="kHrs">0 <span class="unit">/ 70 h</span></div><div class="bar"><i id="bHrs"></i></div></div>
   <div class="kpi"><div class="lbl">Current phase</div><div class="val" style="font-size:18px" id="kPhase">&ndash;</div><div class="sub" id="kPhaseSub"></div></div>
 </div>
 
 <div class="note">Progress ticks and hours are saved in this browser only (localStorage). Open the file from the same browser to keep your history; use <b>Export</b> in the Study log tab to back it up.</div>
 
 <div class="tabs">
-  <button class="tab active" data-v="plan">Weekly plan</button>
+  <button class="tab active" data-v="daily">Daily targets</button>
+  <button class="tab" data-v="plan">Weekly plan</button>
   <button class="tab" data-v="ms">Milestones &amp; admin</button>
   <button class="tab" data-v="exam">Exam facts &amp; syllabus</button>
   <button class="tab" data-v="ref">Formulas &amp; memo</button>
@@ -109,9 +110,17 @@
 </div>
 
 <!-- ========== WEEKLY PLAN ========== -->
-<div class="view active" id="v-plan">
+<div class="view active" id="v-daily">
   <div class="card">
-    <h2>18-week study schedule &middot; ~10 h/week</h2>
+    <h2>Daily targets &middot; 30 minutes a day</h2>
+    <p class="small">One box per day. Set a timer for 30 minutes, do the task, tick it, move on. New weeks are added every Monday. If you miss a day, do not double up, just continue.</p>
+    <div id="daily"></div>
+  </div>
+</div>
+
+<div class="view" id="v-plan">
+  <div class="card">
+    <h2>18-week study schedule &middot; 3.5 h/week (30 min/day)</h2>
     <p class="small">Phases: <span class="ph ph1">1 Foundations</span> <span class="ph ph2">2 Planning domain</span> <span class="ph ph3">3 Scheduling domain</span> <span class="ph ph4">4 Practice &amp; memo</span> <span class="ph ph5">5 Final review</span>. Tick a week when its deliverable is done. The highlighted row is the current week.</p>
     <table id="plan">
       <thead><tr><th>✓</th><th>Wk</th><th>Dates</th><th>Phase</th><th>Topic</th><th>Primary references</th><th>Deliverable (what "done" means)</th><th>Hrs</th></tr></thead>
@@ -258,12 +267,13 @@
           <tr><td>Buffer</td><td>15 min</td></tr>
         </tbody>
       </table>
-      <h3>Weekly rhythm that fits a site job</h3>
+      <h3>30-minutes-a-day rules</h3>
       <ul class="small" style="padding-left:18px">
-        <li><b>Weekdays:</b> 4 &times; 1 h early morning or after shift &mdash; reading + 15 questions.</li>
-        <li><b>Friday / rest day:</b> 1 &times; 3 h block &mdash; calculations, mock sections, memo drill.</li>
-        <li><b>Sunday evening:</b> 30 min &mdash; log hours here, review wrong answers, set next week's topic.</li>
-        <li>If a week slips, do not stretch the plan: cut reading, keep the questions and the deliverable.</li>
+        <li><b>Same slot every day</b> (e.g. 06:00 before site, or straight after dinner). Phone away, timer on.</li>
+        <li><b>Questions beat reading.</b> With ~70 h total, read only what a wrong answer sends you to. Target split: 50% practice questions, 25% calculations, 15% reading, 10% memo.</li>
+        <li><b>Mocks in chunks:</b> 12 questions per day, timed at 2.5 min each. Try to find one full 5-hour sitting in late February for pacing; if you cannot, the chunked mocks still work.</li>
+        <li><b>Sunday:</b> the 30 min is admin: log the week, re-do the wrong answers, read next week's targets.</li>
+        <li>If you miss a day, carry on; never try to catch up by doubling.</li>
       </ul>
     </div>
   </div>
@@ -308,32 +318,50 @@
 
   // ---- weekly plan: [phase, topic, references, deliverable, hrs]
   const WEEKS=[
-    [1,'Set-up & diagnostic','AACE PSP page; Study Guide intro; RP 14R-90','AACE membership bought; experience write-up drafted; references ordered; 50-question diagnostic taken and scored by domain',8],
-    [1,'TCM framework & terminology','TCM 7.2, 9.2, 10.2; RP 10S-90','One-page TCM process map; 150 flash-card terms (paper or app) started',10],
-    [1,'Application submitted','AACE application portal; Canons of Ethics','PSP application + fee submitted (member rate); Study Guide ch.1 read',8],
-    [2,'Planning inputs I: contract, scope, stakeholders','Study Guide ch. Planning Input; S&K planning chapter','Chapter notes; 40 Q-bank questions on planning inputs, score logged',10],
-    [2,'Planning inputs II: constraints, execution strategy, risk','Study Guide; RP 48R-06 constructability','Notes; 40 questions; list of 10 "trap" terms (plan vs schedule, program vs project...)',10],
-    [2,'Planning outputs: planning docs, phases, baseline plan','Study Guide ch. Planning Output; RP 38R-06 schedule basis','Write a mock Schedule Basis Memorandum for your current project (1 page)',10],
-    [2,'Planning domain consolidation','All of phase 2','Timed 36-question planning section at exam pace; ≥75% or re-loop weak topics',10],
-    [3,'Scheduling inputs I: WBS/OBS/CBS, activities, logic','Study Guide ch. Scheduling Input; RP 23R-02, 24R-03','Build a 30-activity network by hand from a narrative; 40 questions',10],
-    [3,'Scheduling inputs II: durations, calendars, resource & cost loading','RP 32R-04; S&K scheduling chapter','Duration estimate worksheet (quantity ÷ crew rate); 40 questions',10],
-    [3,'CPM calculations: forward/backward pass, floats, lags','Study Guide; RP 49R-06','20 hand-calculated networks incl. SS/FF with lags, both day-numbering conventions; zero errors on the last 5',12],
-    [3,'Resource levelling, compression, schedule levels & types','RP 37R-06; S&K','Levelling exercise; crash-cost slope exercise; 40 questions',10],
-    [3,'Scheduling outputs I: baseline, updates, progress measurement, EV','TCM 9.2; RP 53R-06; S&K EVM chapter','EV worksheet from a real update; 40 questions on SPI/CPI/EAC',10],
-    [3,'Scheduling outputs II: variance, forecasting, recovery, delay analysis basics','TCM 10.2; RP 52R-06; RP 29R-03 overview','Timed 83-question scheduling section; ≥75% or re-loop; first memo drill',12],
-    [4,'Mock exam 1 (full, timed 5 h) + review','Full Q-bank mock','Mock 1 score by domain logged; error log started (question, why wrong, rule)',12],
-    [4,'Weak-area loop + memo drill 2','Error log topics','Every error-log item re-studied and re-tested; memo 2 written in 40 min',10],
-    [4,'Mock exam 2 + memo drill 3','Full Q-bank mock','Mock 2 ≥ 80%; memo 3 self-graded against the method checklist',12],
-    [5,'Final review: formulas, RP summaries, terminology','Formula sheet; flash cards','Formula sheet reproduced from memory; 300 flash cards at ≥90%',10],
-    [5,'Mock exam 3 (exam-day rehearsal) & taper','Full Q-bank mock','Mock 3 at exam pacing; last 2 days light review only; exam logistics confirmed',8],
+    [1,'Diagnostic & exam orientation','Study Guide intro; RP 14R-90; TCM 7.2','45-question diagnostic done over 3 days and scored by domain; weak-area list written',3.5],
+    [1,'TCM framework & terminology','TCM 7.2, 9.2, 10.2; RP 10S-90','One-page TCM process map; 100 flash-card terms started',3.5],
+    [1,'Planning domain primer','Study Guide ch.1; RP 14R-90 skills list','Study Guide ch.1 read; flash cards to 150; application status checked',3.5],
+    [2,'Planning inputs I: contract, scope, stakeholders','Study Guide ch. Planning Input; S&K planning chapter','Chapter notes; 20 Q-bank questions on planning inputs, score logged',3.5],
+    [2,'Planning inputs II: constraints, execution strategy, risk','Study Guide; RP 48R-06 constructability','Notes; 20 questions; list of 10 "trap" terms (plan vs schedule, program vs project...)',3.5],
+    [2,'Planning outputs: planning docs, phases, baseline plan','Study Guide ch. Planning Output; RP 38R-06 schedule basis','Write a mock Schedule Basis Memorandum for Habshan-05 (1 page, 3 sittings)',3.5],
+    [2,'Planning domain consolidation','All of phase 2','36-question planning section in 3 timed chunks; ≥75% or re-loop weak topics',3.5],
+    [3,'Scheduling inputs I: WBS/OBS/CBS, activities, logic','Study Guide ch. Scheduling Input; RP 23R-02, 24R-03','Build a 15-activity network by hand from a narrative; 20 questions',3.5],
+    [3,'Scheduling inputs II: durations, calendars, resource & cost loading','RP 32R-04; S&K scheduling chapter','Duration estimate worksheet (quantity ÷ crew rate); 20 questions',3.5],
+    [3,'CPM calculations: forward/backward pass, floats, lags','Study Guide; RP 49R-06','10 hand-calculated networks incl. SS/FF with lags, both day-numbering conventions; zero errors on the last 3',3.5],
+    [3,'Resource levelling, compression, schedule levels & types','RP 37R-06; S&K','Levelling exercise; crash-cost slope exercise; 20 questions',3.5],
+    [3,'Scheduling outputs I: baseline, updates, progress measurement, EV','TCM 9.2; RP 53R-06; S&K EVM chapter','EV worksheet from a real Habshan update; 20 questions on SPI/CPI/EAC',3.5],
+    [3,'Scheduling outputs II: variance, forecasting, recovery, delay analysis basics','TCM 10.2; RP 52R-06; RP 29R-03 overview','83-question scheduling section over 6 days (14/day, timed); ≥75% or re-loop',3.5],
+    [4,'Mock exam 1 (full, timed 5 h) + review','Full Q-bank mock','Mock 1 done as 12 questions/day over the week, scored by domain; error log started',3.5],
+    [4,'Weak-area loop + memo drill 2','Error log topics','Every error-log item re-studied and re-tested; memo 1 written (2 sittings)',3.5],
+    [4,'Mock exam 2 + memo drill 3','Full Q-bank mock','Mock 2 (12/day) ≥ 80%; memo 2 self-graded against the method checklist',3.5],
+    [5,'Final review: formulas, RP summaries, terminology','Formula sheet; flash cards','Formula sheet reproduced from memory; 200 flash cards at ≥90%',3.5],
+    [5,'Mock exam 3 (exam-day rehearsal) & taper','Full Q-bank mock','One full 5-h sitting on a day off if at all possible (otherwise mock 3 at 12/day); last 2 days light; logistics confirmed',3.5],
+  ];
+  const DAILY=[
+    {wk:'Set-up week',dates:'Mon 26 Oct – Sun 1 Nov 2026',days:[
+      ['Mon 26','Create AACE account at aacei.org, buy individual membership, bookmark the PSP details page and FAQs.'],
+      ['Tue 27','Fix dates: Google Doc CV (Descon Abu Dhabi: Apr 2024), LinkedIn and Indeed to match the timeline on the Milestones tab.'],
+      ['Wed 28','Buy / download references: PSP Certification Study Guide, S&K of Cost Engineering, TCM Framework, RPs 10S-90, 14R-90, 49R-06 (member downloads).'],
+      ['Thu 29','Start the Expertise-Level application: personal details, education (BSc UET 2008, MS NUST 2015), upload degree copies.'],
+      ['Fri 30','Application: employment entries 1–5 (Descon AD, Descon FSD, Mughals, Rafi, CAMCE) with planning / scheduling duties first.'],
+      ['Sat 31','Application: entries 6–10 (Siyahkalem, UCH, PREH, MEC, Habib Rafiq), ethics agreement, full review.'],
+      ['Sun 1','Submit application and pay (US$525). Add this week to the Study log. Read RP 14R-90 skills list for 15 min.']]},
+    {wk:'Week 1 · Diagnostic & orientation',dates:'Mon 2 – Sun 8 Nov 2026',days:[
+      ['Mon 2','Diagnostic part 1: 15 Planning questions from the Study Guide sample set, timed 30 min, no notes. Record score.'],
+      ['Tue 3','Diagnostic part 2: 15 Scheduling-input questions (WBS, logic, durations), timed. Record score.'],
+      ['Wed 4','Diagnostic part 3: 15 Scheduling-output / calculation questions (float, EV), timed. Tally all three by domain.'],
+      ['Thu 5','Study Guide introduction: exam structure, domain weights, question styles. Write your weak-area list from the diagnostic.'],
+      ['Fri 6','RP 14R-90: read the required-skills list, tick what you do daily on Habshan-05, mark what you have never done.'],
+      ['Sat 7','TCM Framework 7.2 Schedule Planning & Development, first half. Note AACE terms that differ from PMI usage.'],
+      ['Sun 8','Admin: log hours, re-do the diagnostic questions you got wrong, read Week 2 targets.']]}
   ];
   const PHASE_NAME={1:'Foundations',2:'Planning domain',3:'Scheduling domain',4:'Practice & memo',5:'Final review'};
   const MS=[
-    ['06 Nov 2026','Gather proof: degree copies, PMP certificate, employer letters','Timeline is confirmed (see eligibility card above). Make LinkedIn and all CV copies show Descon Abu Dhabi from Apr 2024.'],
-    ['08 Nov 2026','Join AACE International as a member','Member exam rate saves US$165 and gives access to RPs and the Study Guide discount.'],
-    ['13 Nov 2026','Buy / download references','Study Guide, S&K, TCM, the RPs listed in the syllabus tab, one question bank.'],
-    ['15 Nov 2026','Take the baseline diagnostic','Record the domain scores; this is the number you beat in February.'],
-    ['20 Nov 2026','Submit PSP application and pay the fee','Allow several weeks for AACE review before you can book a seat.'],
+    ['31 Oct 2026','Gather proof: degree copies, PMP certificate, employer letters','Timeline is confirmed (see eligibility card above). Make LinkedIn and all CV copies show Descon Abu Dhabi from Apr 2024.'],
+    ['26 Oct 2026','Join AACE International as a member','Member exam rate saves US$165 and gives access to RPs and the Study Guide discount.'],
+    ['28 Oct 2026','Buy / download references','Study Guide, S&K, TCM, the RPs listed in the syllabus tab, one question bank.'],
+    ['04 Nov 2026','Take the baseline diagnostic','Record the domain scores; this is the number you beat in February.'],
+    ['01 Nov 2026','Submit PSP application and pay the fee','Done in the set-up week so AACE review time is not on the critical path.'],
     ['15 Dec 2026','Clearance email received; pay, get voucher, book Kryterion seat for March 2027','6-month window from clearance, 3 attempts. Book early March so a resit fits inside the window.'],
     ['20 Dec 2026','Planning domain section test ≥75%','If below, extend phase 2 by one week and compress phase 4 reading.'],
     ['31 Jan 2027','Scheduling domain section test ≥75%','Same rule as above.'],
@@ -356,6 +384,18 @@
 
   function curWeek(){const w=Math.floor((today-PLAN_START)/(7*864e5))+1;return w<1?0:(w>WEEKS.length?WEEKS.length+1:w);}
 
+  function renderDaily(){
+    const box=document.getElementById('daily');box.innerHTML='';
+    st.daily=st.daily||{};
+    DAILY.forEach((w,wi)=>{
+      const h=document.createElement('h3');h.textContent=w.wk+' · '+w.dates;box.appendChild(h);
+      const t=document.createElement('table');t.innerHTML='<thead><tr><th>✓</th><th>Day</th><th>30-minute target</th></tr></thead><tbody></tbody>';
+      w.days.forEach((d,di)=>{const k=wi+'-'+di;const tr=document.createElement('tr');if(st.daily[k])tr.className='done';
+        tr.innerHTML=`<td class="chk"><input type="checkbox" data-k="${k}" ${st.daily[k]?'checked':''}></td><td style="white-space:nowrap"><b>${d[0]}</b></td><td>${d[1]}</td>`;t.querySelector('tbody').appendChild(tr);});
+      box.appendChild(t);
+    });
+    box.querySelectorAll('input').forEach(c=>c.onchange=()=>{st.daily[c.dataset.k]=c.checked;save();renderDaily();});
+  }
   function renderPlan(){
     const tb=document.querySelector('#plan tbody');tb.innerHTML='';
     const cw=curWeek();
@@ -389,7 +429,7 @@
     const md=Object.values(st.ms).filter(Boolean).length;
     document.getElementById('kMs').innerHTML=`${md} <span class="unit">/ ${MS.length}</span>`;document.getElementById('bMs').style.width=(md/MS.length*100)+'%';
     const h=st.log.reduce((a,e)=>a+e.hrs,0);
-    document.getElementById('kHrs').innerHTML=`${h.toFixed(1)} <span class="unit">/ 180 h</span>`;document.getElementById('bHrs').style.width=Math.min(100,h/180*100)+'%';
+    document.getElementById('kHrs').innerHTML=`${h.toFixed(1)} <span class="unit">/ 70 h</span>`;document.getElementById('bHrs').style.width=Math.min(100,h/70*100)+'%';
     const cw=curWeek();
     const ph=cw===0?'Not started':(cw>WEEKS.length?'Exam window':PHASE_NAME[WEEKS[cw-1][0]]);
     document.getElementById('kPhase').textContent=ph;
@@ -407,7 +447,7 @@
   document.getElementById('lExp').onclick=()=>{
     const b=new Blob([JSON.stringify(st,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='psp-plan-progress.json';a.click();
   };
-  document.getElementById('lClr').onclick=()=>{if(confirm('Clear all ticks and log entries from this browser?')){st={weeks:{},ms:{},log:[]};save();renderPlan();renderMs();renderLog();kpis();}};
+  document.getElementById('lClr').onclick=()=>{if(confirm('Clear all ticks and log entries from this browser?')){st={weeks:{},ms:{},log:[]};save();renderDaily();renderPlan();renderMs();renderLog();kpis();}};
 
   // ---- tabs
   document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
@@ -415,7 +455,7 @@
     t.classList.add('active');document.getElementById('v-'+t.dataset.v).classList.add('active');
   });
 
-  renderPlan();renderMs();renderLog();kpis();
+  renderDaily();renderPlan();renderMs();renderLog();kpis();
 })();
 </script>
 </body>
