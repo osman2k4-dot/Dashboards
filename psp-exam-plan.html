@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PSP Exam Plan — March 2027</title>
+<meta name="description" content="Personal study plan and progress tracker for the AACE International Planning &amp; Scheduling Professional (PSP) examination, target March 2027.">
+<style>
+  :root{
+    --navy:#0b2545; --steel:#143a73; --accent:#c8961e;
+    --bg:#eef1f5; --card:#ffffff; --ink:#1b2733; --muted:#5b6b7b;
+    --line:#dce3ea; --good:#1f9d55; --warn:#c99700; --mid:#e08a1e; --bad:#c0392b;
+    --p1:#143a73; --p2:#0aa2c0; --p3:#1f9d55; --p4:#e08a1e; --p5:#c0392b;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5}
+  .band{background:linear-gradient(100deg,var(--navy),var(--steel));color:#fff;border-bottom:4px solid var(--accent)}
+  .band .inner{max-width:1240px;margin:0 auto;padding:22px 28px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px}
+  .brand{display:flex;align-items:center;gap:16px}
+  .logo{width:46px;height:46px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--navy);font-size:16px}
+  .brand h1{margin:0;font-size:21px;font-weight:700}
+  .brand .tag{font-size:12px;color:#b9c8db;margin-top:3px;text-transform:uppercase;letter-spacing:.14em}
+  .meta{text-align:right;font-size:12px;color:#cdd9e6;line-height:1.7}
+  .meta b{color:#fff}
+  .wrap{max-width:1240px;margin:0 auto;padding:24px 28px 48px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;box-shadow:0 1px 2px rgba(11,37,69,.05);border-top:3px solid var(--accent)}
+  .kpi .lbl{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+  .kpi .val{font-size:28px;font-weight:800;margin-top:6px;color:var(--navy)}
+  .kpi .unit{font-size:13px;color:var(--muted);font-weight:600}
+  .kpi .sub{font-size:12px;color:var(--muted);margin-top:4px}
+  .bar{height:8px;background:#e6ebf1;border-radius:99px;overflow:hidden;margin-top:8px}
+  .bar i{display:block;height:100%;background:var(--good);width:0;transition:width .3s}
+  .tabs{display:flex;gap:0;margin:0 0 20px;border-bottom:2px solid var(--line);flex-wrap:wrap}
+  .tab{background:transparent;border:none;border-bottom:3px solid transparent;color:var(--muted);padding:11px 18px;cursor:pointer;font-weight:700;font-size:14px;margin-bottom:-2px}
+  .tab.active{color:var(--navy);border-bottom-color:var(--accent)}
+  .view{display:none}.view.active{display:block}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;box-shadow:0 1px 2px rgba(11,37,69,.05);margin-bottom:22px}
+  .card h2{margin:0 0 12px;font-size:16px;color:var(--navy)}
+  .card h3{margin:16px 0 8px;font-size:14px;color:var(--steel)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media(max-width:920px){.grid2{grid-template-columns:1fr}}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--line);background:#f7f9fb}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  tr.done td{color:var(--muted);text-decoration:line-through}
+  tr.done td.chk,tr.done td.wk{text-decoration:none}
+  tr.now td{background:#fffbea}
+  .ph{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:99px;color:#fff}
+  .ph1{background:var(--p1)}.ph2{background:var(--p2)}.ph3{background:var(--p3)}.ph4{background:var(--p4)}.ph5{background:var(--p5)}
+  .ms{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .msb{border:1px solid var(--line);border-radius:10px;padding:14px;border-top:4px solid var(--p1)}
+  .msb .d{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .msb .t{font-weight:700;margin:4px 0 6px;color:var(--navy)}
+  .msb ul{margin:0;padding-left:16px;color:var(--muted);font-size:12.5px}
+  input[type=checkbox]{width:17px;height:17px;cursor:pointer;accent-color:var(--good)}
+  .facts dt{font-weight:700;color:var(--steel);margin-top:8px}
+  .facts dd{margin:2px 0 0;color:var(--muted)}
+  code{background:#f1f4f8;border:1px solid var(--line);padding:1px 6px;border-radius:5px;font-size:12.5px}
+  .formula td:first-child{font-weight:700;color:var(--steel);white-space:nowrap}
+  .log{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
+  .log label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px}
+  .log input,.log select{padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:inherit}
+  .btn{background:var(--navy);color:#fff;border:none;padding:9px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px}
+  .btn.ghost{background:#fff;color:var(--bad);border:1px solid var(--line)}
+  .note{background:#fff7ec;border:1px solid #f3ddb8;color:#8a5a12;font-size:13px;padding:12px 16px;border-radius:10px;margin-bottom:22px}
+  .small{font-size:12px;color:var(--muted)}
+  a{color:var(--steel)}
+  @media print{.tabs,.log,.btn{display:none}.view{display:block!important}}
+</style>
+</head>
+<body>
+
+<div class="band"><div class="inner">
+  <div class="brand">
+    <div class="logo">PSP</div>
+    <div>
+      <h1>PSP Exam Plan &mdash; AACE International</h1>
+      <div class="tag">Planning &amp; Scheduling Professional &middot; Target: March 2027</div>
+    </div>
+  </div>
+  <div class="meta">
+    Plan start: <b>Mon 2 Nov 2026</b><br>
+    Target exam window: <b>1&ndash;31 Mar 2027</b><br>
+    Today: <b id="today"></b>
+  </div>
+</div></div>
+
+<div class="wrap">
+
+<div class="kpis">
+  <div class="kpi"><div class="lbl">Days to 1 March 2027</div><div class="val" id="kDays">&ndash;</div><div class="sub" id="kWeeks"></div></div>
+  <div class="kpi"><div class="lbl">Study weeks done</div><div class="val" id="kWk">0 <span class="unit">/ 18</span></div><div class="bar"><i id="bWk"></i></div></div>
+  <div class="kpi"><div class="lbl">Milestones done</div><div class="val" id="kMs">0 <span class="unit">/ 12</span></div><div class="bar"><i id="bMs"></i></div></div>
+  <div class="kpi"><div class="lbl">Hours logged</div><div class="val" id="kHrs">0 <span class="unit">/ 180 h</span></div><div class="bar"><i id="bHrs"></i></div></div>
+  <div class="kpi"><div class="lbl">Current phase</div><div class="val" style="font-size:18px" id="kPhase">&ndash;</div><div class="sub" id="kPhaseSub"></div></div>
+</div>
+
+<div class="note">Progress ticks and hours are saved in this browser only (localStorage). Open the file from the same browser to keep your history; use <b>Export</b> in the Study log tab to back it up.</div>
+
+<div class="tabs">
+  <button class="tab active" data-v="plan">Weekly plan</button>
+  <button class="tab" data-v="ms">Milestones &amp; admin</button>
+  <button class="tab" data-v="exam">Exam facts &amp; syllabus</button>
+  <button class="tab" data-v="ref">Formulas &amp; memo</button>
+  <button class="tab" data-v="log">Study log</button>
+</div>
+
+<!-- ========== WEEKLY PLAN ========== -->
+<div class="view active" id="v-plan">
+  <div class="card">
+    <h2>18-week study schedule &middot; ~10 h/week</h2>
+    <p class="small">Phases: <span class="ph ph1">1 Foundations</span> <span class="ph ph2">2 Planning domain</span> <span class="ph ph3">3 Scheduling domain</span> <span class="ph ph4">4 Practice &amp; memo</span> <span class="ph ph5">5 Final review</span>. Tick a week when its deliverable is done. The highlighted row is the current week.</p>
+    <table id="plan">
+      <thead><tr><th>✓</th><th>Wk</th><th>Dates</th><th>Phase</th><th>Topic</th><th>Primary references</th><th>Deliverable (what "done" means)</th><th>Hrs</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========== MILESTONES ========== -->
+<div class="view" id="v-ms">
+  <div class="card">
+    <h2>Milestones &amp; administrative checklist</h2>
+    <p class="small">AACE approves the application first, then you book the computer-based test with the testing provider. Apply early so the review time does not eat into your March window.</p>
+    <table id="mstab">
+      <thead><tr><th>✓</th><th>Due</th><th>Milestone</th><th>Notes</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h2>Phase overview</h2>
+    <div class="ms">
+      <div class="msb" style="border-top-color:var(--p1)"><div class="d">2 &ndash; 22 Nov 2026</div><div class="t">1 &middot; Foundations</div><ul><li>Membership, application, references</li><li>TCM framework &amp; terminology</li><li>Baseline diagnostic test</li></ul></div>
+      <div class="msb" style="border-top-color:var(--p2)"><div class="d">23 Nov &ndash; 20 Dec 2026</div><div class="t">2 &middot; Planning domain</div><ul><li>Inputs &amp; considerations</li><li>Outputs &amp; deliverables</li><li>Planning Q-bank</li></ul></div>
+      <div class="msb" style="border-top-color:var(--p3)"><div class="d">21 Dec 2026 &ndash; 31 Jan 2027</div><div class="t">3 &middot; Scheduling domain</div><ul><li>Inputs: WBS, logic, durations, loading</li><li>CPM / float / resource calcs</li><li>Outputs: analysis, variance, recovery</li></ul></div>
+      <div class="msb" style="border-top-color:var(--p4)"><div class="d">1 &ndash; 21 Feb 2027</div><div class="t">4 &middot; Practice &amp; memo</div><ul><li>3 timed full mocks</li><li>Weekly memo drills</li><li>Weak-area loops</li></ul></div>
+      <div class="msb" style="border-top-color:var(--p5)"><div class="d">22 Feb &ndash; exam day</div><div class="t">5 &middot; Final review</div><ul><li>Formula &amp; terminology sheet</li><li>Final mock at 5-h pace</li><li>Rest before exam</li></ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== EXAM FACTS ========== -->
+<div class="view" id="v-exam">
+  <div class="grid2">
+    <div class="card">
+      <h2>Exam facts (AACE official page, checked Oct 2026)</h2>
+      <dl class="facts">
+        <dt>Format</dt><dd>Closed-book, computer-based. 5 hours maximum. 119 multiple-choice and compound-scenario questions plus one memo-writing assignment.</dd>
+        <dt>Eligibility</dt><dd>8 years industry-related experience, <b>or</b> 4 years experience + 4-year industry-related degree. Agreement to the AACE Canons of Ethics.</dd>
+        <dt>Fees</dt><dd>US$525 member / US$690 non-member, paid with the application, non-refundable. Resit US$260. Membership is optional but the member rate more than covers an individual membership.</dd>
+        <dt>Passing</dt><dd>AACE reports a pass/fail; third-party guides quote ~70% average across domains. Treat each domain as needing a solid pass, not just the total.</dd>
+        <dt>Recertification</dt><dd>Every 3 years via continuing-education units or re-examination.</dd>
+        <dt>Calculator</dt><dd>Allowed (battery-operated). Practise every CPM calculation by hand anyway, it is faster under time pressure.</dd>
+      </dl>
+      <p class="small">Verify on <a href="https://web.aacei.org/certification/certification-information/certifications-offered/professional-certifications/psp-details" target="_blank" rel="noopener">AACE &mdash; PSP details</a> and the <a href="https://web.aacei.org/certification/certification-faqs" target="_blank" rel="noopener">Certification FAQs</a> before applying; fees and the question count change from time to time.</p>
+    </div>
+    <div class="card">
+      <h2>Syllabus weighting &amp; where the marks are</h2>
+      <table>
+        <thead><tr><th>Domain</th><th>Approx. share</th><th>Focus</th></tr></thead>
+        <tbody>
+          <tr><td><b>1. Planning</b></td><td>~30%</td><td>Inputs &amp; considerations (contract, SOW, stakeholders, constraints, execution strategy); outputs &amp; deliverables (planning documents, phase definitions, baseline plan, work breakdown).</td></tr>
+          <tr><td><b>2. Scheduling</b></td><td>~70%</td><td>Inputs (breakdown structures, logic, durations, resource &amp; cost loading, calendars); outputs (schedule levels/types, CPM, float, baseline, updates, variance analysis, forecasting, recovery, reporting, delay analysis basics).</td></tr>
+          <tr><td><b>3. Communication</b></td><td>Memo</td><td>One business memo written from a scenario. Graded on structure, clarity and whether the recommendation is supported by the scheduling facts given.</td></tr>
+        </tbody>
+      </table>
+      <h3>Reference library (buy / borrow in Week 1)</h3>
+      <ul class="small" style="padding-left:18px">
+        <li><b>AACE PSP Certification Study Guide</b> (latest edition) &mdash; the spine of the plan; every week maps to its chapters.</li>
+        <li><b>AACE Skills &amp; Knowledge of Cost Engineering</b> (S&amp;K) &mdash; planning, scheduling, EVM and terminology chapters.</li>
+        <li><b>Total Cost Management (TCM) Framework</b> &mdash; sections 7.2 Schedule Planning &amp; Development, 9.2 Progress &amp; Performance Measurement, 10.2 Forecasting.</li>
+        <li><b>Recommended Practices:</b> 10S-90 Cost Engineering Terminology, 14R-90 Responsibility &amp; Required Skills of a Planning &amp; Scheduling Professional, 23R-02 Identification of Activities, 24R-03 Developing Activity Logic, 32R-04 Determining Activity Durations, 37R-06 Schedule Levels of Detail, 38R-06 Documenting the Schedule Basis, 49R-06 Identifying the Critical Path, 52R-06 Time Impact Analysis, 53R-06 Schedule Update Review, 29R-03 Forensic Schedule Analysis (overview only), 48R-06 Schedule Constructability Review.</li>
+        <li><b>Practice questions:</b> AACE sample questions, plus one reputable question bank for timed drills.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ========== FORMULAS & MEMO ========== -->
+<div class="view" id="v-ref">
+  <div class="grid2">
+    <div class="card">
+      <h2>Formula sheet &mdash; must be automatic by Week 12</h2>
+      <table class="formula">
+        <tbody>
+          <tr><td>Forward pass</td><td>EF = ES + Duration (zero-based) or ES + D &minus; 1 (day-numbered). ES of successor = max(EF of predecessors + lag).</td></tr>
+          <tr><td>Backward pass</td><td>LS = LF &minus; Duration. LF = min(LS of successors &minus; lag).</td></tr>
+          <tr><td>Total float</td><td>TF = LS &minus; ES = LF &minus; EF. Critical path: longest path, TF = 0 (or lowest TF).</td></tr>
+          <tr><td>Free float</td><td>FF = min(ES of successors) &minus; EF of activity.</td></tr>
+          <tr><td>Relationships</td><td>FS, SS, FF, SF with lags/leads. Practise SS+lag and FF+lag passes, those are the usual traps.</td></tr>
+          <tr><td>PERT duration</td><td>Expected = (O + 4M + P) / 6. Std dev = (P &minus; O) / 6.</td></tr>
+          <tr><td>Earned value</td><td>EV = % complete &times; BAC. SV = EV &minus; PV. CV = EV &minus; AC. SPI = EV / PV. CPI = EV / AC.</td></tr>
+          <tr><td>Forecasts</td><td>EAC = BAC / CPI (typical). ETC = EAC &minus; AC. VAC = BAC &minus; EAC. TCPI = (BAC &minus; EV) / (BAC &minus; AC).</td></tr>
+          <tr><td>Productivity</td><td>Productivity = Output / Input (e.g. m&sup3; per man-hour). Duration = Quantity / (Crew rate &times; crews). Performance factor = Planned MH / Actual MH.</td></tr>
+          <tr><td>Schedule % complete</td><td>Duration-, cost-, or physical-based; know when each is appropriate and how weighting rolls up through the WBS.</td></tr>
+          <tr><td>Resource levelling</td><td>Delay non-critical activities within float first; levelling may extend the end date, smoothing never does.</td></tr>
+          <tr><td>Schedule compression</td><td>Crashing (add resources, cost up) vs fast-tracking (overlap, risk up). Crash cost slope = (Crash cost &minus; Normal cost)/(Normal dur &minus; Crash dur).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Memo-writing method (practise weekly from Week 13)</h2>
+      <ol style="padding-left:18px">
+        <li><b>Read the scenario twice.</b> List every number, date and constraint given. Underline what the recipient actually asked for.</li>
+        <li><b>Header:</b> To / From / Date / Subject. Subject states the recommendation, e.g. "Recommendation: 3-week recovery plan for Unit 200 piping".</li>
+        <li><b>Purpose (2 lines):</b> why you are writing and the decision needed.</li>
+        <li><b>Findings (bullets):</b> facts from the scenario with the calculation shown (float, SPI, days late). No facts you were not given.</li>
+        <li><b>Options &amp; analysis:</b> 2&ndash;3 options with schedule, cost and risk impact.</li>
+        <li><b>Recommendation &amp; next steps:</b> one clear recommendation, who does what by when.</li>
+        <li><b>Time box:</b> 35&ndash;40 minutes max. Leave the memo to the end of a 5-h sitting only if you have practised that order.</li>
+      </ol>
+      <h3>Exam-day pacing (5 h = 300 min)</h3>
+      <table>
+        <tbody>
+          <tr><td>Pass 1 &mdash; answer every easy question, flag the rest</td><td>110 min</td></tr>
+          <tr><td>Pass 2 &mdash; flagged calculation / scenario questions</td><td>90 min</td></tr>
+          <tr><td>Memo</td><td>40 min</td></tr>
+          <tr><td>Review flagged items, check units and day-numbering convention</td><td>45 min</td></tr>
+          <tr><td>Buffer</td><td>15 min</td></tr>
+        </tbody>
+      </table>
+      <h3>Weekly rhythm that fits a site job</h3>
+      <ul class="small" style="padding-left:18px">
+        <li><b>Weekdays:</b> 4 &times; 1 h early morning or after shift &mdash; reading + 15 questions.</li>
+        <li><b>Friday / rest day:</b> 1 &times; 3 h block &mdash; calculations, mock sections, memo drill.</li>
+        <li><b>Sunday evening:</b> 30 min &mdash; log hours here, review wrong answers, set next week's topic.</li>
+        <li>If a week slips, do not stretch the plan: cut reading, keep the questions and the deliverable.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ========== STUDY LOG ========== -->
+<div class="view" id="v-log">
+  <div class="card">
+    <h2>Study log</h2>
+    <div class="log">
+      <div><label>Date</label><input type="date" id="lDate"></div>
+      <div><label>Hours</label><input type="number" id="lHrs" min="0.25" step="0.25" value="1" style="width:90px"></div>
+      <div><label>Area</label><select id="lArea"><option>Planning</option><option>Scheduling &ndash; inputs</option><option>Scheduling &ndash; CPM calcs</option><option>Scheduling &ndash; outputs/analysis</option><option>Earned value</option><option>Terminology / RPs</option><option>Practice questions</option><option>Memo</option><option>Mock exam</option></select></div>
+      <div><label>Note / mock score</label><input type="text" id="lNote" placeholder="e.g. Ch.4 done, mock 1: 68%" style="width:260px"></div>
+      <button class="btn" id="lAdd">Add</button>
+      <button class="btn" id="lExp" style="background:var(--steel)">Export JSON</button>
+      <button class="btn ghost" id="lClr">Clear all data</button>
+    </div>
+    <div class="grid2">
+      <div>
+        <h3>Hours by area</h3>
+        <table id="areaTab"><thead><tr><th>Area</th><th>Hours</th><th>Share</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div>
+        <h3>Entries</h3>
+        <table id="logTab"><thead><tr><th>Date</th><th>Hrs</th><th>Area</th><th>Note</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+(function(){
+  const KEY='psp-plan-2027';
+  const EXAM=new Date(2027,2,1); // 1 March 2027
+  const PLAN_START=new Date(2026,10,2); // Mon 2 Nov 2026
+  const today=new Date(); today.setHours(0,0,0,0);
+  const fmt=d=>d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+  const fmtL=d=>d.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+
+  // ---- weekly plan: [phase, topic, references, deliverable, hrs]
+  const WEEKS=[
+    [1,'Set-up & diagnostic','AACE PSP page; Study Guide intro; RP 14R-90','AACE membership bought; experience write-up drafted; references ordered; 50-question diagnostic taken and scored by domain',8],
+    [1,'TCM framework & terminology','TCM 7.2, 9.2, 10.2; RP 10S-90','One-page TCM process map; 150 flash-card terms (paper or app) started',10],
+    [1,'Application submitted','AACE application portal; Canons of Ethics','PSP application + fee submitted (member rate); Study Guide ch.1 read',8],
+    [2,'Planning inputs I: contract, scope, stakeholders','Study Guide ch. Planning Input; S&K planning chapter','Chapter notes; 40 Q-bank questions on planning inputs, score logged',10],
+    [2,'Planning inputs II: constraints, execution strategy, risk','Study Guide; RP 48R-06 constructability','Notes; 40 questions; list of 10 "trap" terms (plan vs schedule, program vs project...)',10],
+    [2,'Planning outputs: planning docs, phases, baseline plan','Study Guide ch. Planning Output; RP 38R-06 schedule basis','Write a mock Schedule Basis Memorandum for your current project (1 page)',10],
+    [2,'Planning domain consolidation','All of phase 2','Timed 36-question planning section at exam pace; ≥75% or re-loop weak topics',10],
+    [3,'Scheduling inputs I: WBS/OBS/CBS, activities, logic','Study Guide ch. Scheduling Input; RP 23R-02, 24R-03','Build a 30-activity network by hand from a narrative; 40 questions',10],
+    [3,'Scheduling inputs II: durations, calendars, resource & cost loading','RP 32R-04; S&K scheduling chapter','Duration estimate worksheet (quantity ÷ crew rate); 40 questions',10],
+    [3,'CPM calculations: forward/backward pass, floats, lags','Study Guide; RP 49R-06','20 hand-calculated networks incl. SS/FF with lags, both day-numbering conventions; zero errors on the last 5',12],
+    [3,'Resource levelling, compression, schedule levels & types','RP 37R-06; S&K','Levelling exercise; crash-cost slope exercise; 40 questions',10],
+    [3,'Scheduling outputs I: baseline, updates, progress measurement, EV','TCM 9.2; RP 53R-06; S&K EVM chapter','EV worksheet from a real update; 40 questions on SPI/CPI/EAC',10],
+    [3,'Scheduling outputs II: variance, forecasting, recovery, delay analysis basics','TCM 10.2; RP 52R-06; RP 29R-03 overview','Timed 83-question scheduling section; ≥75% or re-loop; first memo drill',12],
+    [4,'Mock exam 1 (full, timed 5 h) + review','Full Q-bank mock','Mock 1 score by domain logged; error log started (question, why wrong, rule)',12],
+    [4,'Weak-area loop + memo drill 2','Error log topics','Every error-log item re-studied and re-tested; memo 2 written in 40 min',10],
+    [4,'Mock exam 2 + memo drill 3','Full Q-bank mock','Mock 2 ≥ 80%; memo 3 self-graded against the method checklist',12],
+    [5,'Final review: formulas, RP summaries, terminology','Formula sheet; flash cards','Formula sheet reproduced from memory; 300 flash cards at ≥90%',10],
+    [5,'Mock exam 3 (exam-day rehearsal) & taper','Full Q-bank mock','Mock 3 at exam pacing; last 2 days light review only; exam logistics confirmed',8],
+  ];
+  const PHASE_NAME={1:'Foundations',2:'Planning domain',3:'Scheduling domain',4:'Practice & memo',5:'Final review'};
+  const MS=[
+    ['06 Nov 2026','Confirm eligibility route (8 yrs, or 4 yrs + degree) and gather proof','Employment letters, degree copy, CV with dates. Count years honestly against AACE\'s definition.'],
+    ['08 Nov 2026','Join AACE International as a member','Member exam rate saves US$165 and gives access to RPs and the Study Guide discount.'],
+    ['13 Nov 2026','Buy / download references','Study Guide, S&K, TCM, the RPs listed in the syllabus tab, one question bank.'],
+    ['15 Nov 2026','Take the baseline diagnostic','Record the domain scores; this is the number you beat in February.'],
+    ['20 Nov 2026','Submit PSP application and pay the fee','Allow several weeks for AACE review before you can book a seat.'],
+    ['15 Dec 2026','Application approved; book exam seat for March 2027','Book early in the month so a resit window exists if needed. Note the testing-centre rules.'],
+    ['20 Dec 2026','Planning domain section test ≥75%','If below, extend phase 2 by one week and compress phase 4 reading.'],
+    ['31 Jan 2027','Scheduling domain section test ≥75%','Same rule as above.'],
+    ['07 Feb 2027','Mock exam 1 completed and reviewed','Error log in place.'],
+    ['21 Feb 2027','Mock exam 2 ≥80% and three memos written','Go / no-go point: if <70%, consider shifting the seat to late March.'],
+    ['26 Feb 2027','Mock exam 3 at exam-day pacing','Then taper.'],
+    ['Exam day','Sit the PSP examination','ID, confirmation, calculator (if allowed by the centre), arrive 30 min early.'],
+  ];
+
+  // ---- storage
+  let st={weeks:{},ms:{},log:[]};
+  try{const s=localStorage.getItem(KEY); if(s) st=Object.assign(st,JSON.parse(s));}catch(e){}
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}};
+
+  // ---- header & KPIs
+  document.getElementById('today').textContent=fmtL(today);
+  const days=Math.round((EXAM-today)/864e5);
+  document.getElementById('kDays').textContent=days>0?days:'Exam window';
+  document.getElementById('kWeeks').textContent=days>0?(days/7).toFixed(1)+' weeks remaining':'';
+
+  function curWeek(){const w=Math.floor((today-PLAN_START)/(7*864e5))+1;return w<1?0:(w>WEEKS.length?WEEKS.length+1:w);}
+
+  function renderPlan(){
+    const tb=document.querySelector('#plan tbody');tb.innerHTML='';
+    const cw=curWeek();
+    WEEKS.forEach((w,i)=>{
+      const n=i+1,s=new Date(PLAN_START);s.setDate(s.getDate()+i*7);const e=new Date(s);e.setDate(e.getDate()+6);
+      const tr=document.createElement('tr');if(st.weeks[n])tr.className='done';else if(n===cw)tr.className='now';
+      tr.innerHTML=`<td class="chk"><input type="checkbox" data-w="${n}" ${st.weeks[n]?'checked':''}></td><td class="wk"><b>${n}</b></td><td style="white-space:nowrap">${fmt(s)} &ndash; ${fmt(e)}</td><td><span class="ph ph${w[0]}">${w[0]}</span></td><td><b>${w[1]}</b></td><td class="small">${w[2]}</td><td class="small">${w[3]}</td><td>${w[4]}</td>`;
+      tb.appendChild(tr);
+    });
+    tb.querySelectorAll('input').forEach(c=>c.onchange=()=>{st.weeks[c.dataset.w]=c.checked;save();renderPlan();kpis();});
+  }
+  function renderMs(){
+    const tb=document.querySelector('#mstab tbody');tb.innerHTML='';
+    MS.forEach((m,i)=>{const tr=document.createElement('tr');if(st.ms[i])tr.className='done';
+      tr.innerHTML=`<td class="chk"><input type="checkbox" data-m="${i}" ${st.ms[i]?'checked':''}></td><td style="white-space:nowrap">${m[0]}</td><td><b>${m[1]}</b></td><td class="small">${m[2]}</td>`;tb.appendChild(tr);});
+    tb.querySelectorAll('input').forEach(c=>c.onchange=()=>{st.ms[c.dataset.m]=c.checked;save();renderMs();kpis();});
+  }
+  function renderLog(){
+    const tb=document.querySelector('#logTab tbody');tb.innerHTML='';
+    const sorted=st.log.map((e,i)=>({...e,i})).sort((a,b)=>b.date.localeCompare(a.date));
+    sorted.forEach(e=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${e.date}</td><td>${e.hrs}</td><td>${e.area}</td><td class="small">${(e.note||'').replace(/</g,'&lt;')}</td><td><button class="btn ghost" style="padding:3px 8px" data-i="${e.i}">×</button></td>`;tb.appendChild(tr);});
+    tb.querySelectorAll('button').forEach(b=>b.onclick=()=>{st.log.splice(+b.dataset.i,1);save();renderLog();kpis();});
+    const by={};let tot=0;st.log.forEach(e=>{by[e.area]=(by[e.area]||0)+e.hrs;tot+=e.hrs;});
+    const at=document.querySelector('#areaTab tbody');at.innerHTML='';
+    Object.keys(by).sort((a,b)=>by[b]-by[a]).forEach(a=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${a}</td><td>${by[a].toFixed(2)}</td><td>${tot?Math.round(by[a]/tot*100):0}%</td>`;at.appendChild(tr);});
+    if(!st.log.length)at.innerHTML='<tr><td colspan="3" class="small">No entries yet.</td></tr>';
+  }
+  function kpis(){
+    const wd=Object.values(st.weeks).filter(Boolean).length;
+    document.getElementById('kWk').innerHTML=`${wd} <span class="unit">/ ${WEEKS.length}</span>`;document.getElementById('bWk').style.width=(wd/WEEKS.length*100)+'%';
+    const md=Object.values(st.ms).filter(Boolean).length;
+    document.getElementById('kMs').innerHTML=`${md} <span class="unit">/ ${MS.length}</span>`;document.getElementById('bMs').style.width=(md/MS.length*100)+'%';
+    const h=st.log.reduce((a,e)=>a+e.hrs,0);
+    document.getElementById('kHrs').innerHTML=`${h.toFixed(1)} <span class="unit">/ 180 h</span>`;document.getElementById('bHrs').style.width=Math.min(100,h/180*100)+'%';
+    const cw=curWeek();
+    const ph=cw===0?'Not started':(cw>WEEKS.length?'Exam window':PHASE_NAME[WEEKS[cw-1][0]]);
+    document.getElementById('kPhase').textContent=ph;
+    document.getElementById('kPhaseSub').textContent=cw===0?'Plan starts '+fmtL(PLAN_START):(cw>WEEKS.length?'Good luck':'Week '+cw+' of '+WEEKS.length+': '+WEEKS[cw-1][1]);
+  }
+
+  // ---- log form
+  document.getElementById('lDate').value=today.toISOString().slice(0,10);
+  document.getElementById('lAdd').onclick=()=>{
+    const d=document.getElementById('lDate').value,h=parseFloat(document.getElementById('lHrs').value);
+    if(!d||!(h>0))return;
+    st.log.push({date:d,hrs:h,area:document.getElementById('lArea').value,note:document.getElementById('lNote').value.trim()});
+    document.getElementById('lNote').value='';save();renderLog();kpis();
+  };
+  document.getElementById('lExp').onclick=()=>{
+    const b=new Blob([JSON.stringify(st,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='psp-plan-progress.json';a.click();
+  };
+  document.getElementById('lClr').onclick=()=>{if(confirm('Clear all ticks and log entries from this browser?')){st={weeks:{},ms:{},log:[]};save();renderPlan();renderMs();renderLog();kpis();}};
+
+  // ---- tabs
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');document.getElementById('v-'+t.dataset.v).classList.add('active');
+  });
+
+  renderPlan();renderMs();renderLog();kpis();
+})();
+</script>
+</body>
+</html>
