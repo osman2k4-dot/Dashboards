@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project Progress Dashboard — Excel-driven template</title>
+<meta name="description" content="Single-file project progress dashboard. Drop your Excel sheet, get S-curve, weekly progress, activity status, manpower and concerns. No server, no licence.">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f3f5f8;--card:#ffffff;--ink:#121a26;--muted:#5b6778;--line:#dfe5ec;
+  --navy:#0f2a4d;--steel:#1a4a86;--accent:#c8961e;
+  --plan:#2a78d6;--actual:#eb6834;--man:#1baf7a;
+  --good:#1f8f4e;--warn:#b8860b;--bad:#c0392b;
+  --good-bg:#e4f4ea;--warn-bg:#fbf1d6;--bad-bg:#fae3e0;--neutral-bg:#eef1f5;
+}
+*{box-sizing:border-box}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45}
+.band{background:linear-gradient(100deg,var(--navy),var(--steel));color:#fff;border-bottom:4px solid var(--accent)}
+.band .inner{max-width:1240px;margin:0 auto;padding:20px 24px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:44px;height:44px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--navy);font-size:17px}
+.brand h1{margin:0;font-size:20px;font-weight:700}
+.brand .tag{font-size:11.5px;color:#b9c8db;margin-top:3px;text-transform:uppercase;letter-spacing:.14em}
+.meta{text-align:right;font-size:12px;color:#cdd9e6;line-height:1.7}
+.meta b{color:#fff}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 24px 40px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:18px}
+.toolbar .hint{color:var(--muted);font-size:12.5px;flex:1;min-width:220px}
+.btn{border:1px solid var(--steel);background:var(--steel);color:#fff;font-weight:700;font-size:13px;padding:8px 14px;border-radius:8px;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--steel)}
+.btn:hover{filter:brightness(.95)}
+input[type=file]{display:none}
+.drop{border:2px dashed #9fb3cc;border-radius:12px;padding:10px 16px;color:var(--muted);font-size:12.5px;background:#f8fafc}
+.drop.over{border-color:var(--steel);background:#eaf1fb}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .l{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.kpi .v{font-size:26px;font-weight:800;margin-top:4px;letter-spacing:-.01em}
+.kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
+.kpi.good .v{color:var(--good)} .kpi.warn .v{color:var(--warn)} .kpi.bad .v{color:var(--bad)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.c8{grid-column:span 8}.c4{grid-column:span 4}.c6{grid-column:span 6}.c12{grid-column:span 12}
+@media(max-width:900px){.c8,.c4,.c6{grid-column:span 12}}
+.card h2{margin:0 0 2px;font-size:15px;font-weight:700}
+.card .sub{font-size:12px;color:var(--muted);margin-bottom:10px}
+.ch{position:relative;height:300px}
+.ch.sm{height:240px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-2px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{background:#f1f4f8;text-align:left;padding:8px 10px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);position:sticky;top:0}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr:hover td{background:#f8fafc}
+.bar{height:8px;background:#e7ecf2;border-radius:4px;overflow:hidden;min-width:90px}
+.bar i{display:block;height:100%;background:var(--plan);border-radius:4px}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700}
+.p-good{background:var(--good-bg);color:var(--good)} .p-warn{background:var(--warn-bg);color:var(--warn)} .p-bad{background:var(--bad-bg);color:var(--bad)} .p-neutral{background:var(--neutral-bg);color:var(--muted)}
+.tscroll{max-height:380px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+ul.concerns{margin:0;padding-left:18px}
+ul.concerns li{margin:6px 0;font-size:13px}
+ul.concerns li b{font-weight:700}
+.sev{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-right:6px}
+.sev.high{color:var(--bad)} .sev.med{color:var(--warn)} .sev.low{color:var(--muted)}
+.foot{margin-top:22px;font-size:12px;color:var(--muted);text-align:center}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+@media print{.toolbar,.toast{display:none}.band{-webkit-print-color-adjust:exact}.ch{height:260px}}
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="inner">
+    <div class="brand">
+      <div class="logo" id="logo">PP</div>
+      <div>
+        <h1 id="projTitle">Project Progress Dashboard</h1>
+        <div class="tag" id="projSub">Weekly progress · S-curve · Activity status</div>
+      </div>
+    </div>
+    <div class="meta">
+      Data date <b id="dataDate">—</b><br>
+      Source <b id="srcFile">embedded sample</b><br>
+      Prepared by <b id="prepBy">Project Controls</b>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="toolbar">
+    <label class="drop" id="drop" for="file">Drop your Excel file here or click to browse (.xlsx)</label>
+    <input type="file" id="file" accept=".xlsx,.xls,.csv">
+    <span class="hint">Sheets expected: <b>Setup</b>, <b>Progress</b>, <b>Activities</b>, <b>Manpower</b>, <b>Concerns</b>. Download the template, fill it in, drop it back. Everything runs in your browser; nothing is uploaded.</span>
+    <button class="btn ghost" id="dlTemplate">Download Excel template</button>
+    <button class="btn ghost" id="resetBtn">Reset to sample</button>
+    <button class="btn" onclick="window.print()">Print / PDF</button>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="grid">
+    <div class="card c8">
+      <h2>Progress S-curve</h2>
+      <div class="sub">Cumulative planned vs actual % complete by week. The gap at the data date is the schedule variance.</div>
+      <div class="legend"><span><i style="background:var(--plan)"></i>Planned</span><span><i style="background:var(--actual)"></i>Actual</span><span><i style="background:var(--plan);opacity:.35"></i>Planned (future)</span></div>
+      <div class="ch"><canvas id="scurve"></canvas></div>
+    </div>
+
+    <div class="card c4">
+      <h2>Weekly progress</h2>
+      <div class="sub">Incremental % achieved each week against plan.</div>
+      <div class="legend"><span><i style="background:var(--plan)"></i>Planned</span><span><i style="background:var(--actual)"></i>Actual</span></div>
+      <div class="ch"><canvas id="weekly"></canvas></div>
+    </div>
+
+    <div class="card c8">
+      <h2>Activity status</h2>
+      <div class="sub" id="actSub">Weighted activities with planned vs actual % and variance. Sorted by variance, worst first.</div>
+      <div class="tscroll">
+        <table id="actTable">
+          <thead><tr><th>Activity</th><th>Area</th><th class="n">Weight %</th><th class="n">Plan %</th><th class="n">Actual %</th><th class="n">Var</th><th>Progress</th><th>Status</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card c4">
+      <h2>Areas of concern</h2>
+      <div class="sub">From the Concerns sheet, highest severity first.</div>
+      <ul class="concerns" id="concerns"></ul>
+    </div>
+
+    <div class="card c6">
+      <h2>Manpower</h2>
+      <div class="sub">Average daily headcount per week, planned vs actual.</div>
+      <div class="legend"><span><i style="background:var(--plan)"></i>Planned</span><span><i style="background:var(--man)"></i>Actual</span></div>
+      <div class="ch sm"><canvas id="manpower"></canvas></div>
+    </div>
+
+    <div class="card c6">
+      <h2>Progress by area</h2>
+      <div class="sub">Weighted completion per area, from the Activities sheet.</div>
+      <div class="legend"><span><i style="background:var(--plan)"></i>Planned</span><span><i style="background:var(--actual)"></i>Actual</span></div>
+      <div class="ch sm"><canvas id="areas"></canvas></div>
+    </div>
+  </div>
+
+  <div class="foot">Single-file HTML dashboard · Works offline after first load · Data stays on your machine</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   SAMPLE DATA  (replaced when an Excel file is dropped)
+   ============================================================ */
+const SAMPLE = {
+  setup: { project:"Riverside Logistics Hub — Phase 2", subtitle:"Weekly progress · S-curve · Activity status", client:"Northgate Developments", prepared_by:"Project Controls", data_date:"2026-10-25", logo:"RL" },
+  progress: [
+    ["2026-07-05",1.5,1.2],["2026-07-12",3.4,2.9],["2026-07-19",5.8,5.1],["2026-07-26",8.6,7.7],
+    ["2026-08-02",11.9,10.4],["2026-08-09",15.6,13.5],["2026-08-16",19.7,17.0],["2026-08-23",24.1,21.0],
+    ["2026-08-30",28.8,25.4],["2026-09-06",33.7,30.1],["2026-09-13",38.8,35.2],["2026-09-20",44.0,40.6],
+    ["2026-09-27",49.2,46.1],["2026-10-04",54.3,51.4],["2026-10-11",59.2,56.3],["2026-10-18",63.8,60.7],
+    ["2026-10-25",68.1,64.2],["2026-11-01",72.0,null],["2026-11-08",75.6,null],["2026-11-15",79.0,null],
+    ["2026-11-22",82.2,null],["2026-11-29",85.3,null],["2026-12-06",88.3,null],["2026-12-13",91.2,null],
+    ["2026-12-20",94.0,null],["2026-12-27",96.5,null],["2027-01-03",98.5,null],["2027-01-10",100,null]
+  ].map(r=>({week:r[0],plan:r[1],actual:r[2]})),
+  activities: [
+    ["Site clearance & grading","Zone A",4,100,100],["Piling","Zone A",8,100,100],["Pile caps & grade beams","Zone A",6,100,96],
+    ["Ground slab","Zone A",7,92,85],["Steel erection","Zone A",12,78,71],["Roof cladding","Zone A",6,45,32],
+    ["Piling","Zone B",6,100,100],["Pile caps & grade beams","Zone B",5,88,80],["Ground slab","Zone B",6,70,58],
+    ["Steel erection","Zone B",10,40,22],["Roof cladding","Zone B",5,0,0],
+    ["Underground drainage","External",5,85,88],["Road base & kerbs","External",6,55,41],["Asphalt","External",4,0,0],
+    ["HV substation civils","Utilities",3,90,92],["Fire water ring main","Utilities",3,60,44],["Office block fit-out","Office",4,30,30]
+  ].map(r=>({activity:r[0],area:r[1],weight:r[2],plan:r[3],actual:r[4]})),
+  manpower: [
+    ["2026-09-06",180,172],["2026-09-13",190,181],["2026-09-20",200,186],["2026-09-27",210,195],
+    ["2026-10-04",220,201],["2026-10-11",230,204],["2026-10-18",235,210],["2026-10-25",240,206]
+  ].map(r=>({week:r[0],plan:r[1],actual:r[2]})),
+  concerns: [
+    ["High","Zone B steel erection 18% behind — second erection crew mobilises 3-Nov; recover 10% by end Nov.","Construction Mgr"],
+    ["High","Roof cladding sheets for Zone A delayed at supplier; revised delivery 5-Nov. Float exhausted.","Procurement"],
+    ["Medium","Road base held by late drainage testing in External zone; test witness booked 28-Oct.","QA/QC"],
+    ["Medium","Manpower 34 short of plan for 3 weeks running — welders and riggers.","HR / Subcontractor"],
+    ["Low","Fire water ring main trenching clashes with temporary laydown; relocation agreed.","Site Eng."]
+  ].map(r=>({severity:r[0],issue:r[1],owner:r[2]}))
+};
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $ = s=>document.querySelector(s);
+const fmt1 = v=>v==null||isNaN(v)?"—":(Math.round(v*10)/10).toFixed(1);
+const fmt0 = v=>v==null||isNaN(v)?"—":Math.round(v).toLocaleString();
+const dlab = d=>{ if(!d) return ""; const t=new Date(d); if(isNaN(t)) return String(d); return t.toLocaleDateString("en-GB",{day:"2-digit",month:"short"}); };
+const dlong = d=>{ if(!d) return "—"; const t=new Date(d); if(isNaN(t)) return String(d); return t.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}); };
+const css = n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let charts = {};
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2600); }
+function killChart(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
+
+Chart.defaults.font.family = '"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+Chart.defaults.font.size = 12;
+Chart.defaults.color = css("--muted");
+Chart.defaults.plugins.legend.display = false;
+Chart.defaults.plugins.tooltip.backgroundColor = "#0f2a4d";
+Chart.defaults.plugins.tooltip.padding = 10;
+Chart.defaults.plugins.tooltip.cornerRadius = 6;
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(D){
+  const s = D.setup;
+  $("#projTitle").textContent = s.project || "Project Progress Dashboard";
+  $("#projSub").textContent   = s.subtitle || (s.client ? "Client: "+s.client : "Weekly progress · S-curve · Activity status");
+  $("#dataDate").textContent  = dlong(s.data_date);
+  $("#prepBy").textContent    = s.prepared_by || "Project Controls";
+  $("#logo").textContent      = (s.logo || (s.project||"PP").split(/\s+/).map(w=>w[0]).join("").slice(0,2)).toUpperCase();
+  document.title = (s.project||"Project") + " — Progress Dashboard";
+
+  // ---- progress series
+  const prog = D.progress.filter(r=>r.week).slice().sort((a,b)=>new Date(a.week)-new Date(b.week));
+  const dd = s.data_date ? new Date(s.data_date) : null;
+  let last = null; prog.forEach(r=>{ if(r.actual!=null && !isNaN(r.actual)) last=r; });
+  const planAtDD = last ? last.plan : null, actAtDD = last ? last.actual : null;
+  const sv = (planAtDD!=null && actAtDD!=null) ? actAtDD-planAtDD : null;
+  const spi = (planAtDD && actAtDD!=null) ? actAtDD/planAtDD : null;
+
+  // weekly increments
+  const inc = prog.map((r,i)=>({week:r.week, plan: i? r.plan-prog[i-1].plan : r.plan, actual: (r.actual!=null && (i? prog[i-1].actual!=null : true)) ? (i? r.actual-prog[i-1].actual : r.actual) : null}));
+  const lastInc = inc.filter(r=>r.actual!=null).slice(-1)[0];
+
+  // forecast finish: remaining planned duration stretched by SPI (IEAC-t style)
+  const planFinishRow = prog.find(r=>r.plan>=99.95);
+  const planFinish = planFinishRow ? new Date(planFinishRow.week) : null;
+  let fc = null, slipWeeks = null;
+  if(last && planFinish && spi>0 && actAtDD<100){
+    const remPlanWks = Math.max(0,(planFinish-new Date(last.week))/(7*864e5));
+    const fcWks = remPlanWks/spi;
+    fc = new Date(last.week); fc.setDate(fc.getDate()+Math.round(fcWks*7));
+    slipWeeks = Math.round(fcWks-remPlanWks);
+  }
+
+  // ---- manpower
+  const mp = D.manpower.filter(r=>r.week).slice().sort((a,b)=>new Date(a.week)-new Date(b.week));
+  const mpLast = mp.filter(r=>r.actual!=null).slice(-1)[0];
+
+  // ---- KPIs
+  const kp = [];
+  kp.push({l:"Overall actual", v:fmt1(actAtDD)+"%", s:"planned "+fmt1(planAtDD)+"%", cls:""});
+  kp.push({l:"Schedule variance", v:(sv>0?"+":"")+fmt1(sv)+" pts", s:"actual minus planned", cls: sv==null?"":(sv>=-1?"good":sv>=-5?"warn":"bad")});
+  kp.push({l:"SPI (progress)", v:spi?spi.toFixed(2):"—", s:"actual ÷ planned", cls: spi==null?"":(spi>=0.98?"good":spi>=0.9?"warn":"bad")});
+  kp.push({l:"This week", v:lastInc?fmt1(lastInc.actual)+"%":"—", s:lastInc?"vs plan "+fmt1(lastInc.plan)+"% · w/e "+dlab(lastInc.week):"", cls: lastInc? (lastInc.actual>=lastInc.plan?"good":"warn"):""});
+  kp.push({l:"Forecast finish", v:fc?dlab(fc)+" "+fc.getFullYear():"—", s: slipWeeks==null?"needs plan to 100%":(slipWeeks>0?slipWeeks+" wk late vs plan "+dlab(planFinish):slipWeeks<0?(-slipWeeks)+" wk early":"on plan · "+dlab(planFinish)), cls: slipWeeks==null?"":(slipWeeks<=0?"good":slipWeeks<=3?"warn":"bad"), small:true});
+  kp.push({l:"Manpower", v:mpLast?fmt0(mpLast.actual):"—", s:mpLast?"planned "+fmt0(mpLast.plan)+" · w/e "+dlab(mpLast.week):"", cls: mpLast?(mpLast.actual>=mpLast.plan*0.95?"good":mpLast.actual>=mpLast.plan*0.85?"warn":"bad"):""});
+  $("#kpis").innerHTML = kp.map(k=>`<div class="kpi ${k.cls}"><div class="l">${k.l}</div><div class="v"${k.small?' style="font-size:21px;white-space:nowrap"':''}>${k.v}</div><div class="s">${k.s}</div></div>`).join("");
+
+  // ---- S-curve
+  killChart("scurve");
+  const lastIdx = last ? prog.indexOf(last) : -1;
+  charts.scurve = new Chart($("#scurve"),{
+    type:"line",
+    data:{ labels: prog.map(r=>dlab(r.week)),
+      datasets:[
+        {label:"Planned", data:prog.map(r=>r.plan), borderColor:css("--plan"), backgroundColor:"transparent", borderWidth:2, pointRadius:0, pointHoverRadius:5, tension:.25,
+          segment:{ borderDash: ctx => ctx.p0DataIndex>=lastIdx ? [5,4] : undefined, borderColor: ctx => ctx.p0DataIndex>=lastIdx ? "rgba(42,120,214,.45)" : undefined } },
+        {label:"Actual", data:prog.map(r=>r.actual), borderColor:css("--actual"), backgroundColor:"rgba(235,104,52,.10)", fill:true, borderWidth:2.5, pointRadius:0, pointHoverRadius:5, tension:.25, spanGaps:false }
+      ]},
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:"index",intersect:false},
+      scales:{ y:{min:0,max:100,ticks:{callback:v=>v+"%"},grid:{color:"#eef1f5"}}, x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:10}} },
+      plugins:{ tooltip:{callbacks:{label:c=>" "+c.dataset.label+": "+(c.parsed.y==null?"—":fmt1(c.parsed.y)+"%")}},
+        annotationLine:{idx:lastIdx} } },
+    plugins:[{ id:"annotationLine", afterDraw(ch,_,o){ if(o.idx<0) return; const x=ch.scales.x.getPixelForValue(o.idx), {top,bottom}=ch.chartArea, c=ch.ctx; c.save(); c.strokeStyle="#8a98ab"; c.setLineDash([3,3]); c.lineWidth=1; c.beginPath(); c.moveTo(x,top); c.lineTo(x,bottom); c.stroke(); c.setLineDash([]); c.fillStyle="#5b6778"; c.font="600 11px Segoe UI, Roboto, sans-serif"; c.textAlign="right"; c.fillText("Data date", x-5, top+12); c.restore(); } }]
+  });
+
+  // ---- Weekly bars (last 12 weeks with actuals)
+  killChart("weekly");
+  const wk = inc.filter(r=>r.actual!=null).slice(-12);
+  charts.weekly = new Chart($("#weekly"),{
+    type:"bar",
+    data:{ labels: wk.map(r=>dlab(r.week)), datasets:[
+      {label:"Planned", data:wk.map(r=>r.plan), backgroundColor:css("--plan"), borderRadius:3, borderSkipped:"bottom", barPercentage:.9, categoryPercentage:.7},
+      {label:"Actual", data:wk.map(r=>r.actual), backgroundColor:css("--actual"), borderRadius:3, borderSkipped:"bottom", barPercentage:.9, categoryPercentage:.7} ]},
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:"index",intersect:false},
+      scales:{ y:{beginAtZero:true,ticks:{callback:v=>v+"%"},grid:{color:"#eef1f5"}}, x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:6}} },
+      plugins:{ tooltip:{callbacks:{label:c=>" "+c.dataset.label+": "+fmt1(c.parsed.y)+"%"}} } }
+  });
+
+  // ---- Activities table
+  const acts = D.activities.filter(a=>a.activity).map(a=>({...a, weight:+a.weight||0, plan:+a.plan||0, actual:+a.actual||0, v:(+a.actual||0)-(+a.plan||0)}));
+  acts.sort((a,b)=>a.v-b.v);
+  const status = a => a.actual>=100 ? ["Complete","p-good"] : a.plan===0&&a.actual===0 ? ["Not started","p-neutral"] : a.v>=-2 ? ["On track","p-good"] : a.v>=-10 ? ["Behind","p-warn"] : ["Critical","p-bad"];
+  $("#actTable tbody").innerHTML = acts.map(a=>{ const [t,cl]=status(a); return `<tr><td><b>${a.activity}</b></td><td>${a.area||""}</td><td class="n">${fmt1(a.weight)}</td><td class="n">${fmt1(a.plan)}</td><td class="n">${fmt1(a.actual)}</td><td class="n" style="color:${a.v<-2?css("--bad"):a.v>0?css("--good"):"inherit"};font-weight:700">${a.v>0?"+":""}${fmt1(a.v)}</td><td><div class="bar"><i style="width:${Math.min(100,a.actual)}%;background:${a.v<-10?css("--bad"):a.v<-2?css("--warn"):css("--plan")}"></i></div></td><td><span class="pill ${cl}">${t}</span></td></tr>`; }).join("");
+  const wsum = acts.reduce((s,a)=>s+a.weight,0);
+  const behind = acts.filter(a=>a.v<-2 && a.actual<100).length, crit = acts.filter(a=>a.v<-10).length;
+  $("#actSub").textContent = `${acts.length} activities · ${behind} behind plan (${crit} critical) · weights sum to ${fmt1(wsum)}%` + (Math.abs(wsum-100)>0.5 ? " ⚠ weights should total 100" : "");
+
+  // ---- Areas chart
+  const areaMap = {};
+  acts.forEach(a=>{ const k=a.area||"Unassigned"; areaMap[k]=areaMap[k]||{w:0,p:0,a:0}; areaMap[k].w+=a.weight; areaMap[k].p+=a.plan*a.weight; areaMap[k].a+=a.actual*a.weight; });
+  const areas = Object.entries(areaMap).map(([k,v])=>({area:k,plan:v.w?v.p/v.w:0,actual:v.w?v.a/v.w:0,w:v.w}));
+  killChart("areas");
+  charts.areas = new Chart($("#areas"),{
+    type:"bar",
+    data:{ labels:areas.map(a=>a.area), datasets:[
+      {label:"Planned", data:areas.map(a=>a.plan), backgroundColor:css("--plan"), borderRadius:3, borderSkipped:"left", barPercentage:.9, categoryPercentage:.7},
+      {label:"Actual", data:areas.map(a=>a.actual), backgroundColor:css("--actual"), borderRadius:3, borderSkipped:"left", barPercentage:.9, categoryPercentage:.7} ]},
+    options:{ indexAxis:"y", responsive:true, maintainAspectRatio:false, interaction:{mode:"index",intersect:false},
+      scales:{ x:{min:0,max:100,ticks:{callback:v=>v+"%"},grid:{color:"#eef1f5"}}, y:{grid:{display:false}} },
+      plugins:{ tooltip:{callbacks:{label:c=>" "+c.dataset.label+": "+fmt1(c.parsed.x)+"%", afterBody:(it)=>"Weight "+fmt1(areas[it[0].dataIndex].w)+"%"}} } }
+  });
+
+  // ---- Manpower
+  killChart("manpower");
+  charts.manpower = new Chart($("#manpower"),{
+    type:"bar",
+    data:{ labels:mp.map(r=>dlab(r.week)), datasets:[
+      {type:"line", label:"Planned", data:mp.map(r=>r.plan), borderColor:css("--plan"), borderWidth:2, pointRadius:3, pointBackgroundColor:"#fff", pointBorderWidth:2, tension:.2, order:0},
+      {label:"Actual", data:mp.map(r=>r.actual), backgroundColor:css("--man"), borderRadius:3, borderSkipped:"bottom", barPercentage:.9, categoryPercentage:.6, order:1} ]},
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:"index",intersect:false},
+      scales:{ y:{beginAtZero:true,grid:{color:"#eef1f5"}}, x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:8}} },
+      plugins:{ tooltip:{callbacks:{label:c=>" "+c.dataset.label+": "+fmt0(c.parsed.y)}} } }
+  });
+
+  // ---- Concerns
+  const rank = {high:0,medium:1,med:1,low:2};
+  const con = D.concerns.filter(c=>c.issue).slice().sort((a,b)=>(rank[String(a.severity).toLowerCase()]??3)-(rank[String(b.severity).toLowerCase()]??3));
+  $("#concerns").innerHTML = con.length ? con.map(c=>{ const sv=String(c.severity||"").toLowerCase(); const cl=sv.startsWith("h")?"high":sv.startsWith("m")?"med":"low"; return `<li><span class="sev ${cl}">${c.severity||""}</span>${c.issue}${c.owner?` <span style="color:var(--muted)">— ${c.owner}</span>`:""}</li>`; }).join("") : "<li style='color:var(--muted)'>No open concerns.</li>";
+}
+
+/* ============================================================
+   EXCEL IMPORT
+   ============================================================ */
+const norm = s=>String(s||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"");
+function sheetRows(wb, name){
+  const key = wb.SheetNames.find(n=>norm(n)===norm(name));
+  if(!key) return null;
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[key], {defval:null, raw:true});
+  return rows.map(r=>{ const o={}; Object.keys(r).forEach(k=>o[norm(k)]=r[k]); return o; });
+}
+function toISO(v){
+  if(v==null||v==="") return null;
+  if(v instanceof Date) return v.toISOString().slice(0,10);
+  if(typeof v==="number"){ const d=XLSX.SSF.parse_date_code(v); if(d) return `${d.y}-${String(d.m).padStart(2,"0")}-${String(d.d).padStart(2,"0")}`; }
+  const t=new Date(v); return isNaN(t)?String(v):t.toISOString().slice(0,10);
+}
+const num = v => (v==null||v==="") ? null : (typeof v==="number" ? v : parseFloat(String(v).replace(/[%,\s]/g,"")));
+function pick(o,...keys){ for(const k of keys){ if(o[k]!=null && o[k]!=="") return o[k]; } return null; }
+
+function parseWorkbook(wb, filename){
+  const D = {setup:{}, progress:[], activities:[], manpower:[], concerns:[]};
+  const setup = sheetRows(wb,"Setup");
+  if(setup){ setup.forEach(r=>{ const k=norm(pick(r,"key","field","setting","name")); const v=pick(r,"value","val"); if(k) D.setup[k]=v; }); if(D.setup.data_date) D.setup.data_date=toISO(D.setup.data_date); }
+  const prog = sheetRows(wb,"Progress");
+  if(!prog) throw new Error("Sheet 'Progress' not found. Expected columns: Week, Planned %, Actual %.");
+  D.progress = prog.map(r=>({week:toISO(pick(r,"week","week_ending","date","period")), plan:num(pick(r,"planned","plan","planned_pct","plan_pct","planned_cum")), actual:num(pick(r,"actual","actual_pct","actual_cum"))})).filter(r=>r.week && r.plan!=null);
+  const act = sheetRows(wb,"Activities") || [];
+  D.activities = act.map(r=>({activity:pick(r,"activity","task","description","name"), area:pick(r,"area","zone","unit","package"), weight:num(pick(r,"weight","weight_pct","weightage","wt")), plan:num(pick(r,"planned","plan","planned_pct","plan_pct")), actual:num(pick(r,"actual","actual_pct","progress"))}));
+  const mp = sheetRows(wb,"Manpower") || [];
+  D.manpower = mp.map(r=>({week:toISO(pick(r,"week","week_ending","date")), plan:num(pick(r,"planned","plan","planned_headcount")), actual:num(pick(r,"actual","actual_headcount","headcount"))})).filter(r=>r.week);
+  const con = sheetRows(wb,"Concerns") || [];
+  D.concerns = con.map(r=>({severity:pick(r,"severity","priority","level"), issue:pick(r,"issue","concern","description"), owner:pick(r,"owner","action_by","responsible")}));
+  const lastA=D.progress.filter(r=>r.actual!=null).slice(-1)[0];
+  if(lastA && (!D.setup.data_date || new Date(D.setup.data_date) < new Date(lastA.week))) D.setup.data_date=lastA.week;
+  $("#srcFile").textContent = filename;
+  return D;
+}
+
+function handleFile(file){
+  if(!file) return;
+  const rd = new FileReader();
+  rd.onload = e=>{
+    try{
+      const wb = XLSX.read(new Uint8Array(e.target.result), {type:"array", cellDates:true});
+      const D = parseWorkbook(wb, file.name);
+      render(D);
+      toast("Loaded "+file.name+" · "+D.progress.length+" progress rows, "+D.activities.length+" activities");
+    }catch(err){ console.error(err); toast("Could not read file: "+err.message); }
+  };
+  rd.readAsArrayBuffer(file);
+}
+$("#file").addEventListener("change", e=>handleFile(e.target.files[0]));
+const drop = $("#drop");
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over");}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over");}));
+drop.addEventListener("drop", e=>handleFile(e.dataTransfer.files[0]));
+$("#resetBtn").addEventListener("click", ()=>{ $("#srcFile").textContent="embedded sample"; render(SAMPLE); toast("Sample data restored"); });
+
+/* ============================================================
+   EXCEL TEMPLATE DOWNLOAD (pre-filled with the sample data)
+   ============================================================ */
+$("#dlTemplate").addEventListener("click", ()=>{
+  const wb = XLSX.utils.book_new();
+  const S = SAMPLE;
+  const setup = [["Key","Value","Notes"],
+    ["project",S.setup.project,"Shown in the header"],["subtitle",S.setup.subtitle,"Optional"],["client",S.setup.client,"Optional"],
+    ["prepared_by",S.setup.prepared_by,""],["data_date",S.setup.data_date,"YYYY-MM-DD or an Excel date"],["logo",S.setup.logo,"1-3 letters for the badge"]];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(setup), "Setup");
+  const prog = [["Week","Planned %","Actual %"], ...S.progress.map(r=>[r.week,r.plan,r.actual])];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(prog), "Progress");
+  const act = [["Activity","Area","Weight %","Planned %","Actual %"], ...S.activities.map(a=>[a.activity,a.area,a.weight,a.plan,a.actual])];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(act), "Activities");
+  const mp = [["Week","Planned","Actual"], ...S.manpower.map(r=>[r.week,r.plan,r.actual])];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(mp), "Manpower");
+  const con = [["Severity","Issue","Owner"], ...S.concerns.map(c=>[c.severity,c.issue,c.owner])];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(con), "Concerns");
+  const help = [["How to use"],[""],["1. Fill the sheets. Keep the header row names as they are."],
+    ["2. Progress: one row per week, cumulative planned % and cumulative actual %. Leave Actual blank for future weeks."],
+    ["3. Activities: weights should total 100. Planned and Actual are % complete per activity."],
+    ["4. Manpower: average daily headcount per week."],["5. Concerns: Severity is High / Medium / Low."],
+    ["6. Save, then drag the file onto the dashboard. Nothing is uploaded anywhere."]];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(help), "ReadMe");
+  XLSX.writeFile(wb, "project-progress-template.xlsx");
+  toast("Template downloaded");
+});
+
+render(SAMPLE);
+</script>
+</body>
+</html>

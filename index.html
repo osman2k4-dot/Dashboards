@@ -32,6 +32,26 @@ main{padding:34px 24px 20px}
 .card .open:hover{background:var(--primary-dark)}
 .star{position:relative}
 .star::after{content:"★ Most popular with management";position:absolute;top:14px;right:16px;font-size:10.5px;font-weight:700;color:var(--orange)}
+.featured{max-width:1080px;margin:0 auto 26px;background:var(--card);border:2px solid var(--primary);border-radius:14px;padding:24px 26px;display:grid;grid-template-columns:1.4fr 1fr;gap:22px;align-items:center;box-shadow:0 8px 24px rgba(26,86,219,.10)}
+@media(max-width:760px){.featured{grid-template-columns:1fr}}
+.featured .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:99px;background:#e2eafc;color:var(--primary);margin-bottom:10px}
+.featured h2{font-size:21px;font-weight:800;margin-bottom:8px}
+.featured p{color:var(--muted);font-size:14px}
+.featured ul{margin:10px 0 0 18px;color:var(--ink);font-size:13.5px;line-height:1.7}
+.featured .cta{display:flex;flex-direction:column;gap:10px}
+.featured .price{font-size:30px;font-weight:800;color:var(--navy)}
+.featured .price small{font-size:13px;color:var(--muted);font-weight:600}
+.btn{display:inline-block;text-align:center;text-decoration:none;font-weight:700;font-size:14px;padding:11px 18px;border-radius:9px;border:2px solid var(--primary)}
+.btn.primary{background:var(--primary);color:#fff}.btn.primary:hover{background:var(--primary-dark)}
+.btn.ghost{background:#fff;color:var(--primary)}.btn.ghost:hover{background:#eef3fd}
+.hire{max-width:1080px;margin:26px auto 0;background:linear-gradient(135deg,#fff 0%,#eef3fd 100%);border:1px solid #c9d8f5;border-radius:14px;padding:24px 26px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center}
+@media(max-width:760px){.hire{grid-template-columns:1fr}}
+.hire h3{font-size:17px;margin-bottom:6px}
+.hire p{color:var(--muted);font-size:14px}
+.hire .tiers{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px}
+.tier{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:13px;min-width:150px}
+.tier b{display:block;font-size:15px;color:var(--navy)}
+.tier span{color:var(--muted)}
 .how{max-width:1080px;margin:34px auto 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 26px}
 .how h3{font-size:16px;margin-bottom:10px}
 .how p{color:var(--muted);font-size:14px}
@@ -56,6 +76,27 @@ footer{padding:26px 24px 40px;text-align:center;color:var(--muted);font-size:12.
 <div class="note wrap">⚠ All dashboards below are demos on the fictional "Orion Project" with dummy data. Structure, logic and interactivity are identical to what runs on a live oil &amp; gas EPC site daily.</div>
 
 <main class="wrap">
+
+  <div class="featured" id="template">
+    <div>
+      <span class="tag">Template · ready to use on your project</span>
+      <h2>Project Progress Dashboard — drop your Excel, get the report</h2>
+      <p>The generic version of what runs on site. One HTML file, a 5-sheet Excel workbook, and the weekly report builds itself: S-curve, SPI, forecast finish, activity status sorted worst-first, manpower and concerns. Your branding, your data, nothing leaves your laptop.</p>
+      <ul>
+        <li>Works in any browser, offline, on a phone. No Power BI, no server, no IT ticket.</li>
+        <li>Download the Excel template from inside the dashboard, fill it in, drop it back.</li>
+        <li>Plain HTML and JavaScript, so colours, titles and logic can be edited.</li>
+      </ul>
+    </div>
+    <div class="cta">
+      <div class="price">$49 <small>one-off · single user · free updates</small></div>
+      <a class="btn primary" href="GUMROAD_URL">Buy the template →</a>
+      <a class="btn ghost" href="template-project-progress-dashboard.html">Try the live demo</a>
+      <a class="btn ghost" href="#hire">Need it built for your project?</a>
+    </div>
+  </div>
+
+  <h3 style="font-size:16px;margin:0 0 12px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase">Live site demos</h3>
   <div class="grid">
 
     <div class="card star">
@@ -123,13 +164,29 @@ footer{padding:26px 24px 40px;text-align:center;color:var(--muted);font-size:12.
 
   </div>
 
+  <div class="hire" id="hire">
+    <div>
+      <h3>Custom dashboards for your project</h3>
+      <p>Send a sample of your weekly Excel report. You get a branded, single-file dashboard that your team refreshes by dropping the sheet back in. First version in 2 to 3 days, from the same code that runs daily on a live EPC site.</p>
+      <div class="tiers">
+        <div class="tier"><b>From $150</b><span>Progress template mapped to your data and branding</span></div>
+        <div class="tier"><b>From $400</b><span>Custom KPIs, up to 8 charts, drill-down table, Excel refresh</span></div>
+        <div class="tier"><b>From $900</b><span>Plot-plan progress map or craft productivity module</span></div>
+      </div>
+    </div>
+    <div class="cta" style="display:flex;flex-direction:column;gap:10px">
+      <a class="btn primary" href="mailto:osman2k4@gmail.com?subject=Dashboard%20for%20my%20project">Email me about a build</a>
+      <a class="btn ghost" href="HIRE_URL">Hire on Upwork / Fiverr</a>
+    </div>
+  </div>
+
   <div class="how">
     <h3>How these work</h3>
     <p>Each dashboard is one self-contained HTML file. Site data (daily reports, Excel registers, P6 exports) is processed into embedded JSON, charts render with Chart.js, and the file can be emailed, opened offline, or dropped on a shared drive. Several accept a fresh Excel drop to refresh themselves — no rebuild needed. If your project runs on Excel exports and PowerPoint decks, this is the upgrade path.</p>
   </div>
 </main>
 
-<footer>Demo portfolio · All project names, people, tags and figures are fictional · Built with Chart.js &amp; vanilla JavaScript</footer>
+<footer>Demo portfolio · All project names, people, tags and figures are fictional · Built with Chart.js &amp; vanilla JavaScript · <a href="#template" style="color:var(--primary)">Buy the template</a> · <a href="#hire" style="color:var(--primary)">Hire me</a></footer>
 
 </body>
 </html>
