@@ -1,0 +1,44 @@
+# Publishes a text post to LinkedIn. Start it from the Actions tab
+# ("Post to LinkedIn" > Run workflow) or through the workflow_dispatch API.
+#
+# One-time setup under Settings > Secrets and variables > Actions:
+#   secret   LINKEDIN_ACCESS_TOKEN  token with openid, profile and w_member_social scopes.
+#                                   It expires after 60 days; replace it when runs fail with 401.
+#   secret   LINKEDIN_AUTHOR_URN    optional, urn:li:person:<id>; looked up from the token if unset
+#   variable LINKEDIN_API_VERSION   optional YYYYMM, overrides the default in the script
+name: Post to LinkedIn
+
+on:
+  workflow_dispatch:
+    inputs:
+      text:
+        description: Post text (words starting with # become hashtags)
+        required: true
+        type: string
+      visibility:
+        description: Who can see the post
+        type: choice
+        options: [PUBLIC, CONNECTIONS]
+        default: PUBLIC
+      dry_run:
+        description: Check the token and show the request without posting
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish post
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_AUTHOR_URN: ${{ secrets.LINKEDIN_AUTHOR_URN }}
+          LINKEDIN_API_VERSION: ${{ vars.LINKEDIN_API_VERSION }}
+          POST_TEXT: ${{ inputs.text }}
+          POST_VISIBILITY: ${{ inputs.visibility }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: python3 .github/scripts/linkedin_post.py
