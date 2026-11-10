@@ -13,7 +13,9 @@ on:
     inputs:
       text:
         description: Post text (words starting with # become hashtags)
-        required: true
+        type: string
+      post_file:
+        description: Or the path of a JSON post file in the repo (text plus images), e.g. linkedin/post-03-piping-4d.json
         type: string
       visibility:
         description: Who can see the post
@@ -39,6 +41,7 @@ jobs:
           LINKEDIN_AUTHOR_URN: ${{ secrets.LINKEDIN_AUTHOR_URN }}
           LINKEDIN_API_VERSION: ${{ vars.LINKEDIN_API_VERSION }}
           POST_TEXT: ${{ inputs.text }}
+          POST_FILE: ${{ inputs.post_file }}
           POST_VISIBILITY: ${{ inputs.visibility }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: python3 .github/scripts/linkedin_post.py
