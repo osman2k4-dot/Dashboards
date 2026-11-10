@@ -1,0 +1,21 @@
+{
+  "text": "The S-curve tells you how far behind you are. It doesn't tell you where.\n\nOn a piping job, \"74% actual vs 83% planned\" starts the same meeting every week: which lines, which area, and what is holding them?\n\nSo I built a 4D playback for piping that answers it in one picture. Every spool carries two dates, its baseline erection week and its actual one, and the model colours itself week by week:\n\n🟢 Erected on time\n🟡 Erected late\n🔴 Due, but still not erected\n⚪ Not yet due\n\nPress play and the plant builds itself against the baseline. Stop at the data date and you can see the delay sitting on the rack: Unit 215 is green, while the compression area is turning amber and red.\n\nHover a red spool and it tells you why: valves not received, isometric revision pending, spool still at the fab shop.\n\nSame idea as my other dashboards: one HTML file, no Power BI licence, and no 3D software needed by the people who only want to look. It opens in a browser, even on a phone.\n\nThis demo runs on a fictional plant, the \"Orion Project\", with generated spools and dates. No client model and no client data.\n\nTry it: https://osman2k4-dot.github.io/Dashboards/demo-piping-4d-playback.html\n\nHow do you show management where the piping delay is, and not only how big it is?\n\n#ProjectControls #4DPlanning #Piping #EPC #Construction #Planning #OilAndGas #Primavera",
+  "images": [
+    {
+      "path": "linkedin/assets/post-03/01-dashboard.png",
+      "alt": "Piping 4D dashboard at the data date: a 3D plant model coloured by erection status, with an S-curve and progress by area."
+    },
+    {
+      "path": "linkedin/assets/post-03/02-build-sequence.png",
+      "alt": "The same plant at weeks 10, 18, 24 and 28, showing erection progress and where delay builds up."
+    },
+    {
+      "path": "linkedin/assets/post-03/03-plan-vs-actual.png",
+      "alt": "Baseline plan compared with actual erection at week 28: 83.0% planned, 74.3% actual."
+    },
+    {
+      "path": "linkedin/assets/post-03/04-held-spool.png",
+      "alt": "Close-up of the compression area with a tooltip on a red spool: behind plan, material hold, valves not received."
+    }
+  ]
+}

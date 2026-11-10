@@ -13,7 +13,9 @@ on:
     inputs:
       text:
         description: Post text (words starting with # become hashtags)
-        required: true
+        type: string
+      post_file:
+        description: Or the path of a JSON post file in the repo (text plus images), e.g. linkedin/post-03-piping-4d.json
         type: string
       visibility:
         description: Who can see the post
@@ -32,13 +34,14 @@ jobs:
   post:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Publish post
         env:
           LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
           LINKEDIN_AUTHOR_URN: ${{ secrets.LINKEDIN_AUTHOR_URN }}
           LINKEDIN_API_VERSION: ${{ vars.LINKEDIN_API_VERSION }}
           POST_TEXT: ${{ inputs.text }}
+          POST_FILE: ${{ inputs.post_file }}
           POST_VISIBILITY: ${{ inputs.visibility }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: python3 .github/scripts/linkedin_post.py

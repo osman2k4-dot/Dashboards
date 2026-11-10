@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[DEMO — fictional data] Orion Project — Piping 4D Playback, Plan vs Actual (Data Date 19-Jul-2026)</title>
+<style>
+:root{--bg:#f6f8fa;--card:#fff;--line:#e2e8f0;--text:#1e293b;--muted:#64748b;--accent:#1a56db;--accent-dark:#12399b;
+--good:#0ca30c;--warn:#fab219;--crit:#d03b3b;--plan:#2a78d6;--actual:#eb6834;--ghost:#c3c2b7;
+--grid:#e1e0d9;--axis:#c3c2b7;--ink2:#52514e;--ink3:#898781;--up:#006300}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+.wrap{max-width:1440px;margin:0 auto;padding:16px 20px 50px}
+header.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+h1{font-size:19px;font-weight:700}h1 .sub{color:var(--muted);font-weight:500}
+.chip{background:#eef3fe;color:#12399b;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600}
+.chip.date{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+.spacer{margin-left:auto}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:none;font-family:inherit}
+.btn:hover{border-color:#94a3b8}
+.note{background:#fff7ec;border:1px solid #f3ddb8;color:#8a5a12;font-size:12.5px;padding:9px 14px;border-radius:10px;margin:6px 0 10px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:10px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:0}
+.kpi .l{font-size:11.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.kpi .v{font-size:22px;font-weight:700;margin-top:2px}
+.kpi .s{font-size:12px;color:var(--muted);margin-top:1px}
+.kpi .v.neg{color:var(--crit)}.kpi .v.pos{color:var(--up)}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:none;background:var(--card);padding:7px 12px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;border-right:1px solid var(--line);font-family:inherit}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--accent);color:#fff}
+select{border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:12.5px;font-weight:600;color:var(--text);background:var(--card);font-family:inherit}
+.hint{font-size:12px;color:var(--muted)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:12px;align-items:start}
+.stagecard{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stage{position:relative;height:min(68vh,640px);min-height:380px;background:linear-gradient(180deg,#f3f6f9 0%,#e6ebf1 100%)}
+#cv{display:block;width:100%;height:100%;cursor:grab;touch-action:none;outline:none}
+#cv.drag{cursor:grabbing}
+.hud{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.93);border:1px solid var(--line);border-radius:10px;padding:9px 13px;pointer-events:none}
+.hud .wk{font-size:24px;font-weight:700;line-height:1.1}
+.hud .wd{font-size:12px;color:var(--muted);margin-top:2px}
+.hud .badge{display:inline-block;margin-top:6px;font-size:11px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:#065f46;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:20px;padding:2px 9px}
+.hud .badge.after{color:#12399b;background:#eef3fe;border-color:#c7d7fb}
+.lgd{position:absolute;right:12px;top:12px;background:rgba(255,255,255,.93);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:12px;min-width:188px}
+.lgd .hd{font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.lgd .row{display:flex;align-items:center;gap:7px;padding:2px 0;color:var(--text)}
+.lgd .sw{width:16px;height:16px;border-radius:4px;flex:none;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff}
+.lgd .sw.ghost{background:rgba(195,194,183,.35);border:1px dashed #a8a69c;color:var(--ink2)}
+.lgd .sw.warn{color:#0b0b0b}
+.lgd .n{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums;padding-left:10px}
+.labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.alab{position:absolute;transform:translate(-50%,-50%);background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:11.5px;white-space:nowrap;color:var(--text);box-shadow:0 1px 4px rgba(15,23,42,.06)}
+.alab b{font-weight:700}.alab span{color:var(--muted)}
+.alab.dim{opacity:.35}
+.tip{position:absolute;z-index:4;pointer-events:none;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:12px;box-shadow:0 6px 22px rgba(15,23,42,.14);max-width:290px;line-height:1.45}
+.tip .t1{font-weight:700;font-size:13px}
+.tip .t2{color:var(--muted)}
+.tip .st{display:flex;align-items:center;gap:6px;margin-top:5px;font-weight:600}
+.tip .st i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.tip .why{margin-top:4px;color:#8a5a12;background:#fff7ec;border-radius:6px;padding:3px 7px}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);background:linear-gradient(180deg,#f3f6f9 0%,#e6ebf1 100%);z-index:5}
+.bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 14px;border-top:1px solid var(--line)}
+.play{min-width:92px;background:var(--accent);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.play:hover{background:var(--accent-dark)}
+input[type=range]{flex:1;min-width:160px;accent-color:var(--accent)}
+button:focus-visible,select:focus-visible,input:focus-visible,#cv:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.side,.main{display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.panel h3{font-size:13px;font-weight:700;margin-bottom:2px}
+.panel .ps{font-size:11.5px;color:var(--muted);margin-bottom:8px}
+.clg{display:flex;gap:14px;font-size:12px;color:var(--ink2);margin-bottom:4px}
+.clg i{display:inline-block;width:14px;height:2px;vertical-align:4px;margin-right:5px;border-radius:1px}
+.chartwrap{position:relative}
+#scurve{display:block;width:100%;height:auto;cursor:crosshair}
+.ctip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12px;box-shadow:0 4px 14px rgba(15,23,42,.12);white-space:nowrap}
+.ctip .r{display:flex;align-items:center;gap:6px}
+.ctip .r i{display:inline-block;width:12px;height:2px;border-radius:1px}
+.ctip b{font-variant-numeric:tabular-nums}
+details{margin-top:8px;font-size:12px}
+summary{cursor:pointer;color:var(--accent);font-weight:600}
+table.wt{width:100%;border-collapse:collapse;margin-top:6px;font-variant-numeric:tabular-nums}
+table.wt th,table.wt td{padding:3px 6px;text-align:right;border-bottom:1px solid var(--line)}
+table.wt th:first-child,table.wt td:first-child{text-align:left}
+table.wt th{color:var(--muted);font-weight:600}
+.wtbox{max-height:220px;overflow:auto}
+.arow{display:block;width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:9px;padding:7px 8px;cursor:pointer;font-family:inherit;color:inherit}
+.arow:hover{background:#f6f8fa}
+.arow.on{border-color:#c7d7fb;background:#eef3fe}
+.arow .atop{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:600}
+.arow .atop span{color:var(--muted);font-weight:500;font-size:11.5px}
+.track{position:relative;height:8px;background:#eef2f7;border-radius:4px;margin:6px 0 4px}
+.track .fill{position:absolute;left:0;top:0;bottom:0;background:var(--actual);border-radius:4px}
+.track .mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--plan);border-radius:1px}
+.anum{display:flex;gap:10px;font-size:11.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.anum .beh{margin-left:auto;color:var(--crit);font-weight:600}
+.anum .beh.ok{color:var(--muted);font-weight:500}
+ol.behind{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ol.behind li{border:1px solid var(--line);border-radius:9px}
+ol.behind button{display:block;width:100%;height:100%;text-align:left;background:none;border:0;padding:8px 10px;cursor:pointer;font-family:inherit;color:inherit;border-radius:9px}
+ol.behind button:hover{background:#f6f8fa}
+ol.behind b{font-size:12.5px}
+ol.behind .m{display:block;font-size:11.5px;color:var(--ink2)}
+ol.behind .why{display:block;font-size:11.5px;color:#8a5a12}
+ol.behind li.empty{border:0;grid-column:1/-1;font-size:12px;color:var(--muted);padding:4px 0}
+.foot{margin-top:14px;font-size:12.5px;color:var(--muted);border-left:2px solid var(--line);padding-left:12px;max-width:110ch;line-height:1.55}
+@media (max-width:1100px){.split{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(3,1fr)}ol.behind{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.wrap{padding:12px 16px 40px}.kpis{grid-template-columns:repeat(2,1fr)}.lgd{min-width:0;font-size:11px;padding:7px 9px}.hud .wk{font-size:19px}.hint{display:none}.stage{height:60vh;min-height:340px}ol.behind{grid-template-columns:1fr}.alab span{display:none}.alab{font-size:10.5px;padding:2px 6px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Piping 4D Playback <span class="sub">· Plan vs Actual</span></h1>
+    <span class="chip">Orion Project · Units 215 &amp; 259 · Green Field</span>
+    <span class="chip date">Data date 19-Jul-2026</span>
+    <span class="spacer"></span>
+    <a class="btn" href="index.html">← All dashboards</a>
+  </header>
+  <div class="note">⚠ Demo with fictional data: the plant layout, line numbers, spools and schedule are generated for the fictional "Orion Project". Structure and logic mirror a live EPC piping 4D review.</div>
+
+  <section class="kpis" aria-live="polite">
+    <div class="kpi"><div class="l">Planned progress</div><div class="v" id="kPlan">–</div><div class="s" id="kPlanS"></div></div>
+    <div class="kpi"><div class="l">Actual progress</div><div class="v" id="kAct">–</div><div class="s" id="kActS"></div></div>
+    <div class="kpi"><div class="l">Variance</div><div class="v" id="kVar">–</div><div class="s" id="kVarS"></div></div>
+    <div class="kpi"><div class="l">SPI (inch-metre)</div><div class="v" id="kSpi">–</div><div class="s" id="kSpiS"></div></div>
+    <div class="kpi"><div class="l">Spools behind plan</div><div class="v" id="kBeh">–</div><div class="s" id="kBehS"></div></div>
+  </section>
+
+  <div class="toolbar">
+    <div class="seg" id="mode" role="group" aria-label="Colour mode">
+      <button data-m="pva" class="on" aria-pressed="true">Plan vs Actual</button>
+      <button data-m="plan" aria-pressed="false">Baseline plan</button>
+    </div>
+    <select id="areaSel" aria-label="Area filter"><option value="-1">All areas</option></select>
+    <span class="spacer"></span>
+    <span class="hint">Drag to orbit · scroll to zoom · shift-drag to pan · hover a spool for details</span>
+  </div>
+
+  <div class="split">
+    <div class="main">
+    <div class="stagecard">
+      <div class="stage" id="stage">
+        <canvas id="cv" tabindex="0" aria-label="3D model of the piping, coloured by erection status for the selected week"></canvas>
+        <div class="labels" id="labels"></div>
+        <div class="hud"><div class="wk" id="hWk"></div><div class="wd" id="hWd"></div><div class="badge" id="hBadge"></div></div>
+        <div class="lgd" id="lgd"></div>
+        <div class="tip" id="tip" hidden></div>
+        <div class="loading" id="load">Building the plant…</div>
+      </div>
+      <div class="bar">
+        <button class="play" id="play" aria-label="Play">▶ Play</button>
+        <input type="range" id="scrub" min="0" max="40" step="1" value="28" aria-label="Week">
+        <select id="speed" aria-label="Playback speed"><option value="640">0.5×</option><option value="320" selected>1×</option><option value="160">2×</option><option value="80">4×</option></select>
+        <button class="btn" id="toDD">Go to data date</button>
+        <button class="btn" id="resetV">Reset view</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Behind plan: most overdue spools</h3>
+      <div class="ps">Click a spool to fly to it in the model</div>
+      <ol class="behind" id="behind"></ol>
+    </div>
+    </div>
+
+    <aside class="side">
+      <div class="panel">
+        <h3>Cumulative piping erection</h3>
+        <div class="ps" id="scSub">Weighted by inch-metre · all areas</div>
+        <div class="clg"><span><i style="background:var(--plan)"></i>Planned (baseline)</span><span><i style="background:var(--actual)"></i>Actual</span></div>
+        <div class="chartwrap"><svg id="scurve" viewBox="0 0 340 200" role="img" aria-label="S-curve of planned and actual cumulative piping erection"></svg><div class="ctip" id="ctip" hidden></div></div>
+        <details><summary>Show weekly table</summary><div class="wtbox"><table class="wt" id="wt"></table></div></details>
+      </div>
+      <div class="panel">
+        <h3>By area</h3>
+        <div class="ps">Bar = actual · blue tick = planned · click to isolate in 3D</div>
+        <div id="areas"></div>
+      </div>
+    </aside>
+  </div>
+
+  <p class="foot"><b>How to read it.</b> Every pipe spool carries a baseline erection week and, up to the data date, an actual erection week. Scrub or play through the weeks: green spools were erected on or ahead of plan, amber were erected late, red were due but are still not erected, and blue (after the data date) is what the baseline still expects. The S-curve says <em>how much</em> is behind; the model shows <em>where</em> it is and what is holding it.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+var DAY=864e5, START=Date.UTC(2026,0,5), WEEKS=40, DD=28;
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function pad(n){return (n<10?'0':'')+n}
+function pad3(n){return n<10?'00'+n:n<100?'0'+n:''+n}
+function weDate(w){var d=new Date(START+(w*7-1)*DAY);return pad(d.getUTCDate())+'-'+MON[d.getUTCMonth()]+'-'+String(d.getUTCFullYear()).slice(2)}
+function pct(v){return (v*100).toFixed(1)+'%'}
+function clamp(v,a,b){return v<a?a:v>b?b:v}
+function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+
+// ---------- deterministic fictional data ----------
+var seed=20260719;
+function R(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}
+function ri(a,b){return a+Math.floor(R()*(b-a+1))}
+function pick(a){return a[Math.floor(R()*a.length)]}
+
+var AREAS=[
+  {id:'A1',unit:'215',name:'Inlet & separation',x0:0,x1:45,start:3,dur:20},
+  {id:'A2',unit:'215',name:'Gas treating',x0:45,x1:90,start:9,dur:21},
+  {id:'A3',unit:'259',name:'Compression',x0:90,x1:135,start:15,dur:23},
+  {id:'A4',unit:'259',name:'Utilities & flare KO',x0:135,x1:180,start:20,dur:19}
+];
+function areaAt(x){for(var i=0;i<AREAS.length-1;i++){if(x<AREAS[i].x1)return i}return AREAS.length-1}
+var HOLDS=['Material hold: valves not received','Awaiting spool delivery from fab shop','Isometric revision pending (Rev B)','Support steel not released','Line held for client comments'];
+var KIND={rack:'Pipe rack',branch:'Rack to equipment',local:'Equipment area'};
+var T1=6,T2=9,RACK_Z=5;
+function pr(size){return 0.14+size*0.02}   // drawn pipe radius (m), exaggerated for legibility
+
+var lineSeq={'215':0,'259':0}, spools=[];
+function newLine(ai,size,svc){var u=AREAS[ai].unit;lineSeq[u]+=1;return {no:size+'"-'+svc+'-'+u+pad3(lineSeq[u]),size:size,n:0}}
+function dist(a,b){return Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])+Math.abs(a[2]-b[2])}
+function addSpool(line,pts,ai,kind,f){
+  var len=0;for(var i=1;i<pts.length;i++)len+=dist(pts[i-1],pts[i]);
+  line.n+=1;
+  spools.push({id:line.no+'-SP'+pad(line.n),line:line.no,size:line.size,len:len,im:line.size*len,ai:ai,kind:kind,pts:pts,f:clamp(f,0,1),meshes:[]});
+}
+
+// pipe rack lines: tier, z, size, x-from, x-to, service
+var RACK=[
+  [T1,-4.2,24,0,180,'PG'],[T1,-2.9,16,0,135,'PG'],[T1,-1.8,10,0,90,'HC'],[T1,-0.8,8,45,180,'CW'],
+  [T1,0.3,12,0,180,'FL'],[T1,1.5,6,45,135,'AM'],[T1,2.6,8,90,180,'CW'],[T1,3.9,14,0,90,'HC'],
+  [T2,-4.0,20,0,180,'PG'],[T2,-2.4,6,0,180,'IA'],[T2,-1.2,4,0,180,'NI'],[T2,0.4,10,45,180,'AM'],
+  [T2,1.8,8,0,135,'CW'],[T2,3.4,12,90,180,'PG']
+];
+RACK.forEach(function(d){
+  var tier=d[0],z=d[1],size=d[2],xa=d[3],xb=d[4],y=tier+pr(size);
+  var line=newLine(areaAt(xa+1),size,d[5]);
+  var cuts=[xa];
+  for(var x=xa+12;x<xb-3;x+=12)cuts.push(x);
+  [45,90,135].forEach(function(b){if(b>xa+3&&b<xb-3&&cuts.indexOf(b)<0)cuts.push(b)});
+  cuts.sort(function(a,b){return a-b});cuts.push(xb);
+  for(var i=0;i<cuts.length-1;i++){
+    var c0=cuts[i],c1=cuts[i+1];if(c1-c0<1)continue;
+    var ai=areaAt((c0+c1)/2),a=AREAS[ai];
+    addSpool(line,[[c0,y,z],[c1,y,z]],ai,'rack',0.6*((c0+c1)/2-a.x0)/45+(tier===T2?0.12:0));
+  }
+});
+function rackLineAt(x,tier){var c=RACK.filter(function(d){return d[0]===tier&&d[3]+2<=x&&d[4]-2>=x});return c.length?pick(c):null}
+
+// equipment (fictional tags). t: v=vertical vessel, h=horizontal vessel (axis x), b=package/box, p=pump, k=tank
+var EQ=[
+  {tag:'V-2101',t:'v',x:7,z:16,r:1.8,h:11},{tag:'V-2102',t:'v',x:19,z:16,r:1.6,h:9},{tag:'V-2103',t:'h',x:35,z:16,r:2,L:13},
+  {tag:'E-2101',t:'h',x:10,z:-15,r:0.9,L:7},{tag:'E-2102',t:'h',x:10,z:-18.5,r:0.9,L:7},{tag:'V-2104',t:'h',x:36,z:-16,r:1.3,L:8},
+  {tag:'P-2101A',t:'p',x:26,z:-8.5},{tag:'P-2101B',t:'p',x:30,z:-8.5},
+  {tag:'C-2201',t:'v',x:55,z:17,r:2.2,h:27},{tag:'C-2202',t:'v',x:76,z:17,r:1.8,h:21},
+  {tag:'E-2201',t:'h',x:51,z:-15,r:1,L:7},{tag:'E-2202',t:'h',x:62,z:-15,r:1,L:7},{tag:'E-2203',t:'h',x:73,z:-15,r:1,L:7},{tag:'V-2201',t:'v',x:85,z:-16,r:1.4,h:7},
+  {tag:'P-2201A',t:'p',x:58,z:-8.5},{tag:'P-2201B',t:'p',x:66,z:-8.5},{tag:'P-2202',t:'p',x:81,z:8.5},
+  {tag:'K-2591',t:'b',x:101,z:17,sx:13,sy:5,sz:6},{tag:'K-2592',t:'b',x:123,z:17,sx:13,sy:5,sz:6},
+  {tag:'V-2591',t:'v',x:98,z:-15,r:1.3,h:8},{tag:'V-2592',t:'v',x:120,z:-15,r:1.3,h:8},{tag:'E-2591',t:'h',x:109,z:-16,r:1,L:7},{tag:'E-2592',t:'h',x:130,z:-16,r:1,L:7},
+  {tag:'P-2591',t:'p',x:104,z:-8.5},{tag:'P-2592',t:'p',x:126,z:-8.5},
+  {tag:'V-2595',t:'h',x:150,z:16,r:2.2,L:14},{tag:'X-2596',t:'b',x:169,z:16,sx:8,sy:3.5,sz:5},
+  {tag:'T-2597',t:'k',x:148,z:-20,r:5.5,h:8},{tag:'X-2598',t:'b',x:172,z:-16,sx:7,sy:3,sz:4},
+  {tag:'P-2597A',t:'p',x:159,z:-8.5},{tag:'P-2597B',t:'p',x:163,z:-8.5}
+];
+EQ.forEach(function(e){
+  e.z=-e.z;e.ai=areaAt(e.x);e.side=e.z>0?1:-1;
+  var half=e.t==='b'?e.sz/2:e.t==='p'?0.6:e.r;
+  e.zF=e.z-e.side*half;                        // face towards the rack
+  e.cy=e.t==='h'?1.2+e.r:0;
+});
+function nozzles(e){
+  if(e.t==='v')return e.h>15?[e.h*0.82,e.h*0.45,e.h*0.15+1]:[e.h*0.7,e.h*0.25+0.8];
+  if(e.t==='h')return [e.cy];
+  if(e.t==='b')return [e.sy*0.7,e.sy*0.4];
+  if(e.t==='k')return [e.h*0.75];
+  return [];
+}
+// rack-to-equipment branches
+EQ.forEach(function(e){
+  if(e.t==='p')return;
+  var a=AREAS[e.ai],ys=nozzles(e);
+  ys.forEach(function(ny,k){
+    var tier=(k%2===0)?T1:T2,d=rackLineAt(e.x,tier)||rackLineAt(e.x,tier===T1?T2:T1);if(!d)return;
+    var bsize=Math.min(d[2],pick([3,4,6,8,10])),line=newLine(e.ai,bsize,d[5]);
+    var nx=e.t==='h'||e.t==='b'?e.x+(k-0.5)*Math.min(4,(e.L||e.sx||4)*0.4):e.x+(k-1)*0.7;
+    var xb=clamp(nx+(R()<0.5?-1.5:1.5),d[3]+1,d[4]-1);
+    var yH=d[0]+pr(d[2]),yR=d[0]+1.4+k*0.45,zA=e.zF-e.side*(1.2+k*0.5);
+    var p0=[xb,yH,d[1]],p1=[xb,yR,d[1]],p2=[xb,yR,zA],p3=[xb,ny,zA];
+    var rest=[p2,p3];if(Math.abs(xb-nx)>0.05)rest.push([nx,ny,zA]);rest.push([nx,ny,e.zF]);
+    var f=0.36+0.44*(e.x-a.x0)/45+R()*0.08;
+    addSpool(line,[p0,p1,p2],e.ai,'branch',f);
+    addSpool(line,rest,e.ai,'branch',f+0.06);
+  });
+});
+// pumps: suction from the nearest vessel on the same side, discharge up into the rack
+EQ.filter(function(e){return e.t==='p'}).forEach(function(p){
+  var src=EQ.filter(function(e){return e.ai===p.ai&&e.side===p.side&&(e.t==='v'||e.t==='h'||e.t==='k')})
+            .sort(function(a,b){return Math.abs(a.x-p.x)-Math.abs(b.x-p.x)})[0];
+  var a=AREAS[p.ai],f=0.55+0.35*(p.x-a.x0)/45;
+  if(src){
+    var sl=newLine(p.ai,6,'HC');
+    addSpool(sl,[[src.x,0.9,src.zF],[src.x,0.9,p.z],[p.x-1.3,0.9,p.z]],p.ai,'local',f);
+  }
+  var d=rackLineAt(p.x,T1);if(!d)return;
+  var dl=newLine(p.ai,4,d[5]),x=p.x+0.2;
+  addSpool(dl,[[x,1.4,p.z],[x,4.4,p.z],[x,4.4,d[1]],[x,T1+pr(d[2])*0.2,d[1]]],p.ai,'local',f+0.04);
+});
+// equipment interconnects at grade
+AREAS.forEach(function(a,ai){
+  [1,-1].forEach(function(side){
+    var eqs=EQ.filter(function(e){return e.ai===ai&&e.side===side&&e.t!=='p'}).sort(function(p,q){return p.x-q.x});
+    for(var i=0;i<eqs.length-1;i++){
+      var e1=eqs[i],e2=eqs[i+1],y=2.2+0.5*(i%2);
+      var zr=side>0?Math.min(e1.zF,e2.zF)-1:Math.max(e1.zF,e2.zF)+1,xm=(e1.x+e2.x)/2;
+      var line=newLine(ai,pick([4,6,8]),pick(['PG','HC','CW']));
+      var f=0.5+0.4*(xm-a.x0)/45;
+      addSpool(line,[[e1.x,y,e1.zF],[e1.x,y,zr],[xm,y,zr]],ai,'local',f);
+      addSpool(line,[[xm,y,zr],[e2.x,y,zr],[e2.x,y,e2.zF]],ai,'local',f+0.05);
+    }
+  });
+});
+// baseline + fictional actuals
+spools.forEach(function(s){
+  var a=AREAS[s.ai];
+  s.plan=clamp(a.start+Math.round(s.f*a.dur)+ri(-1,1),a.start,WEEKS-1);
+  var delay=s.ai===0?ri(-1,0):s.ai===1?(R()<0.72?ri(-1,0):ri(1,2)):s.ai===2?Math.round(s.f*6-1.2+R()):(R()<0.5?0:ri(1,3));
+  var act=Math.max(a.start-1,s.plan+delay);
+  s.hold=null;
+  if(s.plan<=DD&&R()<(s.ai===2?0.07:0.03)){act=null;s.hold=pick(HOLDS)}
+  s.actual=(act!=null&&act<=DD)?act:null;
+});
+var TOTAL_IM=spools.reduce(function(t,s){return t+s.im},0);
+
+// ---------- state ----------
+var state={t:DD,mode:'pva',area:-1,playing:false};
+function inScope(s){return state.area<0||s.ai===state.area}
+function statusOf(s,t,mode){
+  var tt=Math.min(t,DD);
+  if(mode==='plan')return s.plan<=t?'plan':'ghost';
+  if(s.actual!=null&&s.actual<=tt)return s.actual<=s.plan?'good':'warn';
+  if(s.plan<=tt)return 'crit';
+  if(s.plan<=t)return 'plan';
+  return 'ghost';
+}
+function isNew(s,t,mode){return mode==='plan'?s.plan===t:(t<=DD&&s.actual===t)}
+function cumul(filter){
+  var tot=0,p=new Array(WEEKS+1).fill(0),a=new Array(DD+1).fill(0);
+  spools.forEach(function(s){if(!filter(s))return;tot+=s.im;for(var w=s.plan;w<=WEEKS;w++)p[w]+=s.im;if(s.actual!=null)for(var v=s.actual;v<=DD;v++)a[v]+=s.im});
+  return {tot:tot,plan:p.map(function(v){return tot?v/tot:0}),act:a.map(function(v){return tot?v/tot:0})};
+}
+
+// ---------- 3D ----------
+var stage=document.getElementById('stage'),cv=document.getElementById('cv'),loadEl=document.getElementById('load');
+if(!window.THREE){loadEl.textContent='The 3D library could not load. Check your connection and reload.';return}
+var renderer;
+try{renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true,preserveDrawingBuffer:true})}
+catch(err){loadEl.textContent='3D view needs WebGL, which this browser has disabled.';return}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+var scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(30,1,1,3000);
+scene.add(new THREE.HemisphereLight(0xffffff,0xaab4c0,0.95));
+var sun=new THREE.DirectionalLight(0xffffff,0.55);sun.position.set(-70,140,-90);scene.add(sun);
+function lam(c,o){var m=new THREE.MeshLambertMaterial({color:c});if(o)Object.assign(m,o);return m}
+var CYL=new THREE.CylinderGeometry(1,1,1,14,1),SPH=new THREE.SphereGeometry(1,12,8),BOX=new THREE.BoxGeometry(1,1,1);
+var CYLV=new THREE.CylinderGeometry(1,1,1,28,1),DOME=new THREE.SphereGeometry(1,24,10,0,Math.PI*2,0,Math.PI/2);
+var COLORS={good:'#0ca30c',warn:'#fab219',crit:'#d03b3b',plan:'#2a78d6'};
+var MAT={},MATNEW={};
+Object.keys(COLORS).forEach(function(k){MAT[k]=lam(COLORS[k]);MATNEW[k]=lam(COLORS[k],{emissive:new THREE.Color(COLORS[k]).multiplyScalar(0.22)})});
+MAT.ghost=lam('#7d8894',{transparent:true,opacity:0.42,depthWrite:false});
+MAT.dim=lam('#c9c7bf',{transparent:true,opacity:0.08,depthWrite:false});
+var MSTEEL=lam('#b4bdc8'),MEQ=lam('#d6dade'),MEQD=lam('#d6dade',{transparent:true,opacity:0.25,depthWrite:false});
+var MSTEELD=lam('#b4bdc8',{transparent:true,opacity:0.3,depthWrite:false});
+
+// ground, grid, unit boundary
+var ground=new THREE.Mesh(new THREE.PlaneGeometry(250,110),lam('#eceff3'));ground.rotation.x=-Math.PI/2;ground.position.set(90,-0.02,0);scene.add(ground);
+var grid=new THREE.GridHelper(240,40,0xd3d9e0,0xdde2e8);grid.position.set(90,0,0);scene.add(grid);
+var bnd=new THREE.Mesh(BOX,lam('#aeb9c6'));bnd.scale.set(0.35,0.04,104);bnd.position.set(90,0.03,0);scene.add(bnd);
+
+// pipe rack steel
+var steel=[];
+function box(sx,sy,sz,x,y,z,m,list){var b=new THREE.Mesh(BOX,m);b.scale.set(sx,sy,sz);b.position.set(x,y,z);scene.add(b);if(list)list.push(b);return b}
+for(var px=0;px<=180;px+=6){
+  [-RACK_Z,RACK_Z].forEach(function(z){var c=box(0.35,T2+0.3,0.35,px,(T2+0.3)/2,z,MSTEEL,steel);c.userData.x=px});
+  [T1,T2].forEach(function(ty){var b=box(0.3,0.35,2*RACK_Z+0.35,px,ty-0.175,0,MSTEEL,steel);b.userData.x=px});
+}
+[T1,T2].forEach(function(ty){[-RACK_Z,RACK_Z].forEach(function(z){for(var a=0;a<4;a++){var s=box(45,0.25,0.25,a*45+22.5,ty-0.2,z,MSTEEL,steel);s.userData.x=a*45+22.5}})});
+steel.forEach(function(m){m.userData.ai=areaAt(m.userData.x)});
+
+// equipment
+var eqMeshes=[];
+function addEq(mesh,e){mesh.userData.ai=e.ai;eqMeshes.push(mesh);scene.add(mesh)}
+EQ.forEach(function(e){
+  var m;
+  if(e.t==='v'||e.t==='k'){
+    m=new THREE.Mesh(CYLV,MEQ);m.scale.set(e.r,e.h,e.r);m.position.set(e.x,e.h/2,e.z);addEq(m,e);
+    if(e.t==='v'){var d=new THREE.Mesh(DOME,MEQ);d.scale.set(e.r,e.r*0.5,e.r);d.position.set(e.x,e.h,e.z);addEq(d,e)}
+  }else if(e.t==='h'){
+    m=new THREE.Mesh(CYLV,MEQ);m.scale.set(e.r,e.L,e.r);m.rotation.z=Math.PI/2;m.position.set(e.x,e.cy,e.z);addEq(m,e);
+    [-1,1].forEach(function(sg){var d=new THREE.Mesh(DOME,MEQ);d.scale.set(e.r,e.r*0.5,e.r);d.rotation.z=-sg*Math.PI/2;d.position.set(e.x+sg*e.L/2,e.cy,e.z);addEq(d,e);
+      var sd=new THREE.Mesh(BOX,MEQ);sd.scale.set(0.5,e.cy-e.r*0.6,e.r*1.6);sd.position.set(e.x+sg*e.L*0.32,(e.cy-e.r*0.6)/2,e.z);addEq(sd,e)});
+  }else if(e.t==='b'){
+    m=new THREE.Mesh(BOX,MEQ);m.scale.set(e.sx,e.sy,e.sz);m.position.set(e.x,e.sy/2,e.z);addEq(m,e);
+  }else if(e.t==='p'){
+    m=new THREE.Mesh(BOX,MEQ);m.scale.set(2.6,1.4,1.2);m.position.set(e.x,0.7,e.z);addEq(m,e);
+  }
+});
+
+// pipes
+var Y=new THREE.Vector3(0,1,0),pickable=[];
+spools.forEach(function(s,si){
+  var r=pr(s.size);
+  for(var i=1;i<s.pts.length;i++){
+    var a=new THREE.Vector3().fromArray(s.pts[i-1]),b=new THREE.Vector3().fromArray(s.pts[i]),len=a.distanceTo(b);if(len<0.01)continue;
+    var m=new THREE.Mesh(CYL,MAT.ghost);m.scale.set(r,len,r);m.position.copy(a).add(b).multiplyScalar(0.5);
+    m.quaternion.setFromUnitVectors(Y,b.clone().sub(a).normalize());m.userData.si=si;scene.add(m);s.meshes.push(m);pickable.push(m);
+    if(i<s.pts.length-1){var k=new THREE.Mesh(SPH,MAT.ghost);k.scale.setScalar(r*1.04);k.position.copy(b);k.userData.si=si;scene.add(k);s.meshes.push(k);pickable.push(k)}
+  }
+  var c=new THREE.Vector3();s.pts.forEach(function(p){c.add(new THREE.Vector3().fromArray(p))});s.center=c.multiplyScalar(1/s.pts.length);
+});
+
+// camera orbit
+var HOME={tx:90,ty:4,tz:0,r:228,az:-0.24,el:0.62},cam=Object.assign({},HOME),camAnim=null;
+function applyCam(){var ce=Math.cos(cam.el),r=cam.r*Math.max(1,1.55/camera.aspect);camera.position.set(cam.tx+r*ce*Math.sin(cam.az),cam.ty+r*Math.sin(cam.el),cam.tz+r*ce*Math.cos(cam.az));camera.lookAt(cam.tx,cam.ty,cam.tz)}
+function flyTo(to,ms){var from=Object.assign({},cam),t0=performance.now();camAnim=function(now){var k=clamp((now-t0)/(ms||650),0,1),e=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2;Object.keys(to).forEach(function(p){cam[p]=from[p]+(to[p]-from[p])*e});if(k>=1)camAnim=null};req()}
+
+var dirty=true;function req(){dirty=true}
+function resize(){var w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();req()}
+new ResizeObserver(resize).observe(stage);
+
+// area labels
+var labelsEl=document.getElementById('labels'),areaLab=AREAS.map(function(a){var d=el('div','alab');labelsEl.appendChild(d);return d});
+var unitLab=[{t:'UNIT 215',x:45},{t:'UNIT 259',x:135}].map(function(u){var d=el('div','alab');d.style.fontWeight='700';d.style.letterSpacing='.5px';d.textContent=u.t;labelsEl.appendChild(d);u.el=d;return u});
+var tmpV=new THREE.Vector3();
+function placeLabels(){
+  var w=stage.clientWidth,h=stage.clientHeight;
+  function put(d,x,y,z){tmpV.set(x,y,z).project(camera);if(tmpV.z>1){d.style.display='none';return}d.style.display='';var hw=d.offsetWidth/2+6;d.style.left=clamp((tmpV.x+1)/2*w,hw,w-hw)+'px';d.style.top=clamp((1-tmpV.y)/2*h,14,h-14)+'px'}
+  AREAS.forEach(function(a,i){put(areaLab[i],(a.x0+a.x1)/2,0,31)});
+  unitLab.forEach(function(u){put(u.el,u.x,0,-40)});
+}
+function loop(now){
+  if(camAnim)camAnim(now);
+  if(dirty||camAnim){applyCam();renderer.render(scene,camera);placeLabels();dirty=false}
+  requestAnimationFrame(loop);
+}
+
+// pointer: orbit, pan, zoom, pinch, hover
+var ptrs={},lastPinch=null,downAt=null,moved=false;
+cv.addEventListener('pointerdown',function(e){cv.setPointerCapture(e.pointerId);ptrs[e.pointerId]={x:e.clientX,y:e.clientY};downAt={x:e.clientX,y:e.clientY};moved=false;cv.classList.add('drag');camAnim=null;hideTip()});
+cv.addEventListener('pointermove',function(e){
+  var p=ptrs[e.pointerId];
+  if(!p){hover(e);return}
+  var ids=Object.keys(ptrs);
+  if(ids.length===2){
+    p.x=e.clientX;p.y=e.clientY;var a=ptrs[ids[0]],b=ptrs[ids[1]],d=Math.hypot(a.x-b.x,a.y-b.y);
+    if(lastPinch)cam.r=clamp(cam.r*lastPinch/d,30,520);lastPinch=d;req();return;
+  }
+  var dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+  if(Math.abs(e.clientX-downAt.x)+Math.abs(e.clientY-downAt.y)>4)moved=true;
+  if(e.shiftKey||e.buttons===2){var k=cam.r*0.0016,ca=Math.cos(cam.az),sa=Math.sin(cam.az);cam.tx+=(-ca*dx-sa*dy)*k;cam.tz+=(sa*dx-ca*dy)*k}
+  else{cam.az-=dx*0.006;cam.el=clamp(cam.el+dy*0.005,0.06,1.45)}
+  req();
+});
+function endPtr(e){delete ptrs[e.pointerId];lastPinch=null;if(!Object.keys(ptrs).length)cv.classList.remove('drag')}
+cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',endPtr);
+cv.addEventListener('pointerleave',function(){if(!Object.keys(ptrs).length)hideTip()});
+cv.addEventListener('contextmenu',function(e){e.preventDefault()});
+cv.addEventListener('wheel',function(e){e.preventDefault();cam.r=clamp(cam.r*Math.exp(e.deltaY*0.0012),30,520);camAnim=null;req()},{passive:false});
+cv.addEventListener('keydown',function(e){
+  var k=e.key;if(k==='ArrowLeft'){cam.az+=0.08}else if(k==='ArrowRight'){cam.az-=0.08}else if(k==='ArrowUp'){cam.el=clamp(cam.el+0.06,0.06,1.45)}else if(k==='ArrowDown'){cam.el=clamp(cam.el-0.06,0.06,1.45)}else if(k==='+'||k==='='){cam.r=clamp(cam.r*0.9,30,520)}else if(k==='-'){cam.r=clamp(cam.r*1.1,30,520)}else return;
+  e.preventDefault();req();
+});
+
+var ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),tip=document.getElementById('tip'),hoverSi=-1,hoverRaf=0,lastEv=null;
+function hover(e){lastEv=e;if(hoverRaf)return;hoverRaf=requestAnimationFrame(function(){hoverRaf=0;doHover(lastEv)})}
+function doHover(e){
+  var rect=cv.getBoundingClientRect();mouse.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);
+  ray.setFromCamera(mouse,camera);
+  var hits=ray.intersectObjects(pickable,false),si=-1;
+  for(var i=0;i<hits.length;i++){var s=spools[hits[i].object.userData.si];if(inScope(s)){si=hits[i].object.userData.si;break}}
+  if(si<0){hideTip();return}
+  if(si!==hoverSi){hoverSi=si;fillTip(spools[si])}
+  tip.hidden=false;
+  var x=e.clientX-rect.left+14,y=e.clientY-rect.top+14;
+  if(x+tip.offsetWidth>rect.width-8)x=e.clientX-rect.left-tip.offsetWidth-14;
+  if(y+tip.offsetHeight>rect.height-8)y=e.clientY-rect.top-tip.offsetHeight-14;
+  tip.style.left=Math.max(6,x)+'px';tip.style.top=Math.max(6,y)+'px';
+}
+function hideTip(){tip.hidden=true;hoverSi=-1}
+var STXT={good:'Erected on time',warn:'Erected late',crit:'Behind plan, not erected',plan:'Planned (baseline)',ghost:'Not yet due'};
+function fillTip(s){
+  tip.textContent='';
+  var a=AREAS[s.ai];
+  tip.appendChild(el('div','t1',s.id));
+  tip.appendChild(el('div','t2',s.size+'" · '+s.len.toFixed(1)+' m · '+Math.round(s.im)+' inch-m · '+KIND[s.kind]));
+  tip.appendChild(el('div','t2','Unit '+a.unit+' · '+a.id+' '+a.name));
+  tip.appendChild(el('div',null,'Planned: Wk '+s.plan+' (w/e '+weDate(s.plan)+')'));
+  tip.appendChild(el('div',null,'Actual: '+(s.actual!=null?'Wk '+s.actual+' (w/e '+weDate(s.actual)+')':'not erected by data date')));
+  var st=statusOf(s,state.t,state.mode),row=el('div','st'),sw=el('i');
+  sw.style.background=st==='ghost'?'#d6d4cc':COLORS[st];row.appendChild(sw);row.appendChild(document.createTextNode(STXT[st]));tip.appendChild(row);
+  if(s.hold&&st==='crit')tip.appendChild(el('div','why',s.hold));
+}
+
+// ---------- UI ----------
+var $=function(id){return document.getElementById(id)};
+var scrub=$('scrub'),playBtn=$('play'),areaSel=$('areaSel');
+scrub.max=WEEKS;
+AREAS.forEach(function(a,i){var o=el('option',null,a.id+' · '+a.name+' (Unit '+a.unit+')');o.value=i;areaSel.appendChild(o)});
+
+var LEG={pva:[['good','✓','Erected on time'],['warn','!','Erected late'],['crit','✕','Behind plan'],['plan','○','Planned after data date'],['ghost','','Not yet due']],
+         plan:[['plan','✓','Planned complete'],['ghost','','Not yet planned']]};
+function render(){
+  var t=state.t,mode=state.mode,tt=Math.min(t,DD),cnt={good:0,warn:0,crit:0,plan:0,ghost:0};
+  spools.forEach(function(s){
+    var st=statusOf(s,t,mode),on=inScope(s),m=!on?MAT.dim:st==='ghost'?MAT.ghost:(isNew(s,t,mode)?MATNEW[st]:MAT[st]);
+    if(on)cnt[st]++;
+    for(var i=0;i<s.meshes.length;i++)s.meshes[i].material=m;
+  });
+  eqMeshes.forEach(function(m){m.material=(state.area<0||m.userData.ai===state.area)?MEQ:MEQD});
+  steel.forEach(function(m){m.material=(state.area<0||m.userData.ai===state.area)?MSTEEL:MSTEELD});
+  // HUD
+  $('hWk').textContent=t===0?'Before start':'Week '+t;
+  $('hWd').textContent=t===0?'Baseline starts 05-Jan-26':'w/e '+weDate(t);
+  var b=$('hBadge');
+  if(mode==='plan'){b.textContent='Baseline plan';b.className='badge after'}
+  else if(t===DD){b.textContent='Data date';b.className='badge'}
+  else if(t>DD){b.textContent='After data date: plan only';b.className='badge after'}
+  else{b.textContent='Actuals to week '+t;b.className='badge'}
+  // legend
+  var lg=$('lgd');lg.textContent='';lg.appendChild(el('div','hd',mode==='plan'?'Baseline plan':'Plan vs actual · spools'));
+  LEG[mode].forEach(function(r){
+    if(mode==='pva'&&r[0]==='plan'&&t<=DD)return;
+    var row=el('div','row'),sw=el('span','sw '+r[0],r[1]);if(r[0]!=='ghost')sw.style.background=COLORS[r[0]];
+    row.appendChild(sw);row.appendChild(el('span',null,r[2]));row.appendChild(el('span','n',String(cnt[r[0]])));lg.appendChild(row);
+  });
+  // KPIs for the current scope
+  var c=cumul(inScope),pl=c.plan[t],ac=c.act[tt],plDD=c.plan[tt],v=ac-plDD;
+  $('kPlan').textContent=pct(pl);$('kPlanS').textContent='Baseline to w/e '+weDate(Math.max(t,1));
+  $('kAct').textContent=pct(ac);$('kActS').textContent=t>DD?'As of data date (w/e '+weDate(DD)+')':'Erected to w/e '+weDate(Math.max(tt,1));
+  var kv=$('kVar');kv.textContent=(v>=0?'▲ +':'▼ ')+(v*100).toFixed(1)+' pp';kv.className='v '+(v<-0.0005?'neg':v>0.0005?'pos':'');
+  $('kVarS').textContent='Actual vs plan at '+(t>DD?'data date':'week '+tt);
+  $('kSpi').textContent=plDD>0?(ac/plDD).toFixed(2):'–';$('kSpiS').textContent=plDD>0?(ac>=plDD?'On or ahead of plan':'Behind plan'):'Nothing planned yet';
+  var due=spools.filter(function(s){return inScope(s)&&s.plan<=tt}),late=due.filter(function(s){return s.actual==null||s.actual>tt});
+  $('kBeh').textContent=String(late.length);$('kBehS').textContent='of '+due.length+' spools due by week '+tt;
+  drawCurve(c);drawAreas();drawBehind(late,tt);
+  scrub.value=t;scrub.setAttribute('aria-valuetext','Week '+t+', week ending '+weDate(Math.max(t,1)));
+  req();
+}
+
+// S-curve
+var svg=$('scurve'),NS='http://www.w3.org/2000/svg',SC={W:340,H:200,l:36,r:56,t:12,b:24};
+function sv(tag,attrs,txt){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;return e}
+function sx(w){return SC.l+(SC.W-SC.l-SC.r)*w/WEEKS}
+function sy(v){return SC.t+(SC.H-SC.t-SC.b)*(1-v)}
+var curve=null;
+function drawCurve(c){
+  curve=c;svg.textContent='';
+  [0,0.25,0.5,0.75,1].forEach(function(v){svg.appendChild(sv('line',{x1:SC.l,x2:SC.W-SC.r,y1:sy(v),y2:sy(v),stroke:v===0?'#c3c2b7':'#e1e0d9','stroke-width':1}));
+    svg.appendChild(sv('text',{x:SC.l-6,y:sy(v)+3.5,'text-anchor':'end','font-size':10,fill:'#898781'},(v*100)+'%'))});
+  [0,8,16,24,32,40].forEach(function(w){svg.appendChild(sv('text',{x:sx(w),y:SC.H-8,'text-anchor':'middle','font-size':10,fill:'#898781'},w===0?'Wk 0':'Wk '+w))});
+  // data date annotation
+  svg.appendChild(sv('line',{x1:sx(DD),x2:sx(DD),y1:SC.t,y2:sy(0),stroke:'#898781','stroke-width':1,'stroke-dasharray':'3 3'}));
+  svg.appendChild(sv('text',{x:sx(DD)-4,y:SC.t+8,'text-anchor':'end','font-size':9.5,fill:'#52514e'},'Data date'));
+  // current week cursor
+  svg.appendChild(sv('line',{x1:sx(state.t),x2:sx(state.t),y1:SC.t,y2:sy(0),stroke:'#1e293b','stroke-width':1.5,opacity:.55}));
+  function path(arr,last){var d='';for(var w=0;w<=last;w++)d+=(w?'L':'M')+sx(w).toFixed(1)+' '+sy(arr[w]).toFixed(1);return d}
+  svg.appendChild(sv('path',{d:path(c.plan,WEEKS),fill:'none',stroke:'#2a78d6','stroke-width':2,'stroke-linejoin':'round'}));
+  svg.appendChild(sv('path',{d:path(c.act,DD),fill:'none',stroke:'#eb6834','stroke-width':2,'stroke-linejoin':'round'}));
+  // markers + direct labels at the current week
+  var tt=Math.min(state.t,DD),py=sy(c.plan[state.t]),ay=sy(c.act[tt]);
+  svg.appendChild(sv('circle',{cx:sx(state.t),cy:py,r:4,fill:'#2a78d6',stroke:'#fff','stroke-width':2}));
+  svg.appendChild(sv('circle',{cx:sx(tt),cy:ay,r:4,fill:'#eb6834',stroke:'#fff','stroke-width':2}));
+  svg.appendChild(sv('text',{x:sx(WEEKS)+5,y:sy(c.plan[WEEKS])+3.5,'font-size':10.5,fill:'#52514e'},'Planned'));
+  svg.appendChild(sv('text',{x:sx(DD)+6,y:sy(c.act[DD])+14,'font-size':10.5,fill:'#52514e'},'Actual '+pct(c.act[DD])));
+  svg.appendChild(sv('line',{id:'xh',x1:0,x2:0,y1:SC.t,y2:sy(0),stroke:'#52514e','stroke-width':1,visibility:'hidden'}));
+  $('scSub').textContent='Weighted by inch-metre · '+(state.area<0?'all areas':AREAS[state.area].id+' '+AREAS[state.area].name);
+}
+var ctip=$('ctip');
+function weekFromEvent(e){var r=svg.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*SC.W;return clamp(Math.round((x-SC.l)/(SC.W-SC.l-SC.r)*WEEKS),0,WEEKS)}
+svg.addEventListener('pointermove',function(e){
+  if(!curve)return;var w=weekFromEvent(e),r=svg.getBoundingClientRect(),xh=svg.querySelector('#xh');
+  xh.setAttribute('x1',sx(w));xh.setAttribute('x2',sx(w));xh.setAttribute('visibility','visible');
+  ctip.textContent='';ctip.appendChild(el('div',null,'Week '+w+(w?' · w/e '+weDate(w):'')));
+  [['Planned',curve.plan[w],'#2a78d6'],['Actual',w<=DD?curve.act[w]:null,'#eb6834']].forEach(function(q){
+    var row=el('div','r'),k=el('i');k.style.background=q[2];row.appendChild(k);row.appendChild(el('b',null,q[1]==null?'n/a':pct(q[1])));row.appendChild(el('span',null,q[0]));ctip.appendChild(row)});
+  ctip.hidden=false;var px=sx(w)/SC.W*r.width;ctip.style.left=(px>r.width*0.6?px-ctip.offsetWidth-10:px+10)+'px';ctip.style.top='8px';
+});
+svg.addEventListener('pointerleave',function(){ctip.hidden=true;var xh=svg.querySelector('#xh');if(xh)xh.setAttribute('visibility','hidden')});
+svg.addEventListener('click',function(e){stop();state.t=weekFromEvent(e);render()});
+
+// weekly table (the non-hover way to read every value)
+function drawTable(){
+  var c=cumul(function(){return true}),tb=$('wt');tb.textContent='';
+  var hr=el('tr');['Week','w/e','Planned','Actual'].forEach(function(h){hr.appendChild(el('th',null,h))});tb.appendChild(hr);
+  for(var w=1;w<=WEEKS;w++){var tr=el('tr');[String(w),weDate(w),pct(c.plan[w]),w<=DD?pct(c.act[w]):'–'].forEach(function(v){tr.appendChild(el('td',null,v))});tb.appendChild(tr)}
+}
+
+// areas panel
+var areasEl=$('areas'),areaRows=AREAS.map(function(a,i){
+  var b=el('button','arow');b.type='button';
+  var top=el('div','atop');top.appendChild(el('b',null,a.id+' · '+a.name));top.appendChild(el('span',null,'Unit '+a.unit));b.appendChild(top);
+  var tr=el('div','track'),f=el('i','fill'),mk=el('b','mark');tr.appendChild(f);tr.appendChild(mk);b.appendChild(tr);
+  var nm=el('div','anum'),na=el('span'),np=el('span'),nb=el('span','beh');nm.appendChild(na);nm.appendChild(np);nm.appendChild(nb);b.appendChild(nm);
+  b.addEventListener('click',function(){setArea(state.area===i?-1:i)});
+  areasEl.appendChild(b);return {b:b,f:f,mk:mk,na:na,np:np,nb:nb};
+});
+function drawAreas(){
+  var t=state.t,tt=Math.min(t,DD);
+  AREAS.forEach(function(a,i){
+    var c=cumul(function(s){return s.ai===i}),row=areaRows[i],ac=c.act[tt],pl=c.plan[tt];
+    var beh=spools.filter(function(s){return s.ai===i&&s.plan<=tt&&(s.actual==null||s.actual>tt)}).length;
+    row.f.style.width=(ac*100)+'%';row.mk.style.left='calc('+(pl*100)+'% - 1px)';
+    row.na.textContent='Actual '+pct(ac);row.np.textContent='Plan '+pct(pl);
+    row.nb.textContent=beh?beh+' behind':'on plan';row.nb.className='beh'+(beh?'':' ok');
+    row.b.classList.toggle('on',state.area===i);row.b.setAttribute('aria-pressed',state.area===i?'true':'false');
+    areaLab[i].textContent='';areaLab[i].appendChild(el('b',null,a.id+' '+a.name));areaLab[i].appendChild(el('span',null,' · actual '+pct(ac)+' / plan '+pct(pl)));
+    areaLab[i].classList.toggle('dim',state.area>=0&&state.area!==i);
+  });
+}
+// behind list
+function drawBehind(late,tt){
+  var ol=$('behind');ol.textContent='';
+  late=late.slice().sort(function(a,b){return (a.plan-b.plan)||(b.im-a.im)}).slice(0,6);
+  if(!late.length){ol.appendChild(el('li','empty','Nothing overdue at this week.'));return}
+  late.forEach(function(s){
+    var li=el('li'),b=el('button');b.type='button';
+    b.appendChild(el('b',null,s.id));
+    b.appendChild(el('span','m',AREAS[s.ai].id+' '+AREAS[s.ai].name+' · due wk '+s.plan+' · '+(tt-s.plan)+' wk overdue'));
+    if(s.hold)b.appendChild(el('span','why',s.hold));
+    b.addEventListener('click',function(){focusSpool(s)});li.appendChild(b);ol.appendChild(li);
+  });
+}
+function focusSpool(s){
+  var c=s.center;flyTo({tx:c.x,ty:c.y,tz:c.z,r:52,el:0.5});
+  var meshes=s.meshes,n=0,orig=meshes.map(function(m){return m.material});
+  var iv=setInterval(function(){n++;meshes.forEach(function(m,i){m.material=n%2?MATNEW.crit:orig[i]});req();if(n>=6){clearInterval(iv);render()}},220);
+}
+function setArea(i){
+  state.area=i;areaSel.value=String(i);
+  if(i<0)flyTo({tx:HOME.tx,ty:HOME.ty,tz:HOME.tz,r:HOME.r});
+  else{var a=AREAS[i];flyTo({tx:(a.x0+a.x1)/2,ty:4,tz:0,r:105})}
+  render();
+}
+areaSel.addEventListener('change',function(){setArea(+areaSel.value)});
+document.querySelectorAll('#mode button').forEach(function(b){b.addEventListener('click',function(){
+  state.mode=b.dataset.m;document.querySelectorAll('#mode button').forEach(function(x){x.classList.toggle('on',x===b);x.setAttribute('aria-pressed',x===b?'true':'false')});render()})});
+
+// playback
+var timer=null;
+function stop(){state.playing=false;clearInterval(timer);timer=null;playBtn.textContent='▶ Play';playBtn.setAttribute('aria-label','Play')}
+function play(){
+  if(state.t>=WEEKS)state.t=0;
+  state.playing=true;playBtn.textContent='❚❚ Pause';playBtn.setAttribute('aria-label','Pause');render();
+  timer=setInterval(function(){if(state.t>=WEEKS){stop();return}state.t++;render()},+$('speed').value);
+}
+playBtn.addEventListener('click',function(){state.playing?stop():play()});
+$('speed').addEventListener('change',function(){if(state.playing){stop();play()}});
+scrub.addEventListener('input',function(){stop();state.t=+scrub.value;render()});
+$('toDD').addEventListener('click',function(){stop();state.t=DD;render()});
+$('resetV').addEventListener('click',function(){flyTo(HOME)});
+document.addEventListener('keydown',function(e){
+  if(e.target&&/INPUT|SELECT|TEXTAREA|BUTTON/.test(e.target.tagName))return;
+  if(e.key===' '){e.preventDefault();state.playing?stop():play()}
+  else if(e.key===','||e.key==='['){stop();state.t=Math.max(0,state.t-1);render()}
+  else if(e.key==='.'||e.key===']'){stop();state.t=Math.min(WEEKS,state.t+1);render()}
+});
+
+// hooks for scripted screenshots: ?week=16&mode=plan&area=2&view=az,el,r
+var q=new URLSearchParams(location.search);
+if(q.has('week'))state.t=clamp(+q.get('week')||0,0,WEEKS);
+if(q.get('mode')==='plan'){state.mode='plan';document.querySelectorAll('#mode button').forEach(function(x){var on=x.dataset.m==='plan';x.classList.toggle('on',on);x.setAttribute('aria-pressed',on?'true':'false')})}
+if(q.has('view')){var v=q.get('view').split(',').map(Number);if(v.length>=3){cam.az=v[0];cam.el=v[1];cam.r=v[2]}if(v.length>=6){cam.tx=v[3];cam.ty=v[4];cam.tz=v[5]}}
+window.orion4d={project:function(s){tmpV.copy(s.center).project(camera);var r=cv.getBoundingClientRect();return {x:r.left+(tmpV.x+1)/2*r.width,y:r.top+(1-tmpV.y)/2*r.height}},setWeek:function(w){stop();state.t=clamp(w,0,WEEKS);render();applyCam();renderer.render(scene,camera);placeLabels()},spools:spools,areas:AREAS};
+
+drawTable();resize();
+if(q.has('area')){state.area=+q.get('area');areaSel.value=String(state.area)}
+render();applyCam();loadEl.remove();requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
