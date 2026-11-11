@@ -1,0 +1,9 @@
+{
+  "text": "Every activity in the schedule shows positive total float. Is there still a critical path?\n\nI'm preparing for AACE's PSP exam (Planning & Scheduling Professional). Here is one of the practice questions from my study sessions. It works as a test for any planner, exam or not.\n\nA planner reports \"no critical path this month\", because every activity in the update shows positive total float. The contract completion milestone has a Finish On or Before constraint, set 25 days after the calculated finish.\n\nWhat is the best response?\n\nA. Accept it. Positive float means no activity is critical.\nB. Remove the constraint so that float returns to zero.\nC. Identify the longest path. It still drives the finish date, and the 25 days is margin against the contract date.\nD. Add Mandatory Finish constraints to restore zero float.\n\nComment your answer (A, B, C or D) and one line on why. I'll share the answer and the reasoning in a follow-up post.\n\nAnd if you have met this on a real project, how did your team report it?\n\n#PSP #AACE #ProjectControls #Planning #Scheduling #CriticalPath #PrimaveraP6 #EPC",
+  "images": [
+    {
+      "path": "linkedin/assets/post-04/01-question.png",
+      "alt": "PSP practice question card. A planner reports no critical path because every activity shows positive total float. The contract completion milestone has a Finish On or Before constraint 25 days after the calculated finish. Four options, A to D, ask for the best response."
+    }
+  ]
+}
