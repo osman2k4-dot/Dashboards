@@ -1,0 +1,9 @@
+{
+  "text": "Same project, same month, three different forecasts: 1,050, 1,125 and 1,294. All three come from standard earned value formulas.\n\nThe numbers: budget 1,000, planned 500, earned 400, spent 450.\n\nWhich forecast is right depends on why the project is over:\n\n1. A one-off event that will not repeat: 1,050\n2. Performance continues as it is: 1,125\n3. The delay will also cost money: 1,294\n4. The plan itself is no longer valid: re-estimate from the bottom up\n\nA useful test before a forecast is signed: the efficiency needed to hit it (TCPI) should be close to the efficiency already achieved. Here, finishing on budget needs 1.09 against 0.89 achieved. That budget will not hold, and the report should say so.\n\nWhich EAC does your project report, and who decides?\n\n#ProjectControls #EarnedValue #EVM #CostControl #Planning #EPC",
+  "images": [
+    {
+      "path": "linkedin/assets/post-10/01-eac.png",
+      "alt": "Card: same project, same month, three different forecasts. With BAC 1,000, PV 500, EV 400 and AC 450, the estimate at completion is 1,050 if the overrun was a one-off, 1,125 if performance continues, and 1,294 if the delay also costs money. A fourth case needs a bottom-up re-estimate. TCPI to finish on budget is 1.09 against a CPI of 0.89."
+    }
+  ]
+}

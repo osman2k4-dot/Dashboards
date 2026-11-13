@@ -1,0 +1,9 @@
+{
+  "text": "The schedule showed 80 days of float on one unit. The real figure was 7.\n\nNothing was wrong with the logic. Float was being measured to the final completion date, while that unit had its own contract key date months earlier.\n\nWhat I did:\n• Put a limit on every interim key date, so float is measured to the date that matters.\n• Re-ran the schedule and the DCMA 14-point check.\n\nWhat changed:\n• Median task float in that unit: about 80 days → 7.\n• Activities with more than 44 days of float: 250 → 10.\n• Negative float: 2 → 0.\n• No dates moved. Only the truth about them did.\n\nComfortable float is easy to approve and hard to deliver.\n\nHow do you check that the float in your schedule is real?\n\n#ProjectControls #Planning #PrimaveraP6 #Scheduling #DCMA14 #EPC",
+  "images": [
+    {
+      "path": "linkedin/assets/post-12/01-float.png",
+      "alt": "Card: the schedule showed 80 days of float, the real figure was 7. After each contract key date got its own limit, median task float in one unit went from 80 to 7 days, activities with more than 44 days of float from 250 to 10, negative float from 2 to 0, and no dates moved."
+    }
+  ]
+}

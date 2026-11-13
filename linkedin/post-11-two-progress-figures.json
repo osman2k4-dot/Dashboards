@@ -1,0 +1,9 @@
+{
+  "text": "Two progress figures for the same project, about ten points apart. Both were calculated correctly.\n\nThe progress report said 73%. The manhour budget said 63%, for the same work on the same date. I had to reconcile them, and nobody had made a mistake. Three things caused the gap:\n\n1. Capped quantities. One system stops counting when a line reaches 100% of its BOQ quantity. Site keeps working, so earned work drops out of the figure.\n2. Different weights. One weights each activity by its own manhours. The other spreads a standard rate over the quantity.\n3. Scope outside the budget. Work measured on site that has no line in the manhour budget.\n\nOn the same basis, the two systems agreed to within 0.1 of a point.\n\nBefore you defend your number, check which of the three you are looking at.\n\nWhich one causes the most arguments on your project?\n\n#ProjectControls #ProgressMeasurement #EarnedValue #Planning #EPC",
+  "images": [
+    {
+      "path": "linkedin/assets/post-11/01-progress.png",
+      "alt": "Card: two progress figures, ten points apart, both calculated correctly. 73% in the progress report against 63% in the manhour budget. Three causes: capped quantities, different weights, and scope outside the budget. On the same basis the two systems agreed to within 0.1 of a point."
+    }
+  ]
+}
