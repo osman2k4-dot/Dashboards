@@ -1,0 +1,9 @@
+{
+  "text": "An AI agent built my P6 baseline in three days. So what is left for the planning engineer?\n\nI gave Claude Code the contract key dates, the BOQ with manhour norms, the client's delivery dates and my construction sequence. It wrote the XER, loaded every activity from the BOQ, drew the S-curves and commodity curves, and ran the DCMA 14 check.\n\nIt also got things wrong. It started piping erection too early, until I gave it the real monthly production plan.\n\nMy view: the typing is gone. The judgement is not.\n\nWhat is yours? In five years, the planning engineer is:\n\nA. A reviewer of AI output\nB. One of fewer planners, each covering more projects\nC. More valuable, because judgement is what remains\nD. Something else\n\nComment one letter and why. I will read every answer.\n\n#ProjectControls #Planning #PrimaveraP6 #AI #EPC",
+  "images": [
+    {
+      "path": "linkedin/assets/post-06/01-question.png",
+      "alt": "Question card: an AI agent built my P6 baseline in three days, what is left for the planner? 281 activities written to an XER file, 106 cost codes loaded from the BOQ and reconciled, 6 revisions in three days. Options A to D for what the planning engineer becomes in five years."
+    }
+  ]
+}
