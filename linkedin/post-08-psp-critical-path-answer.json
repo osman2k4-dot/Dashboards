@@ -1,0 +1,9 @@
+{
+  "text": "Tuesday's question: every activity has positive float. Is there still a critical path?\n\nThe answer is C. Identify the longest path.\n\nWhy:\n• The critical path is the longest chain of activities to the finish. It exists even when nothing shows zero float.\n• The 25 days come from the Finish On or Before constraint on the contract milestone. That is margin against the contract date, not proof that nothing is critical.\n• Removing the constraint (B) or adding Mandatory Finish constraints (D) changes the numbers, not the facts.\n\nOn a real update I would report both: the longest path, and the margin to the contract date.\n\nNext question next week. Which topic should it cover: earned value, delay analysis or resource loading?\n\n#PSP #AACE #ProjectControls #Planning #Scheduling #CriticalPath",
+  "images": [
+    {
+      "path": "linkedin/assets/post-08/01-answer.png",
+      "alt": "PSP practice question answer card. The answer is C: identify the longest path. It still drives the finish date, and the 25 days of float is margin against the contract date. Options A, B and D are shown with the reason each fails."
+    }
+  ]
+}

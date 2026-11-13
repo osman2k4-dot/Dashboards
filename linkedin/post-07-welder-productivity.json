@@ -1,0 +1,25 @@
+{
+  "text": "“142 DI today.” That is what the daily report said. Here is what a number like that can hide.\n\n→ 6 welders produced 60% of it.\n→ 4 welders haven't crossed 3 DI a day all month.\n→ Fit-up is 2 days ahead of welding, and the joint backlog is growing.\n\nI built a single-file HTML dashboard that shows exactly this: a 30-day matrix with every welder and every day, the fit-up vs welding gap, and productivity rankings. No Power BI, no server. One file that opens on a phone.\n\nThe demo runs on fictional data: https://osman2k4-dot.github.io/Dashboards/demo-welder-productivity.html\n\nHow do you track welder-level performance on your project?\n\n#ProjectControls #Piping #Welding #EPC #Productivity",
+  "images": [
+    {
+      "path": "linkedin/assets/post-07/slide-1-cover.png",
+      "alt": "Cover: 142 DI today. Here is what the daily report didn't say: 6 welders carried 60% of the output, 4 welders haven't crossed 3 DI a day all month, fit-up is 2 days ahead of welding."
+    },
+    {
+      "path": "linkedin/assets/post-07/slide-2-overview.png",
+      "alt": "Welder and fabricator productivity dashboard overview with KPI tiles and a daily fit-up versus welding chart. Fictional demo data."
+    },
+    {
+      "path": "linkedin/assets/post-07/slide-3-matrix.png",
+      "alt": "30-day matrix showing production dia-inch per welder per day. Fictional demo data."
+    },
+    {
+      "path": "linkedin/assets/post-07/slide-4-fitup.png",
+      "alt": "Daily fit-up versus welding charts for green field and brown field. Fictional demo data."
+    },
+    {
+      "path": "linkedin/assets/post-07/slide-5-spools.png",
+      "alt": "Spools and joints view showing the gap between fit-up and welding. Fictional demo data."
+    }
+  ]
+}

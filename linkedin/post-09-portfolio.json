@@ -1,0 +1,9 @@
+{
+  "text": "Ten project controls dashboards. One browser. No licence.\n\nThese are the tools I wanted on site as a planner, so I built them:\n\n• Piping progress on the plot plan, and a 4D playback of plan vs actual\n• Welder, crane and scaffolding productivity\n• Steel, civil, E&I and equipment progress\n• Daily progress for reconstruction works\n\nEach one is a single HTML file. It opens on a phone and works offline. Several refresh from a new Excel file.\n\nAll demos run on fictional data: https://osman2k4-dot.github.io/Dashboards/\n\nI am a project controls manager in Abu Dhabi with 16+ years in planning and scheduling. If your project needs a baseline schedule, a schedule review or a dashboard like these, send me a message.\n\nWhich one would be most useful on your project?\n\n#ProjectControls #Planning #PrimaveraP6 #EPC #Dashboards #OilAndGas",
+  "images": [
+    {
+      "path": "linkedin/assets/post-09/01-portfolio.png",
+      "alt": "Screenshot of the project controls dashboards portfolio page, listing demos such as Piping Progress Map, Piping 4D Playback, Steel Structure, Welder and Fabricator Productivity, Equipment Installation, Crane Productivity, Scaffolding, E&I and Civil Works."
+    }
+  ]
+}
