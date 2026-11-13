@@ -1,0 +1,13 @@
+{
+  "text": "A schedule can pass review and still be wrong about its own float. This is how my system audits a schedule, and what it found on one of mine.\n\nThe audit runs on every revision\n• The DCMA 14-point check: logic, leads, lags, relationship types, hard constraints, high float, negative float, long durations, invalid dates, resources, the critical path test and the index checks.\n• Every failure comes with the list of activities behind it, so the number can be traced.\n\nWhat it found\nThe first run passed 5 checks and failed 7. The biggest failure was high float: 250 of 333 activities had more than 44 days.\n\nThe logic was fine. Float was being measured to the final completion date, while one unit had its own contract key date months earlier. Its tasks showed about 80 days of float. They had about 7.\n\nWhat I changed\n• Each interim key date got its own Finish On or Before limit. No dates moved.\n• Client deliverables were placed on the date the work needs them, not the earliest date.\n\nWhat came out\n• Checks passed: 5 → 8. High float: 250 → 10 activities. Negative float: 2 → 0.\n• Four checks still fail: lags, finish-to-start share, long activities, and 32 activities with no manhours. The report says why for each.\n\nOne of those could be passed by spreading manhours onto activities that have none in the BOQ. The system flagged that and did not do it. A clean score that hides a real gap is worse than a failed check you can explain.\n\nWhich DCMA check do you think matters least on a real project?\n\n#ProjectControls #Planning #PrimaveraP6 #DCMA14 #Scheduling #EPC",
+  "images": [
+    {
+      "path": "linkedin/assets/post-12/01-float.png",
+      "alt": "Card: the schedule showed 80 days of float, the real figure was 7. Median task float in one unit 80 to 7 days, high-float activities 250 to 10, negative float 2 to 0, no dates moved."
+    },
+    {
+      "path": "linkedin/assets/post-05/02-dcma.png",
+      "alt": "DCMA 14-point check, first run against final revision: checks passed 5 to 8, failed 7 to 4. High float, negative float and the critical path test now pass. Lags, finish-to-start share, long activities and activities with no manhours fail."
+    }
+  ]
+}

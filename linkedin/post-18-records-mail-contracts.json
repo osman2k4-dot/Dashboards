@@ -1,0 +1,9 @@
+{
+  "text": "Half of project controls is not scheduling. It is finding out what actually happened, and answering for it in writing. This is the other half of my AI system.\n\n1. Records search\nI asked whether a specific delay had been recorded. It read 108 daily reports, 260 logged concerns, the issue log and both look-ahead plans. Its answer: the event was never logged, so the delay could not be substantiated from the records. It then listed what the records did show.\n\nThat answer was more useful than a confident guess. A claim built on a record that does not exist fails later.\n\n2. Outlook assistant\nIt searches my mailbox, reads the thread and its attachments, and drafts the reply for my review. One example: a management question about what our bid had included. It found the right annexure in the bid documents, put the answer in a three-row table and drafted the reply. I read it, correct it and send it myself.\n\n3. Contract questions\nFor the contract and bid documents I use retrieval (RAG). The system pulls the relevant clauses first and answers from them, and every answer points to its clause or page.\n\nWhat stays with me: deciding what the answer means for the project, and what to do about it.\n\nWhere would this help you most: records, mail or the contract?\n\n#ProjectControls #Planning #Contracts #DelayAnalysis #AI #RAG #ClaudeCode",
+  "images": [
+    {
+      "path": "linkedin/assets/post-18/01-records.png",
+      "alt": "Card: records search, Outlook assistant and contract Q&A. For each: what was asked, what the system read, and the answer. The records search read 108 daily reports and found the delay was never logged."
+    }
+  ]
+}

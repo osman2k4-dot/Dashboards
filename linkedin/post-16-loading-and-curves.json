@@ -1,0 +1,9 @@
+{
+  "text": "A resource-loaded schedule is only as good as the link between the BOQ and the activities. This is how my system builds that link, and what happened when I changed the production plan.\n\nLoading\n• Every BOQ line has a cost code, a quantity and a manhour norm.\n• One activity can hold several cost codes as a composite rate. The system loads quantity × norm for each, then splits the composite back out to prove it.\n• On one baseline, P6 manhours equal the BOQ on all 106 cost codes.\n\nCurves\n• Manhours and quantities follow P6 resource curves, not a flat spread.\n• The same curves drive the monthly BOQ distribution, the manpower plan and the weekly commodity curves. They share one source, so they cannot disagree.\n\nWhat happened when I pushed back\nThe first version started piping erection too early. I gave it my monthly production targets. It built a resource curve for each tier of the pipe rack from those targets, and everything else moved with it. The manpower peak shifted two months later.\n\nIt also told me the price. To hit those targets, the buffer before the contract date was gone, and the last month needed several times the welders of the first.\n\nThat is the part I value. Drawing curves is easy. Seeing what a planning decision costs before I commit to it is not.\n\nHow do you keep your histogram and your commodity curves in step with the schedule?\n\n#ProjectControls #Planning #PrimaveraP6 #ResourceLoading #EPC #AI",
+  "images": [
+    {
+      "path": "linkedin/assets/post-05/03-curves.png",
+      "alt": "Two bar charts. Piping erection plan by month before and after a back-loaded P6 resource curve, and direct manpower by month before and after monthly production targets, shown as shares and an index."
+    }
+  ]
+}
