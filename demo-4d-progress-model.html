@@ -600,7 +600,7 @@ var scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(32,1,1,5000);
 scene.add(new THREE.HemisphereLight(0xffffff,0xb7c0cc,.8));
 var sun=new THREE.DirectionalLight(0xffffff,.42);sun.position.set(-120,260,180);scene.add(sun);
 var ground=new THREE.Mesh(new THREE.PlaneGeometry(900,700),new THREE.MeshLambertMaterial({color:0xE4E8ED}));ground.rotation.x=-Math.PI/2;ground.position.set(180,-0.05,10);scene.add(ground);
-var grid=new THREE.GridHelper(900,90,0xC9D0D9,0xC9D0D9);grid.position.set(180,0.01,10);grid.material.transparent=true;grid.material.opacity=.7;scene.add(grid);
+var grid=new THREE.GridHelper(900,90,0xC9D0D9,0xC9D0D9);grid.position.set(180,0.01,10);grid.material.transparent=true;grid.material.opacity=.45;scene.add(grid);
 // hatch texture: orange with light stripes
 function hatchTex(){var c=document.createElement('canvas');c.width=c.height=64;var g=c.getContext('2d');g.fillStyle='#EC6F0A';g.fillRect(0,0,64,64);g.strokeStyle='#F9D1B1';g.lineWidth=9;for(var i=-64;i<128;i+=22){g.beginPath();g.moveTo(i,0);g.lineTo(i+64,64);g.stroke()}var t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1.5,3);return t}
 var GEO={cyl:new THREE.CylinderGeometry(1,1,1,10,1),sph:new THREE.SphereGeometry(1,10,6),box:new THREE.BoxGeometry(1,1,1)};
@@ -637,7 +637,7 @@ function paint(){
         var inSel=lineSet?!!lineSet[ln]:(S.spSel?(sp>=0&&!!S.spSel[sp]):true);
         if(S.mode==='spool'){col=SC[st];hatch=st==='RS'}
         else{if(st==='NS')col=C.ND;else if(st==='WD')col=C.P;else if(st==='NR')col=(lineSet||S.spSel)&&inSel?C.HL:C.NOT;else hatch=true}
-        if(lineSet||S.spSel){if(inSel)thick=1.7;else pale=true}
+        if(lineSet||S.spSel){if(inSel)thick=S.tp>=0?2.4:1.7;else pale=true}
         else if(fa&&!fa[ai])pale=true;
       }else if(d===5){col=EXIST}
       else{
@@ -763,7 +763,7 @@ function placeLabels(){
     L.ln.setAttribute('x1',x);L.ln.setAttribute('y1',y);L.ln.setAttribute('x2',x2);L.ln.setAttribute('y2',y2)});
   ALAB.forEach(function(L){var a=L.a,b=ABOX[a.i],show=unitFocus&&a.unit===S.focus&&b[0]<1e8;
     if(show){var cx=(b[0]+b[1])/2,cz=(b[2]+b[3])/2;V.set(cx,b[4]+12+L.k*16,cz).project(camera);var x=(V.x+1)/2*w,y=(1-V.y)/2*h;show=V.z<1;V.set(cx,b[4]*.6,cz).project(camera);var x2=(V.x+1)/2*w,y2=(1-V.y)/2*h}
-    L.el.style.display=L.ln.style.display=show?'':'none';if(!show)return;L.el.style.left=x+'px';L.el.style.top=y+'px';L.ln.setAttribute('x1',x);L.ln.setAttribute('y1',y);L.ln.setAttribute('x2',x2);L.ln.setAttribute('y2',y2)});
+    L.el.style.display=L.ln.style.display=show?'':'none';if(!show)return;x+=(L.k%2?1:-1)*120;y-=L.k*26;L.el.style.left=x+'px';L.el.style.top=y+'px';L.ln.setAttribute('x1',x);L.ln.setAttribute('y1',y);L.ln.setAttribute('x2',x2);L.ln.setAttribute('y2',y2)});
   // north arrow (north is +z)
   V.set(cam.tx,0,cam.tz).project(camera);var a0=[V.x,V.y];V.set(cam.tx,0,cam.tz+30).project(camera);var ang=Math.atan2(-(V.y-a0[1]),V.x-a0[0])*180/Math.PI+90;
   document.getElementById('narrow').setAttribute('transform','rotate('+ang+')');
@@ -845,7 +845,7 @@ function setFocus(k){
 }
 function tpBounds(tp){var x0=1e9,x1=-1e9,z0=1e9,z1=-1e9,y1=0;['cyl','sph'].forEach(function(g){INST[g].forEach(function(r){if(r[10]===2&&LINES[r[13]]&&LINES[r[13]].tp===tp.i){x0=Math.min(x0,r[0]);x1=Math.max(x1,r[0]);z0=Math.min(z0,r[2]);z1=Math.max(z1,r[2]);y1=Math.max(y1,r[1])}})});return [x0,x1,z0,z1,y1]}
 function highlightTP(i){
-  var tp=TPS[i];S.tp=i;S.mc1=false;S.spSel=null;closeCard();showTab('4d');
+  var tp=TPS[i];S.tp=i;S.mc1=false;S.spSel=null;S.focus='all';[].forEach.call(chipsEl.querySelectorAll('.chip'),function(c){c.classList.toggle('on',c.dataset.k==='all')});closeCard();showTab('4d');
   setBanner('Test pack '+tp.id+': '+tp.isoN+' ISO sheets, '+tp.isoN+' drawn');
   var b=tpBounds(tp);flyTo(Object.assign(fitBox(b[0],b[1],b[2],b[3],b[4]),{az:cam.az,el:Math.max(cam.el,.5)}));paint();
 }
