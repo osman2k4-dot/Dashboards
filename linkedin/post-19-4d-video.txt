@@ -1,0 +1,15 @@
+Every progress meeting asks the same question: where exactly is the delay? I built a 4D piping model that answers it. Watch 36 seconds.
+
+• Every pipe spool carries two dates: its baseline week and its actual erection week.
+• Green is on time, amber is late, red is due but still not erected.
+• Switch to the baseline to see what should be standing.
+• Isolate an area: compression is 18 points behind plan.
+• Hover a red spool and it tells you why: material hold, valves not received.
+
+The S-curve says how much is behind. The model shows where, and why.
+
+On my live project I built the same kind of playback from the Navisworks model and the approved baseline. This demo runs on fictional data so I can share it. It is one HTML file that opens in any browser, even on a phone.
+
+What would you want a 4D model to show in your progress meeting?
+
+#4DPlanning #ProjectControls #Piping #PrimaveraP6 #EPC #Navisworks

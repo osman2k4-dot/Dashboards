@@ -664,7 +664,7 @@ var q=new URLSearchParams(location.search);
 if(q.has('week'))state.t=clamp(+q.get('week')||0,0,WEEKS);
 if(q.get('mode')==='plan'){state.mode='plan';document.querySelectorAll('#mode button').forEach(function(x){var on=x.dataset.m==='plan';x.classList.toggle('on',on);x.setAttribute('aria-pressed',on?'true':'false')})}
 if(q.has('view')){var v=q.get('view').split(',').map(Number);if(v.length>=3){cam.az=v[0];cam.el=v[1];cam.r=v[2]}if(v.length>=6){cam.tx=v[3];cam.ty=v[4];cam.tz=v[5]}}
-window.orion4d={project:function(s){tmpV.copy(s.center).project(camera);var r=cv.getBoundingClientRect();return {x:r.left+(tmpV.x+1)/2*r.width,y:r.top+(1-tmpV.y)/2*r.height}},setWeek:function(w){stop();state.t=clamp(w,0,WEEKS);render();applyCam();renderer.render(scene,camera);placeLabels()},spools:spools,areas:AREAS};
+window.orion4d={project:function(s){tmpV.copy(s.center).project(camera);var r=cv.getBoundingClientRect();return {x:r.left+(tmpV.x+1)/2*r.width,y:r.top+(1-tmpV.y)/2*r.height}},setWeek:function(w){stop();state.t=clamp(w,0,WEEKS);render();applyCam();renderer.render(scene,camera);placeLabels()},spools:spools,areas:AREAS,view:function(o){camAnim=null;if(o)Object.assign(cam,o);applyCam();renderer.render(scene,camera);placeLabels();return Object.assign({},cam)},area:function(i){state.area=i;areaSel.value=String(i);render();applyCam();renderer.render(scene,camera);placeLabels()},home:HOME};
 
 drawTable();resize();
 if(q.has('area')){state.area=+q.get('area');areaSel.value=String(state.area)}
