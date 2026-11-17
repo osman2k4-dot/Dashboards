@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[DEMO — fictional data] Orion 4D progress model (cut-off 31-Oct-2026)</title>
+<style>
+:root{--ink:#14202E;--muted:#4A5563;--line:#C3CAD4;--head:#F4F6F9;--alt:#F6F7F9;--ground:#E7EAEF;
+--nr:#F6D84C;--rs:#EC6F0A;--dg:#A85210;--er:#7DBDEB;--fu:#1F6FBF;--wd:#14315F;--ns:#B3B7BD;
+--ds:#33414E;--dc:#A8977A;--dp:#1F6FBF;--de:#96652A;--di:#F2CF3A;--notst:#F1E6B5;--exist:#DDE1E7}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;color:var(--ink);background:#fff;font-size:13.5px;overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+.top{display:flex;align-items:stretch;border-bottom:1px solid var(--line);height:40px;background:#fff}
+.brand{font-weight:700;font-size:16px;padding:0 14px;display:flex;align-items:center;white-space:nowrap}
+.tabs{display:flex;overflow-x:auto}
+.tab{border:0;border-left:1px solid var(--line);background:#fff;padding:0 16px;font-size:14px;cursor:pointer;white-space:nowrap}
+.tab:last-child{border-right:1px solid var(--line)}
+.tab.on{background:var(--ink);color:#fff}
+.cut{margin-left:auto;display:flex;align-items:center;gap:10px;padding:0 14px;font-size:14px;white-space:nowrap}
+.demo{font-size:11px;font-weight:700;letter-spacing:.06em;color:#8a5a12;background:#fff7ec;border:1px solid #f3ddb8;border-radius:20px;padding:2px 9px}
+.view{display:none;height:calc(100vh - 40px)}
+.view.on{display:block}
+#v4d.on{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto auto}
+.chips{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:4px 12px;cursor:pointer;font-size:13px;white-space:nowrap}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chips .lbl{font-size:12px;color:var(--muted);margin-left:6px}
+.chips .sp{margin-left:auto}
+.btn{border:1px solid var(--line);background:#fff;border-radius:6px;padding:5px 11px;cursor:pointer;font-size:13px;white-space:nowrap}
+.btn:hover{border-color:#8a96a6}
+.btn.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+.stage{position:relative;overflow:hidden;background:#eef1f5}
+#cv{display:block;width:100%;height:100%;cursor:grab;touch-action:none;outline:none}
+#cv.drag{cursor:grabbing}
+.seg{position:absolute;left:10px;top:10px;display:flex;border:1px solid var(--line);background:#fff;border-radius:4px;overflow:hidden;z-index:3}
+.seg span{font-size:11.5px;font-weight:700;letter-spacing:.08em;color:var(--muted);padding:6px 9px;border-right:1px solid var(--line);display:flex;align-items:center}
+.seg button{border:0;border-right:1px solid var(--line);background:#fff;padding:5px 9px;cursor:pointer;font-size:12.5px}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--ink);color:#fff}
+.banner{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:4px;padding:6px 8px 6px 13px;display:none;align-items:center;gap:12px;font-weight:600;font-size:13px;z-index:3;max-width:70%}
+.banner button{border:0;background:#fff;color:var(--ink);border-radius:3px;padding:3px 10px;font-weight:600;cursor:pointer}
+.north{position:absolute;right:16px;top:14px;z-index:3;font-weight:700;font-size:12px;display:flex;align-items:center;gap:4px}
+.hint{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:4px;padding:4px 12px;font-size:12.5px;z-index:3;white-space:nowrap}
+#labels{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+#leaders{position:absolute;inset:0;pointer-events:none;z-index:1}
+.ulab{position:absolute;transform:translate(-50%,-100%);background:#fff;border:1px solid #6b7684;padding:2px 7px;font-size:12px;line-height:1.25;text-align:center;white-space:nowrap}
+.ulab b{display:block;font-size:12.5px}
+.card{position:absolute;right:10px;top:46px;width:372px;max-height:calc(100% - 60px);overflow:auto;background:#fff;border:1px solid var(--line);box-shadow:0 4px 16px rgba(20,32,46,.12);z-index:4;display:none;padding:12px 14px;font-size:12.5px;line-height:1.45}
+.card .x{position:absolute;right:8px;top:6px;border:0;background:none;font-size:18px;cursor:pointer}
+.card .k{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.card h4{font-size:15px;margin:2px 0 4px}
+.card .r b{font-weight:700;text-transform:uppercase;font-size:11.5px;letter-spacing:.03em}
+.card hr{border:0;border-top:1px solid var(--line);margin:7px 0}
+.card .acts{display:flex;gap:8px;margin-top:10px}
+.sw{display:inline-block;width:11px;height:11px;border:1px solid rgba(0,0,0,.25);vertical-align:-1px;margin-right:3px}
+.sw.h{background:repeating-linear-gradient(135deg,#EC6F0A 0 3px,#F9D1B1 3px 6px)}
+.legend{display:flex;align-items:center;gap:12px;padding:5px 10px;border-top:1px solid var(--line);flex-wrap:wrap;font-size:12.5px}
+.legend .cb{font-size:11.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)}
+.legend select{border:1px solid var(--line);border-radius:3px;padding:3px 6px;font-size:12.5px;min-width:180px}
+.legend .it{white-space:nowrap}
+.legend .it b{font-weight:700}
+.kpis{display:grid;grid-template-columns:140px 170px minmax(0,1.8fr) repeat(4,minmax(0,1fr));border-top:1px solid var(--line)}
+.kpi{padding:5px 10px;border-left:1px solid var(--line);font-size:12px;line-height:1.3;min-width:0}
+.kpi:first-child{border-left:0}
+.kpi .h{font-weight:700;letter-spacing:.03em;text-transform:uppercase;font-size:12px}
+.kpi .h small{text-transform:none;font-weight:400;color:var(--muted);letter-spacing:0}
+.kpi .v{font-size:17px;font-weight:700}
+.kpi .v small{font-size:12px;font-weight:400;color:var(--muted);white-space:nowrap}
+.kpi label{display:flex;gap:5px;align-items:center;cursor:pointer}
+.timeline{display:grid;grid-template-columns:130px 190px minmax(0,1fr);align-items:center;border-top:1px solid var(--line);padding:8px 12px;gap:12px}
+.play{background:var(--ink);color:#fff;border:0;border-radius:3px;padding:9px 0;font-weight:700;font-size:15px;cursor:pointer;width:100%}
+.speed{margin-top:5px;width:100%;border:1px solid var(--line);background:#fff;border-radius:3px;padding:3px;font-size:12px;cursor:pointer}
+.when .h{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--muted)}
+.when .d{font-size:27px;font-weight:700;line-height:1.1}
+#tl{width:100%;height:84px;display:block;cursor:pointer}
+.page{height:100%;overflow:auto;padding:14px 16px 30px}
+.page h2{font-size:17px;margin:0 0 6px}
+.page h3{font-size:13px;letter-spacing:.04em;text-transform:uppercase;margin:16px 0 6px}
+.page h3 small{text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);font-size:12.5px}
+.note{font-size:12px;color:var(--muted);line-height:1.45}
+.tiles{display:flex;gap:8px;flex-wrap:wrap}
+.tile{border:1px solid var(--line);padding:6px 11px;min-width:96px;cursor:pointer;background:#fff;text-align:left}
+.tile.big{flex:1;min-width:150px;padding:8px 12px}
+.tile .n{font-size:21px;font-weight:700;line-height:1.15}
+.tile.big .n{font-size:24px}
+.tile .t{font-size:12px;color:var(--muted)}
+.tile .lab{font-weight:700;font-size:13.5px}
+.tile.dash{border-style:dashed}
+.tile.on{outline:2px solid var(--ink);outline-offset:-2px}
+table.t{border-collapse:collapse;width:100%;font-size:12.5px}
+table.t th{background:var(--head);text-align:left;font-weight:700;padding:5px 6px;border-bottom:2px solid var(--ink);vertical-align:bottom;white-space:nowrap}
+table.t td{padding:3px 6px;border-bottom:1px solid #e3e7ec;white-space:nowrap}
+table.t tbody tr:nth-child(even) td{background:var(--alt)}
+table.t td.n,table.t th.n{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.tot td{font-weight:700;border-top:2px solid var(--ink);background:#fff}
+table.t td a{color:inherit;text-decoration:underline;cursor:pointer}
+table.t tbody tr.click{cursor:pointer}
+table.t tbody tr.click:hover td{background:#e8eef7}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.tools input,.tools select{border:1px solid var(--line);border-radius:3px;padding:5px 8px;font-size:12.5px}
+.tools input{flex:1;min-width:160px}
+.tools .cnt{font-weight:700;font-size:12.5px}
+.segb{display:inline-flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.segb button{border:0;border-right:1px solid var(--line);background:#fff;padding:6px 12px;cursor:pointer;font-size:13px}
+.segb button:last-child{border-right:0}
+.segb button.on{background:var(--ink);color:#fff}
+.box{border:1px solid var(--line);max-height:520px;overflow:auto}
+.box table.t th{position:sticky;top:0;z-index:1}
+.focus li{list-style:none;border:1px solid var(--line);padding:7px 10px;margin-bottom:6px;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:8px;align-items:center}
+.focus li:hover{background:#eef3fa}
+.focus .bar{height:8px;background:#e3e7ec;position:relative}
+.focus .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--wd)}
+.focus .m{font-size:12px;color:var(--muted)}
+.about p{max-width:110ch;line-height:1.55;margin-bottom:9px}
+.about dl{display:grid;grid-template-columns:200px minmax(0,1fr);gap:6px 14px;max-width:120ch}
+.about dt{font-weight:700}
+.alab{position:absolute;transform:translate(-50%,-100%);background:#fff;border:1px solid #6b7684;padding:2px 7px;font-size:12px;line-height:1.25;white-space:nowrap}
+.alab b{display:block;font-size:12.5px}
+.rep{max-width:1560px}
+.rep h1{font-size:20px;margin:4px 0 2px}
+.rep .sub{font-size:12px;color:var(--muted);margin-bottom:10px}
+table.q{border-collapse:collapse;width:100%;font-size:12.5px;line-height:1.42}
+table.q th{background:#e6e9ee;text-align:left;padding:4px 7px;border:1px solid #c9ced6}
+table.q td{padding:4px 7px;border:1px solid #d5d9df;vertical-align:top}
+table.q td.k{font-weight:700;width:220px}
+table.q td.s{width:290px;font-size:11.5px;color:#3b4552}
+table.q tr.sec td{background:#eef0f3;font-weight:700;letter-spacing:.02em}
+table.wk{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:14px}
+table.wk th,table.wk td{border:1px solid #d5d9df;padding:3px 6px;text-align:right;font-variant-numeric:tabular-nums}
+table.wk th{background:#e6e9ee}
+table.wk td:first-child,table.wk th:first-child{text-align:left}
+table.wk tr.tot td{font-weight:700}
+.cm-bars text{font-size:12px;fill:#14202E}
+@media print{.top,.noprint{display:none!important}.view{height:auto!important;display:none!important}.view.on{display:block!important}body{overflow:visible}.page{overflow:visible;height:auto}}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#eef1f5;z-index:9;font-size:14px;color:var(--muted)}
+@media (max-width:900px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi:first-child,.kpi:nth-child(2){grid-column:span 1}.timeline{grid-template-columns:110px minmax(0,1fr)}.timeline .when{display:none}.grid2{grid-template-columns:1fr}.card{width:auto;left:10px}.brand{font-size:14px}.hint{display:none}body{overflow:auto}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">Orion 4D progress model</div>
+  <div class="tabs" id="tabs">
+    <button class="tab" data-v="ov">Overview</button>
+    <button class="tab on" data-v="4d">4D model</button>
+    <button class="tab" data-v="sp">Spools</button>
+    <button class="tab" data-v="ht">Hydrotest</button>
+    <button class="tab" data-v="cm">Commodities by month</button>
+    <button class="tab" data-v="rp">Plan summary</button>
+    <button class="tab" data-v="ab">About the data</button>
+  </div>
+  <div class="cut"><span class="demo">DEMO · FICTIONAL DATA</span><span>Cut-off 31-Oct-2026</span></div>
+</div>
+
+<div class="view" id="vov"><div class="page" id="ovPage"></div></div>
+
+<div class="view on" id="v4d">
+  <div class="chips" id="chips"></div>
+  <div class="stage" id="stage">
+    <canvas id="cv" tabindex="0" aria-label="3D model of the plant coloured by progress"></canvas>
+    <svg id="leaders"></svg>
+    <div id="labels"></div>
+    <div class="seg" id="showOnly"><span>SHOW ONLY</span></div>
+    <div class="banner" id="banner"><span id="bannerTxt"></span><button id="bannerClear">Clear</button></div>
+    <div class="north" id="north"><span>N</span><svg width="22" height="22" viewBox="-11 -11 22 22"><path id="narrow" d="M0,-9 L5,6 L0,3 L-5,6 Z" fill="#14202E"/></svg></div>
+    <div class="hint">Drag to turn the model - wheel to zoom - click any item for details - press Play to run the plan</div>
+    <div class="card" id="card"></div>
+    <div class="loading" id="load">Building the plant…</div>
+  </div>
+  <div class="legend"><span class="cb">COLOUR BY</span>
+    <select id="mode"><option value="built">Built work by discipline</option><option value="spool">Spool status</option></select>
+    <span id="lgd" style="display:contents"></span>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="timeline">
+    <div><button class="play" id="play">▶&nbsp; Play</button><select class="speed" id="speed"><option value="900">Speed: slow</option><option value="450" selected>Speed: normal</option><option value="200">Speed: fast</option></select></div>
+    <div class="when"><div class="h" id="whenH">ACTUAL AT CUT-OFF</div><div class="d" id="whenD">31-Oct-2026</div></div>
+    <svg id="tl" viewBox="0 0 1000 84" preserveAspectRatio="none" role="slider" aria-label="Week"></svg>
+  </div>
+</div>
+
+<div class="view" id="vsp"><div class="page" id="spPage"></div></div>
+<div class="view" id="vht"><div class="page" id="htPage"></div></div>
+<div class="view" id="vcm"><div class="page" id="cmPage"></div></div>
+<div class="view" id="vrp"><div class="page" id="rpPage"></div></div>
+<div class="view" id="vab"><div class="page about" id="abPage"></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+/* ================= dates ================= */
+var DAY=864e5, CUT=Date.UTC(2026,9,31), NW=30;
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function pad(n){return (n<10?'0':'')+n}
+function fd(ms){var d=new Date(ms);return pad(d.getUTCDate())+'-'+MON[d.getUTCMonth()]+'-'+d.getUTCFullYear()}
+function fm(ms){var d=new Date(ms);return MON[d.getUTCMonth()]+'-'+String(d.getUTCFullYear()).slice(2)}
+function wms(w){return CUT+w*7*DAY}
+var MS=[{k:'MC-01',w:14,ms:Date.UTC(2027,1,5)},{k:'MC-02',w:22,ms:Date.UTC(2027,3,2)},{k:'Overall Completion',w:30,ms:Date.UTC(2027,4,28)}];
+var KEYD=[{w:7,t:'Main rack piping complete'},{w:12,t:'MC-01 hydrotest complete'},{w:26,t:'E&I terminations complete'}];
+
+/* ================= random ================= */
+var seed=20261031;
+function R(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}
+function ri(a,b){return a+Math.floor(R()*(b-a+1))}
+function rf(a,b){return a+R()*(b-a)}
+function pick(a){return a[Math.floor(R()*a.length)]}
+function clamp(v,a,b){return v<a?a:v>b?b:v}
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function fmtN(n){return Math.round(n).toLocaleString('en-US')}
+
+/* ================= areas and units ================= */
+var UNITS=[
+ {u:'310',f:'BF',x0:10,x1:60,z0:-82,z1:-12,ap:.42},
+ {u:'320',f:'BF',x0:66,x1:116,z0:-82,z1:-12,ap:.36},
+ {u:'330',f:'BF',x0:122,x1:172,z0:-82,z1:-12,ap:.50},
+ {u:'340',f:'BF',x0:178,x1:228,z0:-82,z1:-12,ap:.30},
+ {u:'215',f:'GF',x0:236,x1:298,z0:14,z1:138,ap:.64},
+ {u:'259',f:'GF',x0:314,x1:380,z0:14,z1:138,ap:.58}
+];
+var AREAS=[], AREA_BY={};
+function area(code,unit,f,name,prog){var a={i:AREAS.length,code:code,unit:unit,f:f,name:name,prog:prog};AREAS.push(a);AREA_BY[code]=a.i;return a.i}
+// prog: built share at cut-off for S, C, E, I and the week each finishes
+var A={};
+A.a1=area('A01-01','310','BF','Unit 310 process area',{S:.82,C:.93,E:.80,I:.30,fw:[9,6,11,24]});
+A.a1r=area('A01-02','310','BF','Unit 310 pipe rack',{S:.95,C:1,E:1,I:.35,fw:[3,0,0,22]});
+A.a2=area('A02-01','320','BF','Unit 320 process area',{S:.74,C:.90,E:.71,I:.22,fw:[11,7,13,26]});
+A.a2r=area('A02-02','320','BF','Unit 320 pipe rack',{S:.90,C:1,E:1,I:.25,fw:[4,0,0,24]});
+A.a3=area('A03-01','330','BF','Unit 330 process area',{S:.90,C:.96,E:.88,I:.40,fw:[6,4,8,22]});
+A.a3r=area('A03-02','330','BF','Unit 330 pipe rack',{S:1,C:1,E:1,I:.45,fw:[0,0,0,20]});
+A.a4=area('A04-01','340','BF','Unit 340 process area',{S:.66,C:.86,E:.62,I:.15,fw:[13,9,15,27]});
+A.a4r=area('A04-02','340','BF','Unit 340 pipe rack',{S:.86,C:1,E:1,I:.20,fw:[5,0,0,25]});
+A.a5=area('A05-01','215','GF','Unit 215 compression',{S:.93,C:.97,E:.90,I:.48,fw:[5,3,7,21]});
+A.a5b=area('A05-02','215','GF','Unit 215 process area',{S:.95,C:.98,E:.94,I:.52,fw:[4,2,6,20]});
+A.a6=area('A06-01','259','GF','Unit 259 absorption',{S:.88,C:.95,E:.86,I:.42,fw:[7,4,9,23]});
+A.a6b=area('A06-02','259','GF','Unit 259 tank farm',{S:.80,C:.92,E:.75,I:.35,fw:[8,5,10,23]});
+A.r1b=area('R01-01','Racks','BF','Main pipe rack, Brown Field section',{S:1,C:1,E:1,I:.55,fw:[0,0,0,18]});
+A.r1g=area('R01-02','Racks','GF','Main pipe rack, Green Field section',{S:.96,C:1,E:.85,I:.50,fw:[3,0,6,19]});
+A.r2=area('R02-01','Racks','GF','Green Field north rack',{S:.94,C:1,E:1,I:.45,fw:[4,0,0,19]});
+A.ex=area('EX-00','Existing','EX','Existing plant',{S:1,C:1,E:1,I:1,fw:[0,0,0,0]});
+var UNIT_AREAS={};AREAS.forEach(function(a){(UNIT_AREAS[a.unit]=UNIT_AREAS[a.unit]||[]).push(a.i)});
+var UNIT_AP={310:.50,320:.46,330:.56,340:.42,215:.62,259:.56,Racks:.60};
+
+/* ================= instances ================= */
+// disciplines: 0 structure, 1 civil, 2 piping, 3 equipment, 4 E&I, 5 existing
+var DN=['Structure','Civil','Piping','Equipment','E&I','Existing plant'];
+var INST={cyl:[],sph:[],box:[]};
+var _q=null,_v1=null,_v2=null,_Y=null;
+function push(g,px,py,pz,qx,qy,qz,qw,sx,sy,sz,d,a,sp,ln){INST[g].push([px,py,pz,qx,qy,qz,qw,sx,sy,sz,d,a,sp,ln])}
+function box(x,y,z,sx,sy,sz,d,a){push('box',x,y,z,0,0,0,1,sx,sy,sz,d,a,-1,-1)}
+function cylA(p0,p1,r,d,a,sp,ln){
+  _v1.set(p1[0]-p0[0],p1[1]-p0[1],p1[2]-p0[2]);var L=_v1.length();if(L<1e-4)return;_v1.multiplyScalar(1/L);
+  _q.setFromUnitVectors(_Y,_v1);
+  push('cyl',(p0[0]+p1[0])/2,(p0[1]+p1[1])/2,(p0[2]+p1[2])/2,_q.x,_q.y,_q.z,_q.w,r,L,r,d,a,sp,ln);
+}
+function vcyl(x,y0,z,r,h,d,a){push('cyl',x,y0+h/2,z,0,0,0,1,r,h,r,d,a,-1,-1)}
+function hcylX(x,y,z,r,L,d,a){push('cyl',x,y,z,0,0,-Math.SQRT1_2,Math.SQRT1_2,r,L,r,d,a,-1,-1)}
+function hcylZ(x,y,z,r,L,d,a){push('cyl',x,y,z,Math.SQRT1_2,0,0,Math.SQRT1_2,r,L,r,d,a,-1,-1)}
+function sph(x,y,z,sx,sy,sz,d,a,sp,ln){push('sph',x,y,z,0,0,0,1,sx,sy,sz,d,a,sp==null?-1:sp,ln==null?-1:ln)}
+
+/* ================= piping data ================= */
+var LINES=[],SPOOLS=[],ISOS=[],TPS=[];
+var SVC=[['PG','PGS'],['HC','HCL'],['CW','CWS'],['FL','FLR'],['AM','AMN'],['CD','CND'],['IA','IAS'],['NI','NIT'],['FG','FGS']];
+var SPEC=['15304-N','11340-P','15310-N','12200-P','16410-N'];
+var lineSeq={};
+function pr(size){return 0.03+size*0.0133}
+function newLine(ai,size,svcI,kind){
+  var a=AREAS[ai],u=a.unit==='Racks'?(a.f==='BF'?'300':'200'):a.unit;
+  lineSeq[u]=(lineSeq[u]||100)+ri(1,4);
+  var s=SVC[svcI];
+  var L={i:LINES.length,ai:ai,unit:a.unit,size:size,svc:s[0],sys:s[1],kind:kind,
+    no:u+'-'+('000'+lineSeq[u]).slice(-4)+'-'+s[0]+'-'+size+'"-'+pick(SPEC),spools:[],isoN:0,tp:-1,ns:0};
+  LINES.push(L);return L;
+}
+// route a polyline into spools and pieces
+function route(L,pts,spLen,opt){
+  opt=opt||{};
+  var r=pr(L.size),a=AREAS[L.ai],iso=null,isoLeft=0,cur=null,acc=0;
+  function newSpool(){
+    if(!iso||isoLeft<=0){L.isoN++;iso={i:ISOS.length,line:L.i,name:a.code+'-'+L.svc+L.no.split('-')[1]+'-'+pad(L.isoN),spools:[]};ISOS.push(iso);isoLeft=ri(2,4)}
+    isoLeft--;
+    cur={i:SPOOLS.length,id:'SPL-'+pad(iso.spools.length+1),iso:iso.i,line:L.i,ai:L.ai,size:L.size,len:0,bends:0};
+    SPOOLS.push(cur);iso.spools.push(cur.i);L.spools.push(cur.i);acc=0;
+  }
+  newSpool();
+  var target=spLen*rf(.75,1.15);
+  for(var k=1;k<pts.length;k++){
+    var p0=pts[k-1],p1=pts[k];
+    var dx=p1[0]-p0[0],dy=p1[1]-p0[1],dz=p1[2]-p0[2],len=Math.sqrt(dx*dx+dy*dy+dz*dz);if(len<1e-3)continue;
+    var pos=0;
+    while(pos<len-1e-6){
+      var take=Math.min(len-pos,target-acc);
+      if(take<0.05&&len-pos>0.05){ // close spool at this point
+        var q=[p0[0]+dx*pos/len,p0[1]+dy*pos/len,p0[2]+dz*pos/len];
+        cylA([q[0]-dx/len*.07,q[1]-dy/len*.07,q[2]-dz/len*.07],[q[0]+dx/len*.07,q[1]+dy/len*.07,q[2]+dz/len*.07],r*1.38,2,L.ai,cur.i,L.i);
+        newSpool();target=spLen*rf(.75,1.15);continue;
+      }
+      var s0=[p0[0]+dx*pos/len,p0[1]+dy*pos/len,p0[2]+dz*pos/len],s1=[p0[0]+dx*(pos+take)/len,p0[1]+dy*(pos+take)/len,p0[2]+dz*(pos+take)/len];
+      cylA(s0,s1,r,2,L.ai,cur.i,L.i);cur.len+=take;
+      // occasional valve on the run
+      if(opt.valves&&take>2.5&&R()<opt.valves){var m=[(s0[0]+s1[0])/2,(s0[1]+s1[1])/2,(s0[2]+s1[2])/2];sph(m[0],m[1],m[2],r*1.7,r*1.7,r*1.7,2,L.ai,cur.i,L.i);box(m[0],m[1]+r*2.2,m[2],r*1.2,r*2,r*1.2,2,L.ai);INST.box[INST.box.length-1][12]=cur.i;INST.box[INST.box.length-1][13]=L.i}
+      pos+=take;acc+=take;
+      if(acc>=target-1e-6&&!(k===pts.length-1&&pos>=len-1e-6)){
+        cylA([s1[0]-dx/len*.07,s1[1]-dy/len*.07,s1[2]-dz/len*.07],[s1[0]+dx/len*.07,s1[1]+dy/len*.07,s1[2]+dz/len*.07],r*1.38,2,L.ai,cur.i,L.i);
+        newSpool();target=spLen*rf(.75,1.15);
+      }
+    }
+    if(k<pts.length-1){sph(p1[0],p1[1],p1[2],r*1.02,r*1.02,r*1.02,2,L.ai,cur.i,L.i);cur.bends++}
+  }
+  // small-bore vents and drains without a spool number
+  var nsN=opt.ns==null?ri(0,2):opt.ns;
+  for(var n=0;n<nsN;n++){var k2=ri(1,pts.length-1),t=rf(.2,.8),p0b=pts[k2-1],p1b=pts[k2];
+    var b=[p0b[0]+(p1b[0]-p0b[0])*t,p0b[1]+(p1b[1]-p0b[1])*t,p0b[2]+(p1b[2]-p0b[2])*t],up=R()<.5?1:-1;
+    cylA(b,[b[0],b[1]+up*rf(.5,1.1),b[2]],0.045,2,L.ai,-1,L.i);L.ns++}
+}
+
+/* ================= plant generation ================= */
+function build(){
+  _q=new THREE.Quaternion();_v1=new THREE.Vector3();_v2=new THREE.Vector3();_Y=new THREE.Vector3(0,1,0);
+  /* ---- ground pads and roads ---- */
+  UNITS.forEach(function(U){var as=UNIT_AREAS[U.u];for(var x=U.x0;x<U.x1;x+=10)for(var z=U.z0;z<U.z1;z+=10){if(R()<.42)continue;var zc=z+5,ai=U.f==='GF'&&zc>(U.u==='215'?U.z0+56:U.z0+80)?as[1]:as[0];box(x+5,0.06,zc,9.6,0.12,9.6,1,ai)}});
+  box(190,0.04,-6,392,0.08,14,1,A.r1b);
+  box(305,0.04,80,14,0.08,150,1,A.r2);
+  // existing plant: blocks, an old rack and tanks to the south and west
+  box(120,0.03,-100,250,0.06,8,5,A.ex);
+  for(var ex=0;ex<11;ex++){var x=10+ex*21,z=-125+rf(-6,6);box(x,rf(2,5),z,rf(8,14),rf(4,10),rf(9,16),5,A.ex);if(R()<.5)vcyl(x+rf(-3,3),0,z-12,rf(1,2),rf(10,22),5,A.ex)}
+  for(var ex2=0;ex2<29;ex2++){var x2=8+ex2*8;[-3,3].forEach(function(dz){vcyl(x2,0,-92+dz,.18,7,5,A.ex)});box(x2,7,-92,.3,.35,6.4,5,A.ex)}
+  for(var ep=0;ep<7;ep++){cylA([4,7.4,-94+ep*.7],[236,7.4,-94+ep*.7],.12+ep*.02,5,A.ex,-1,-1)}
+  [[-26,-30],[-26,0],[-26,30],[-8,72],[18,80]].forEach(function(c){vcyl(c[0],0,c[1],6.5,9,5,A.ex);sph(c[0],9,c[1],6.5,1.2,6.5,5,A.ex)});
+  for(var ex3=0;ex3<6;ex3++)box(-30+ex3*14,3,120+rf(-4,4),10,6,12,5,A.ex);
+
+  /* ---- main rack R1 along x, z = 0 ---- */
+  rack({x0:0,x1:380,z:0,w:10,tiers:[7,10],bay:8,axis:'x',aiOf:function(x){return x<230?A.r1b:A.r1g},extraTier:{from:230,y:13}});
+  /* ---- north rack R2 at x = 305 ---- */
+  rack({x0:6,x1:150,z:305,w:8,tiers:[7,10],bay:8,axis:'z',aiOf:function(){return A.r2}});
+  /* air coolers on top of the Green Field section */
+  for(var ac=234;ac<378;ac+=9){box(ac+4.5,15,0,8.6,1.4,11,3,A.r1g);for(var f=0;f<2;f++){push('cyl',ac+2.3+f*4.4,15.8,0,0,0,0,1,1.8,.2,1.8,3,A.r1g,-1,-1)}box(ac+4.5,14.1,-5.4,8.6,.15,.4,0,A.r1g);box(ac+4.5,14.1,5.4,8.6,.15,.4,0,A.r1g)}
+
+  /* ---- rack lines on R1 ---- */
+  var t1=[],t2=[],t3=[];for(var q1=0;q1<13;q1++)t1.push(-4.3+q1*.72);for(var q2=0;q2<11;q2++)t2.push(-4.2+q2*.84);for(var q3=0;q3<6;q3++)t3.push(-4+q3*1.6);
+  t1.forEach(function(z,i){var size=pick([20,16,14,12,10,8,6]),x0=i%3===0?0:ri(0,3)*45,x1=i%2===0?378:ri(5,8)*45;rackLine(size,7,z,x0,Math.max(x0+90,x1),ri(0,8))});
+  t2.forEach(function(z,i){var size=pick([18,14,12,8,6,4]),x0=i%2?0:ri(1,4)*40,x1=ri(6,9)*42;rackLine(size,10,z,x0,Math.max(x0+90,x1),ri(0,8))});
+  t3.forEach(function(z){var size=pick([30,24,20,16]);rackLine(size,13,z,232,378,ri(0,4))});
+  /* ---- rack lines on R2 ---- */
+  for(var q4=0;q4<16;q4++){rackLineZ(pick([16,14,12,10,8,6,4]),q4%2?10:7,305-3.4+(q4>>1)*.95,6,ri(100,150),ri(0,8))}
+
+  /* ---- units ---- */
+  UNITS.forEach(function(U){if(U.f==='BF')bfUnit(U);});
+  gf215(UNITS[4]);gf259(UNITS[5]);
+}
+function rack(o){
+  var tiers=o.tiers,top=tiers[tiers.length-1],w=o.w/2;
+  for(var s=o.x0;s<=o.x1+1e-6;s+=o.bay){
+    var ai=o.aiOf(s),hasX=o.extraTier&&s>=o.extraTier.from,ht=(hasX?o.extraTier.y:top)+.3;
+    [-w,w].forEach(function(dw){if(o.axis==='x')box(s,ht/2,o.z+dw,.45,ht,.45,0,ai);else box(o.z+dw,ht/2,s,.45,ht,.45,0,ai);
+      // foundations
+      if(o.axis==='x')box(s,.4,o.z+dw,1.4,.8,1.4,1,ai);else box(o.z+dw,.4,s,1.4,.8,1.4,1,ai)});
+    var ys=tiers.slice();if(hasX)ys.push(o.extraTier.y);
+    ys.forEach(function(y){if(o.axis==='x')box(s,y-.2,o.z,.35,.4,o.w+.4,0,ai);else box(o.z,y-.2,s,o.w+.4,.4,.35,0,ai)});
+    if(s+o.bay<=o.x1+1e-6){
+      var ai2=o.aiOf(s+o.bay/2);
+      ys.forEach(function(y){[-w,w].forEach(function(dw){if(o.axis==='x')box(s+o.bay/2,y-.15,o.z+dw,o.bay,.3,.3,0,ai2);else box(o.z+dw,y-.15,s+o.bay/2,.3,.3,o.bay,0,ai2)})});
+      // bracing on every third bay
+      if(Math.round(s/o.bay)%3===0){[-w,w].forEach(function(dw){if(o.axis==='x'){cylA([s,.8,o.z+dw],[s+o.bay,tiers[0]-.4,o.z+dw],.1,0,ai2,-1,-1)}else{cylA([o.z+dw,.8,s],[o.z+dw,tiers[0]-.4,s+o.bay],.1,0,ai2,-1,-1)}})}
+      // cable trays (E&I) on the outer side of the top tier
+      if(o.axis==='x')box(s+o.bay/2,top+.6,o.z-w+.6,o.bay,.12,.9,4,ai2);else box(o.z-w+.6,top+.6,s+o.bay/2,.9,.12,o.bay,4,ai2);
+    }
+  }
+}
+function rackLine(size,tier,z,x0,x1,svcI){
+  var ai=((x0+x1)/2)<230?A.r1b:A.r1g,L=newLine(ai,size,svcI,'rack'),y=tier+pr(size),pts=[[x0,y,z]];
+  // expansion loops lift above the tier every ~90 m
+  for(var x=x0+60;x<x1-40;x+=ri(80,110)){var h=2.2+size*.05;pts.push([x,y,z],[x,y+h,z],[x+4,y+h,z],[x+4,y,z])}
+  pts.push([x1,y,z]);
+  route(L,pts,12,{ns:1});
+}
+function rackLineZ(size,tier,x,z0,z1,svcI){
+  var L=newLine(A.r2,size,svcI,'rack'),y=tier+pr(size),pts=[[x,y,z0]];
+  for(var z=z0+50;z<z1-30;z+=ri(70,90)){var h=2.2+size*.05;pts.push([x,y,z],[x,y+h,z],[x,y+h,z+4],[x,y,z+4])}
+  pts.push([x,y,z1]);route(L,pts,12,{ns:1});
+}
+/* equipment builders */
+function column(x,z,r,h,ai,tag){
+  vcyl(x,0,z,r*1.15,1.2,1,ai);           // foundation ring
+  vcyl(x,1.2,z,r,h,3,ai);sph(x,1.2+h,z,r,r*.55,r,3,ai);
+  for(var y=6;y<h-2;y+=ri(5,7)){box(x,1.2+y,z-r-.9,r*2+1.6,.2,1.8,0,ai);box(x-r-.9,1.2+y,z,1.8,.2,r*2+1.6,0,ai)}
+  box(x+r+.35,1.2+h/2,z,.4,h,.5,0,ai);   // ladder
+  return {x:x,z:z,r:r,h:h+1.2};
+}
+function drum(x,y,z,r,L,ax,ai){
+  if(ax==='x'){hcylX(x,y,z,r,L,3,ai);sph(x-L/2,y,z,r*.5,r,r,3,ai);sph(x+L/2,y,z,r*.5,r,r,3,ai);[-.3,.3].forEach(function(f){box(x+f*L,(y-r)/2+.2,z,.6,y-r+.4,r*1.6,1,ai)})}
+  else{hcylZ(x,y,z,r,L,3,ai);sph(x,y,z-L/2,r,r,r*.5,3,ai);sph(x,y,z+L/2,r,r,r*.5,3,ai);[-.3,.3].forEach(function(f){box(x,(y-r)/2+.2,z+f*L,r*1.6,y-r+.4,.6,1,ai)})}
+}
+function pump(x,z,ai,rot){box(x,.3,z,rot?1.2:2.6,.6,rot?2.6:1.2,1,ai);box(x,.9,z,rot?.9:1.4,.6,rot?1.4:.9,3,ai);if(rot)hcylZ(x,.95,z+.9,.35,1.1,3,ai);else hcylX(x+.9,.95,z,.35,1.1,3,ai)}
+function techStructure(x0,z0,sx,sz,levels,lh,ai){
+  var nx=Math.max(2,Math.round(sx/6)),nz=Math.max(2,Math.round(sz/6)),H=levels*lh;
+  for(var i=0;i<=nx;i++)for(var k=0;k<=nz;k++){var x=x0+i*sx/nx,z=z0+k*sz/nz;box(x,H/2,z,.45,H,.45,0,ai);box(x,.35,z,1.3,.7,1.3,1,ai)}
+  for(var l=1;l<=levels;l++){var y=l*lh;
+    for(var i2=0;i2<=nx;i2++)box(x0+i2*sx/nx,y-.2,z0+sz/2,.3,.35,sz,0,ai);
+    for(var k2=0;k2<=nz;k2++)box(x0+sx/2,y-.2,z0+k2*sz/nz,sx,.35,.3,0,ai);
+    box(x0+sx/2,y-.02,z0+sz/2,sx,.06,sz,0,ai);   // grating
+  }
+  for(var l2=0;l2<levels;l2++){cylA([x0,l2*lh+.6,z0],[x0+sx/nx,(l2+1)*lh-.4,z0],.1,0,ai,-1,-1);cylA([x0+sx,l2*lh+.6,z0+sz],[x0+sx-sx/nx,(l2+1)*lh-.4,z0+sz],.1,0,ai,-1,-1)}
+  return {x0:x0,z0:z0,sx:sx,sz:sz,H:H};
+}
+function localRack(x,z0,z1,tiers,ai){
+  for(var z=z0;z>=z1-1e-6;z-=6){[-3,3].forEach(function(dx){box(x+dx,(tiers[tiers.length-1]+.3)/2,z,.4,tiers[tiers.length-1]+.3,.4,0,ai);box(x+dx,.35,z,1.2,.7,1.2,1,ai)});tiers.forEach(function(y){box(x,y-.2,z,6.4,.35,.3,0,ai)});
+    if(z-6>=z1-1e-6){tiers.forEach(function(y){[-3,3].forEach(function(dx){box(x+dx,y-.15,z-3,.25,.25,6,0,ai)})});box(x-2.4,tiers[tiers.length-1]+.55,z-3,.9,.1,6,4,ai)}}
+}
+// a run from one point to another with a riser to a height, Manhattan route
+function manhattan(p0,p1,yRun,order){var pts=[p0,[p0[0],yRun,p0[2]]];if(order==='xz'){pts.push([p1[0],yRun,p0[2]],[p1[0],yRun,p1[2]])}else{pts.push([p0[0],yRun,p1[2]],[p1[0],yRun,p1[2]])}pts.push(p1);return pts}
+function dup(tg){return tg.map(function(t){return {p:[t.p[0],Math.max(.7,t.p[1]+rf(-1.2,1.2)),t.p[2]+rf(-1.6,1.6)],a:t.a,big:false,pump:t.pump,riser:t.riser}})}
+function inter(tg,ai,n){for(var ic=0;ic<n;ic++){var a1=tg[ri(0,tg.length-1)].p,a2=tg[ri(0,tg.length-1)].p,dd=Math.abs(a1[0]-a2[0])+Math.abs(a1[2]-a2[2]);if(dd<6||dd>70)continue;
+  var L2=newLine(ai,pick([8,6,4,3,2]),pick([0,1,4,5]),'unit');route(L2,dedupe(manhattan([a1[0],Math.min(a1[1],3.2),a1[2]],[a2[0],Math.min(a2[1],3.2),a2[2]],rf(2.6,4.2),R()<.5?'xz':'zx')),rf(6,9),{valves:.2})}}
+function bfUnit(U){
+  var ai=UNIT_AREAS[U.u][0],air=UNIT_AREAS[U.u][1],xc=(U.x0+U.x1)/2,rx=U.x0+22;
+  localRack(rx,-8,-74,[5,8],air);
+  var cols=[column(U.x0+8,U.z0+12,rf(1.4,2.1),rf(18,28),ai),column(U.x0+38,U.z0+10,rf(1.2,1.8),rf(14,22),ai)];
+  var ts=techStructure(U.x0+30,U.z0+24,12,12,3,5,ai);
+  drum(ts.x0+6,ts.H+1.6,ts.z0+6,1.1,6,'x',ai);
+  var drums=[[U.x0+8,2.4,U.z1-16,1.3,8,'z'],[U.x0+40,2.2,U.z1-14,1.1,7,'z'],[U.x0+40,2.0,U.z1-30,.9,6,'z']];
+  drums.forEach(function(d){drum(d[0],d[1],d[2],d[3],d[4],d[5],ai)});
+  var ex=[[U.x0+8,1.6,U.z0+40],[U.x0+12,1.6,U.z0+40]];ex.forEach(function(e){drum(e[0],e[1],e[2],.7,6,'z',ai);vcyl(e[0],.9,e[2]-3.6,.5,1.4,3,ai)});
+  var pumps=[];for(var p=0;p<5;p++){var pz=U.z1-6-p*3.6;pump(rx-6,pz,ai,false);pumps.push([rx-6,pz])}
+  // E&I: junction boxes and lighting
+  for(var j=0;j<6;j++){box(U.x0+rf(4,46),1.2,U.z0+rf(6,60),.6,.9,.3,4,ai);vcyl(U.x0+rf(2,48),0,U.z0+rf(4,66),.08,7,4,ai)}
+  /* piping */
+  var yR1=[7,10],targets=[];
+  cols.forEach(function(c,ci){for(var n=0;n<3;n++){targets.push({p:[c.x+(ci?1:-1)*(c.r+.6),rf(3,c.h-4),c.z],big:true})}});
+  drums.forEach(function(d){targets.push({p:[d[0]+(d[0]<rx?d[3]+.5:-d[3]-.5),d[1]+d[3]*.4,d[2]+rf(-2,2)],big:true})});
+  targets.push({p:[ts.x0+6,ts.H+1.6,ts.z0+3],big:true},{p:[ts.x0+2,ts.H/2+.6,ts.z0+12.4],big:false},{p:[ts.x0+10,ts.H-1,ts.z0-.4],big:false});
+  ex.forEach(function(e){targets.push({p:[e[0],e[1]+.75,e[2]+2],big:false},{p:[e[0],e[1]+.75,e[2]-2],big:false})});
+  pumps.forEach(function(p){targets.push({p:[p[0]-1.6,.95,p[1]],big:false,pump:true})});
+  var ts2=techStructure(U.x0+27,U.z0+38,8,8,2,5,ai);drum(ts2.x0+4,ts2.H+1.8,ts2.z0+4,.8,5,'x',ai);targets.push({p:[ts2.x0+1.2,ts2.H+1.8,ts2.z0+4],big:true},{p:[ts2.x0+8.4,ts2.H/2,ts2.z0+4],big:false});
+  targets=targets.concat(dup(targets));
+  targets.forEach(function(t,ti){
+    var size=t.big?pick([12,10,8,6,4]):pick([6,4,3,2]),svcI=pick([0,1,2,3,4,5,8]);
+    // from main rack: drop at local rack, run along local rack then branch to the target
+    var L=newLine(ai,size,svcI,'unit'),tier=ti%2?8:5,y=tier+pr(size),lx=rx+rf(-2.2,2.2);
+    var pts=[[lx,yR1[ti%2]+pr(size),-4.6],[lx,yR1[ti%2]+pr(size),-7],[lx,y,-9],[lx,y,t.p[2]],[lx,y,t.p[2]]];
+    var yRun=t.pump?y:Math.max(y,t.p[1]);
+    pts=[[lx,yR1[ti%2]+pr(size),-4.4],[lx,yR1[ti%2]+pr(size),-7.5],[lx,y,-7.5],[lx,y,t.p[2]],[t.p[0]+(t.p[0]<lx?1.2:-1.2),y,t.p[2]],[t.p[0]+(t.p[0]<lx?1.2:-1.2),t.p[1],t.p[2]],t.p];
+    route(L,dedupe(pts),rf(6,9),{valves:.25});
+  });
+  // equipment interconnects at grade
+  for(var ic=0;ic<16;ic++){var a1=targets[ri(0,targets.length-1)].p,a2=targets[ri(0,targets.length-1)].p;if(Math.abs(a1[0]-a2[0])+Math.abs(a1[2]-a2[2])<6)continue;
+    var L2=newLine(ai,pick([8,6,4,3]),pick([0,1,4,5]),'unit');route(L2,dedupe(manhattan([a1[0],Math.min(a1[1],3.2),a1[2]],[a2[0],Math.min(a2[1],3.2),a2[2]],rf(2.6,4),R()<.5?'xz':'zx')),rf(6,9),{valves:.2})}
+  // local rack runs along the unit rack
+  for(var lr=0;lr<12;lr++){var Lr=newLine(air,pick([10,8,6,4,3]),pick([0,1,2,6,7]),'rack'),yy=(lr%2?8:5)+pr(4),xx=rx+(-2.6+(lr>>1)*.95);route(Lr,[[xx,yy,-7],[xx,yy,ri(-74,-50)]],10,{ns:1})}
+  // existing plant inside the Brown Field unit (shown pale)
+  var eh=rf(14,20);vcyl(U.x0+47,0,U.z0+30,1.3,eh,5,A.ex);sph(U.x0+47,eh,U.z0+30,1.3,.7,1.3,5,A.ex);
+  box(U.x0+46,3,U.z1-22,6,6,8,5,A.ex);
+  for(var e2=0;e2<4;e2++){var ex0=U.x0+43.5+e2*.8;cylA([ex0,3.5+e2*.4,U.z0-8],[ex0,3.5+e2*.4,U.z1-4],.12+e2*.03,5,A.ex,-1,-1)}
+  for(var e3=0;e3<6;e3++)box(U.x0+rf(30,50),rf(.8,2),U.z0+rf(50,64),rf(2,4),rf(1.6,4),rf(2,4),5,A.ex);
+}
+function gf215(U){
+  var ai=A.a5,ai2=A.a5b;
+  // compressor shelter: steel frame with roof, two compressor packages inside
+  var sx=U.x0+6,sz=U.z0+8,W=24,D=16,H=12;
+  for(var i=0;i<=4;i++)for(var k=0;k<=2;k++){box(sx+i*W/4,H/2,sz+k*D/2,.5,H,.5,0,ai);box(sx+i*W/4,.4,sz+k*D/2,1.4,.8,1.4,1,ai)}
+  for(var i2=0;i2<=4;i2++)box(sx+i2*W/4,H,sz+D/2,.4,.5,D,0,ai);
+  for(var k3=0;k3<=2;k3++)box(sx+W/2,H,sz+k3*D/2,W,.5,.4,0,ai);
+  box(sx+W/2,H+.6,sz+D/2,W+1,.25,D+1,0,ai);box(sx+W/2,7,sz,W,.3,.3,0,ai);box(sx+W/2,7,sz+D,W,.3,.3,0,ai);
+  for(var c=0;c<2;c++){box(sx+6+c*12,1.2,sz+8,9,2.4,5,3,ai);box(sx+6+c*12,2.8,sz+8,6,1.2,3.4,3,ai);hcylX(sx+2+c*12,2.3,sz+8,1,2.5,3,ai);box(sx+6+c*12,.3,sz+8,10,.6,6,1,ai)}
+  box(sx+W/2,10.2,sz+D/2,1,.6,D,3,ai); // crane beam
+  var scr=[column(U.x0+38,U.z0+10,1.5,9,ai),column(U.x0+46,U.z0+10,1.5,9,ai),column(U.x0+54,U.z0+10,1.3,8,ai)];
+  var coolers=[];for(var e=0;e<4;e++){drum(U.x0+38+e*5,1.6,U.z0+32,.8,7,'z',ai);coolers.push([U.x0+38+e*5,U.z0+32])}
+  for(var p=0;p<4;p++)pump(U.x0+40+p*4,U.z0+44,ai,true);
+  // process area: absorber and regenerator, tech structure, drums
+  var cols=[column(U.x0+12,U.z0+70,2.6,34,ai2),column(U.x0+28,U.z0+72,2.0,26,ai2)];
+  var ts=techStructure(U.x0+36,U.z0+60,18,12,4,5,ai2);drum(ts.x0+9,ts.H+1.8,ts.z0+6,1.3,8,'x',ai2);drum(ts.x0+5,ts.H/2+1.5,ts.z0+6,1,5,'x',ai2);
+  var drums=[[U.x0+10,2.4,U.z0+98,1.4,9],[U.x0+26,2.2,U.z0+100,1.2,8],[U.x0+44,2.2,U.z0+98,1.1,7],[U.x0+52,2.0,U.z0+108,.9,6]];
+  drums.forEach(function(d){drum(d[0],d[1],d[2],d[3],d[4],'z',ai2)});
+  for(var p2=0;p2<6;p2++)pump(U.x0+8+p2*4.4,U.z0+86,ai2,true);
+  for(var j=0;j<10;j++){box(U.x0+rf(4,58),1.2,U.z0+rf(6,118),.6,.9,.3,4,R()<.5?ai:ai2);vcyl(U.x0+rf(2,60),0,U.z0+rf(4,120),.08,8,4,R()<.5?ai:ai2)}
+  // unit pipe rack inside 215 (E-W at z = U.z0 + 52)
+  var zr=U.z0+52;for(var x=U.x0+2;x<=U.x1+6;x+=7){[-3,3].forEach(function(dz){box(x,4.2,zr+dz,.4,8.4,.4,0,ai2);box(x,.35,zr+dz,1.2,.7,1.2,1,ai2)});[5,8].forEach(function(y){box(x,y-.2,zr,.3,.35,6.4,0,ai2)});if(x+7<=U.x1+6)[5,8].forEach(function(y){[-3,3].forEach(function(dz){box(x+3.5,y-.15,zr+dz,7,.25,.25,0,ai2)})})}
+  // piping: rack R2 to shelter, compressors, scrubbers, coolers; unit rack runs; column risers
+  var tg=[];
+  for(var c2=0;c2<2;c2++){tg.push({p:[sx+3+c2*12,3.4,sz+8],a:ai,big:true},{p:[sx+9+c2*12,3.4,sz+8],a:ai,big:true})}
+  scr.forEach(function(s){tg.push({p:[s.x-s.r-.5,s.h*.6,s.z],a:ai,big:true},{p:[s.x+s.r+.5,2.2,s.z],a:ai,big:false})});
+  coolers.forEach(function(cc){tg.push({p:[cc[0],2.4,cc[1]-3],a:ai,big:false},{p:[cc[0],2.4,cc[1]+3],a:ai,big:false})});
+  cols.forEach(function(cl,ci){for(var n=0;n<4;n++)tg.push({p:[cl.x+(n%2?cl.r+.6:-cl.r-.6),rf(4,cl.h-3),cl.z],a:ai2,big:true,riser:true})});
+  tg.push({p:[ts.x0+9,ts.H+1.8,ts.z0+4],a:ai2,big:true},{p:[ts.x0+5,ts.H/2+1.5,ts.z0+8],a:ai2,big:true});
+  drums.forEach(function(d){tg.push({p:[d[0],d[1]+d[3]+.4,d[2]+rf(-2,2)],a:ai2,big:true})});
+  tg=tg.concat(dup(tg));inter(tg,ai2,18);
+  tg.forEach(function(t,ti){
+    var size=t.big?pick([16,14,12,10,8,6]):pick([6,4,3,2]),L=newLine(t.a,size,pick([0,1,2,3,4,5,8]),'unit');
+    var fromR2=[305-3.6+ti%5*.2,(ti%2?10:7)+pr(size),zr+rf(-2,2)];
+    var yRun=(ti%2?8:5)+pr(size),xr=t.p[0]+(t.riser?(t.p[0]<U.x0+20?-1.4:1.4):0);
+    var pts=[[301.2,fromR2[1],zr+(ti%6)-2.5],[U.x1+4,fromR2[1],zr+(ti%6)-2.5],[U.x1+4,yRun,zr+(ti%6)-2.5],[xr,yRun,zr+(ti%6)-2.5],[xr,yRun,t.p[2]],[xr,t.p[1],t.p[2]],t.p];
+    route(L,dedupe(pts),rf(6,9),{valves:.25});
+  });
+  for(var lr=0;lr<12;lr++){var Lr=newLine(ai2,pick([12,10,8,6,4]),pick([0,1,2,6,7]),'unit'),yy=(lr%2?8:5)+pr(6),zz=zr-2.6+(lr>>1)*.95;route(Lr,[[U.x1+5,yy,zz],[U.x0+2,yy,zz]],10,{ns:1})}
+}
+function gf259(U){
+  var ai=A.a6,ai2=A.a6b;
+  var cols=[column(U.x0+10,U.z0+12,2.4,32,ai),column(U.x0+24,U.z0+14,2.0,28,ai),column(U.x0+38,U.z0+12,1.6,22,ai)];
+  var ts=techStructure(U.x0+46,U.z0+8,16,14,4,5,ai);drum(ts.x0+8,ts.H+1.6,ts.z0+7,1.2,7,'x',ai);
+  var drums=[[U.x0+10,2.4,U.z0+40,1.3,8],[U.x0+24,2.2,U.z0+42,1.1,7],[U.x0+40,2.2,U.z0+40,1.2,8],[U.x0+54,2.0,U.z0+42,.9,6]];
+  drums.forEach(function(d){drum(d[0],d[1],d[2],d[3],d[4],'z',ai)});
+  for(var p=0;p<6;p++)pump(U.x0+8+p*4.4,U.z0+54,ai,true);
+  for(var e=0;e<3;e++){drum(U.x0+44+e*5,1.6,U.z0+58,.8,7,'z',ai)}
+  // tank farm
+  var tanks=[[U.x0+12,U.z0+92],[U.x0+30,U.z0+92],[U.x0+12,U.z0+112],[U.x0+30,U.z0+112]];
+  tanks.forEach(function(t){vcyl(t[0],0,t[1],7.6,.6,1,ai2);vcyl(t[0],.6,t[1],7,9.5,3,ai2);sph(t[0],10.1,t[1],7,1.3,7,3,ai2);box(t[0]+7.3,5,t[1],.3,10,.6,0,ai2)});
+  box(U.x0+21,.6,U.z0+102,40,1.2,.6,1,ai2);box(U.x0+21,.6,U.z0+122,40,1.2,.6,1,ai2);box(U.x0+1,.6,U.z0+112,.6,1.2,22,1,ai2);box(U.x0+41,.6,U.z0+112,.6,1.2,22,1,ai2);
+  for(var p2=0;p2<4;p2++)pump(U.x0+50+p2*3.5,U.z0+100,ai2,true);
+  for(var j=0;j<10;j++){box(U.x0+rf(4,62),1.2,U.z0+rf(6,118),.6,.9,.3,4,R()<.5?ai:ai2);vcyl(U.x0+rf(2,64),0,U.z0+rf(4,120),.08,8,4,R()<.5?ai:ai2)}
+  var zr=U.z0+72;for(var x=U.x0-6;x<=U.x1;x+=7){[-3,3].forEach(function(dz){box(x,4.2,zr+dz,.4,8.4,.4,0,ai);box(x,.35,zr+dz,1.2,.7,1.2,1,ai)});[5,8].forEach(function(y){box(x,y-.2,zr,.3,.35,6.4,0,ai)});if(x+7<=U.x1)[5,8].forEach(function(y){[-3,3].forEach(function(dz){box(x+3.5,y-.15,zr+dz,7,.25,.25,0,ai)})})}
+  var tg=[];
+  cols.forEach(function(cl){for(var n=0;n<4;n++)tg.push({p:[cl.x+(n%2?cl.r+.6:-cl.r-.6),rf(4,cl.h-3),cl.z],a:ai,big:true,riser:true})});
+  tg.push({p:[ts.x0+8,ts.H+1.6,ts.z0+5],a:ai,big:true},{p:[ts.x0+4,ts.H/2,ts.z0+14.4],a:ai,big:false});
+  drums.forEach(function(d){tg.push({p:[d[0],d[1]+d[3]+.4,d[2]+rf(-2,2)],a:ai,big:true})});
+  tanks.forEach(function(t){tg.push({p:[t[0]-7.4,1.4,t[1]],a:ai2,big:true},{p:[t[0],10.6,t[1]-3],a:ai2,big:false})});
+  tg=tg.concat(dup(tg));inter(tg,ai,18);
+  tg.forEach(function(t,ti){
+    var size=t.big?pick([20,16,14,12,10,8]):pick([6,4,3,2]),L=newLine(t.a,size,pick([0,1,2,3,4,5,8]),'unit');
+    var yR=(ti%2?10:7)+pr(size),yRun=(ti%2?8:5)+pr(size),xr=t.p[0]+(t.riser?(ti%2?1.4:-1.4):0),zz=zr+(ti%6)-2.5;
+    var pts=[[308.8,yR,zz],[U.x0-4,yR,zz],[U.x0-4,yRun,zz],[xr,yRun,zz],[xr,yRun,t.p[2]],[xr,t.p[1],t.p[2]],t.p];
+    route(L,dedupe(pts),rf(6,9),{valves:.25});
+  });
+  for(var lr=0;lr<12;lr++){var Lr=newLine(ai,pick([12,10,8,6,4]),pick([0,1,2,6,7]),'unit'),yy=(lr%2?8:5)+pr(6),zz2=zr-2.6+(lr>>1)*.95;route(Lr,[[U.x0-5,yy,zz2],[U.x1,yy,zz2]],10,{ns:1})}
+}
+function dedupe(pts){var o=[pts[0]];for(var i=1;i<pts.length;i++){var p=pts[i],q=o[o.length-1];if(Math.abs(p[0]-q[0])+Math.abs(p[1]-q[1])+Math.abs(p[2]-q[2])>.05)o.push(p)}
+  // drop collinear middle points
+  var r=[o[0]];for(var j=1;j<o.length-1;j++){var a=r[r.length-1],b=o[j],c=o[j+1];var d1=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],d2=[c[0]-b[0],c[1]-b[1],c[2]-b[2]];
+    var cr=[d1[1]*d2[2]-d1[2]*d2[1],d1[2]*d2[0]-d1[0]*d2[2],d1[0]*d2[1]-d1[1]*d2[0]];if(Math.abs(cr[0])+Math.abs(cr[1])+Math.abs(cr[2])>1e-6)r.push(b)}
+  r.push(o[o.length-1]);return r}
+
+/* ================= progress data ================= */
+var ST=['NR','RS','DG','ER','FU','WD'];
+var STN={NR:'Not received at site',RS:'Received at site',DG:'Doubled at ground',ER:'Erected',FU:'Fit-up done',WD:'Welding done',NS:'No spool number in the model'};
+var STC={NR:'#F6D84C',RS:'#EC6F0A',DG:'#A85210',ER:'#7DBDEB',FU:'#1F6FBF',WD:'#14315F',NS:'#B3B7BD'};
+function assign(){
+  /* test packs: lines grouped by unit area and service */
+  var groups={};
+  var gc={};LINES.forEach(function(L){var a=AREAS[L.ai],k0=a.code+'|'+L.sys;gc[k0]=(gc[k0]||0)+1;var key=a.unit+'|'+a.code+'|'+L.sys+'|'+Math.floor((gc[k0]-1)/(L.kind==='rack'?2:4));(groups[key]=groups[key]||[]).push(L.i)});
+  var sysN={},tpN={};
+  Object.keys(groups).forEach(function(key){
+    var ls=groups[key],L0=LINES[ls[0]],a=AREAS[L0.ai],u=a.unit==='Racks'?(a.f==='BF'?'300':'200'):a.unit;
+    var sk=u+'-'+L0.sys;sysN[sk]=(sysN[sk]||0)+1;var sysId=sk+'-'+pad(Math.ceil(sysN[sk]/2))+'-'+pad(sysN[sk]);
+    tpN[sysId]=(tpN[sysId]||0)+1;
+    var tp={i:TPS.length,id:sysId+'-TP-AG-'+('00'+tpN[sysId]).slice(-3),sys:sysId,unit:a.unit,ai:L0.ai,lines:ls,spools:[],isos:{}};
+    TPS.push(tp);ls.forEach(function(li){LINES[li].tp=tp.i;LINES[li].spools.forEach(function(si){tp.spools.push(si);tp.isos[SPOOLS[si].iso]=1})});
+  });
+  // MC-01: the client's priority list (all of units 215 and 330, the BF rack and about a third of the rest)
+  TPS.forEach(function(tp){var a=AREAS[tp.ai];tp.mc=((a.unit==='215'&&R()<.8)||(a.unit==='330'&&R()<.7)||(a.code==='R01-01'&&R()<.85)||R()<.2)?1:2});
+  /* spool status */
+  SPOOLS.forEach(function(s){
+    var L=LINES[s.line],a=AREAS[s.ai],ap=UNIT_AP[a.unit]||.5,pos=L.spools.indexOf(s.i)/Math.max(1,L.spools.length-1);
+    if(L.kind==='rack')ap+=.12;
+    var sc=ap+rf(-.3,.3)-pos*.1+(TPS[L.tp].mc===1?.08:-.02);
+    s.st=sc>.66?'WD':sc>.58?'FU':sc>.53?'ER':sc>.44?'DG':sc>.26?'RS':'NR';
+    s.joints=2+Math.floor(s.len/3.5)+s.bends;
+    s.scope=s.joints*s.size;   // weld inch-dia of the spool
+    s.fu=s.st==='WD'||s.st==='FU'?s.joints:s.st==='ER'?ri(0,s.joints-1):0;
+    s.w=s.st==='WD'?s.joints:s.st==='FU'?ri(0,s.joints-1):0;
+    s.erected=(s.st==='ER'||s.st==='FU'||s.st==='WD')?Date.UTC(2026,ri(3,9),ri(1,28)):0;
+    var mc=TPS[L.tp].mc,base={FU:[1,4],ER:[2,6],DG:[3,8],RS:[4,9],NR:[5,10]},base2={FU:[2,8],ER:[4,12],DG:[6,16],RS:[8,18],NR:[10,20]};
+    var rng=(mc===1?base:base2)[s.st];s.pw=rng?ri(rng[0],rng[1]):-1;   // planned week welding complete
+  });
+  /* test-pack paper status, hydrotest */
+  var P6N={};
+  TPS.forEach(function(tp){
+    var sc=0,wd=0,er=0,done=true,mx=0;tp.spools.forEach(function(si){var s=SPOOLS[si];sc+=s.scope;wd+=s.w*s.size;if(s.erected)er++;if(s.st!=='WD')done=false;mx=Math.max(mx,s.pw)});
+    tp.scope=sc;tp.welded=wd;tp.erected=er;tp.done=done;
+    tp.paper=done?(R()<.45?'Approved':'Submitted'):(R()<.66?'Submitted':R()<.7?'To be Submitted':'Approved');
+    tp.tested=0;tp.reinst=0;
+    if(done&&R()<.55){tp.tested=Date.UTC(2026,ri(7,9),ri(1,28));if(R()<.5)tp.reinst=tp.tested+ri(6,14)*DAY}
+    var hw=done?(tp.tested?-1:ri(1,3)):clamp(mx+1,1,tp.mc===1?12:21);tp.hw=hw;
+    var a=AREAS[tp.ai];var k=a.code+'|'+tp.mc;P6N[k]=(P6N[k]||0);
+    tp.p6=(a.unit==='Racks'?(a.f==='BF'?'300':'200'):a.unit)+'.'+a.code.replace('-','')+'.PI.'+(tp.mc===1?'HT1':'HT2')+(10+P6N[k]%4*10);P6N[k]++;
+    tp.isoN=Object.keys(tp.isos).length;
+  });
+}
+/* non-piping build plan: bottom-up inside each area and discipline */
+var BUILT=null; // per geometry, Int16Array of the week each item is complete (-1 = built at cut-off)
+function planBuild(){
+  BUILT={};
+  ['cyl','sph','box'].forEach(function(g){BUILT[g]=new Int16Array(INST[g].length)});
+  var buckets={};
+  ['cyl','sph','box'].forEach(function(g){INST[g].forEach(function(r,i){var d=r[10];if(d===2||d===5){BUILT[g][i]=-1;return}var k=r[11]+'|'+d;(buckets[k]=buckets[k]||[]).push([g,i,r[1]])})});
+  Object.keys(buckets).forEach(function(k){
+    var p=k.split('|'),a=AREAS[+p[0]],d=+p[1],list=buckets[k];list.sort(function(x,y){return x[2]-y[2]});
+    var share=a.prog[['S','C','x','E','I'][d]],fw=a.prog.fw[[0,1,0,2,3][d]],nb=Math.round(share*list.length);
+    list.forEach(function(e,j){BUILT[e[0]][e[1]]=j<nb?-1:Math.max(1,Math.round(1+(j-nb+1)/Math.max(1,list.length-nb)*(Math.max(fw,2)-1)))});
+  });
+}
+
+/* ================= three.js scene ================= */
+var stage=document.getElementById('stage'),cv=document.getElementById('cv');
+if(!window.THREE){document.getElementById('load').textContent='The 3D library could not load. Check the connection and reload.';return}
+build();assign();planBuild();
+var renderer;
+try{renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,preserveDrawingBuffer:true})}catch(e){document.getElementById('load').textContent='The 3D view needs WebGL.';return}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setClearColor(0xeef1f5,1);
+var scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(32,1,1,5000);
+scene.add(new THREE.HemisphereLight(0xffffff,0xb7c0cc,.8));
+var sun=new THREE.DirectionalLight(0xffffff,.42);sun.position.set(-120,260,180);scene.add(sun);
+var ground=new THREE.Mesh(new THREE.PlaneGeometry(900,700),new THREE.MeshLambertMaterial({color:0xE4E8ED}));ground.rotation.x=-Math.PI/2;ground.position.set(180,-0.05,10);scene.add(ground);
+var grid=new THREE.GridHelper(900,90,0xC9D0D9,0xC9D0D9);grid.position.set(180,0.01,10);grid.material.transparent=true;grid.material.opacity=.7;scene.add(grid);
+// hatch texture: orange with light stripes
+function hatchTex(){var c=document.createElement('canvas');c.width=c.height=64;var g=c.getContext('2d');g.fillStyle='#EC6F0A';g.fillRect(0,0,64,64);g.strokeStyle='#F9D1B1';g.lineWidth=9;for(var i=-64;i<128;i+=22){g.beginPath();g.moveTo(i,0);g.lineTo(i+64,64);g.stroke()}var t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1.5,3);return t}
+var GEO={cyl:new THREE.CylinderGeometry(1,1,1,12,1),sph:new THREE.SphereGeometry(1,12,8),box:new THREE.BoxGeometry(1,1,1)};
+var MAT_SOLID=new THREE.MeshLambertMaterial({color:0xffffff}),MAT_HATCH=new THREE.MeshLambertMaterial({color:0xffffff,map:hatchTex()});
+var MESH={};
+['cyl','sph','box'].forEach(function(g){var n=INST[g].length;
+  MESH[g]={solid:new THREE.InstancedMesh(GEO[g],MAT_SOLID,n),hatch:new THREE.InstancedMesh(GEO[g],MAT_HATCH,n)};
+  ['solid','hatch'].forEach(function(k){var m=MESH[g][k];m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);m.frustumCulled=false;m.userData.g=g;m.setColorAt(0,new THREE.Color());scene.add(m)});
+});
+var ZERO=new THREE.Matrix4().makeScale(0,0,0),M4=new THREE.Matrix4(),P3=new THREE.Vector3(),Q4=new THREE.Quaternion(),S3=new THREE.Vector3(),COL=new THREE.Color();
+
+/* ================= state ================= */
+var S={w:0,mode:'built',show:-1,focus:'all',tp:-1,mc1:false,spSel:null,hidden:{},card:null,playing:false};
+var PALE=new THREE.Color('#E3E7EC'),EXIST=new THREE.Color('#DDE1E7'),WHITE=new THREE.Color('#ffffff');
+var C={S:new THREE.Color('#33414E'),C:new THREE.Color('#A8977A'),P:new THREE.Color('#1F6FBF'),E:new THREE.Color('#96652A'),I:new THREE.Color('#F2CF3A'),NOT:new THREE.Color('#F1E6B5'),HL:new THREE.Color('#F6D84C'),ND:new THREE.Color('#B3B7BD')};
+var SC={};Object.keys(STC).forEach(function(k){SC[k]=new THREE.Color(STC[k])});
+var DCOL=[C.S,C.C,C.P,C.E,C.I,EXIST];
+function spoolStatusAt(s,w){if(w<=0||s.st==='WD')return s.st;if(s.pw>=0&&s.pw<=w)return 'WD';var o=ST.indexOf(s.st);if(s.pw-2<=w&&o<4)return 'FU';if(s.pw-4<=w&&o<3)return 'ER';if(s.pw-6<=w&&o<2)return 'RS';return s.st}
+function focusAreas(){var f=S.focus;if(f==='all'||f==='mc1')return null;var set={};AREAS.forEach(function(a){if((f==='GF'||f==='BF')?a.f===f:(f==='Racks'?a.unit==='Racks':a.unit===f))set[a.i]=1});return set}
+function paint(){
+  var w=S.w,fa=focusAreas(),tpSet=null,lineSet=null;
+  if(S.tp>=0){lineSet={};TPS[S.tp].lines.forEach(function(li){lineSet[li]=1})}
+  else if(S.mc1){lineSet={};TPS.forEach(function(tp){if(tp.mc===1)tp.lines.forEach(function(li){lineSet[li]=1})})}
+  else if(S.spSel){lineSet=null}
+  var cnt={NR:0,RS:0,DG:0,ER:0,FU:0,WD:0,NS:0};
+  ['cyl','sph','box'].forEach(function(g){
+    var rows=INST[g],ms=MESH[g].solid,mh=MESH[g].hatch,B=BUILT[g];
+    for(var i=0;i<rows.length;i++){
+      var r=rows[i],d=r[10],ai=r[11],sp=r[12],ln=r[13],hid=(S.show>=0&&d!==S.show&&d!==5)||S.hidden[g+i];
+      if(hid){ms.setMatrixAt(i,ZERO);mh.setMatrixAt(i,ZERO);continue}
+      var col=null,hatch=false,pale=false,thick=1;
+      if(d===2){
+        var st=sp>=0?spoolStatusAt(SPOOLS[sp],w):'NS';
+        var inSel=lineSet?!!lineSet[ln]:(S.spSel?(sp>=0&&!!S.spSel[sp]):true);
+        if(S.mode==='spool'){col=SC[st];hatch=st==='RS'}
+        else{if(st==='NS')col=C.ND;else if(st==='WD')col=C.P;else if(st==='NR')col=(lineSet||S.spSel)&&inSel?C.HL:C.NOT;else hatch=true}
+        if(lineSet||S.spSel){if(inSel)thick=1.7;else pale=true}
+        else if(fa&&!fa[ai])pale=true;
+      }else if(d===5){col=EXIST}
+      else{
+        var bw=B[i],built=bw<0||bw<=w,prog=!built&&bw-3<=w;
+        if(S.mode==='spool'){col=PALE;pale=true}
+        else{if(built)col=DCOL[d];else if(prog)hatch=true;else col=C.NOT}
+        if(lineSet||S.spSel||(fa&&!fa[ai]))pale=true;
+      }
+      if(pale){COL.copy(col||PALE).lerp(WHITE,.72);col=COL;hatch=false}
+      P3.set(r[0],r[1],r[2]);Q4.set(r[3],r[4],r[5],r[6]);
+      if(thick!==1&&g!=='box')S3.set(r[7]*thick,g==='cyl'?r[8]:r[8]*thick,r[9]*thick);else S3.set(r[7],r[8],r[9]);
+      M4.compose(P3,Q4,S3);
+      if(hatch){mh.setMatrixAt(i,M4);ms.setMatrixAt(i,ZERO);mh.setColorAt(i,WHITE)}
+      else{ms.setMatrixAt(i,M4);mh.setMatrixAt(i,ZERO);ms.setColorAt(i,col)}
+    }
+    ms.instanceMatrix.needsUpdate=mh.instanceMatrix.needsUpdate=true;ms.instanceColor.needsUpdate=mh.instanceColor.needsUpdate=true;
+  });
+  SPOOLS.forEach(function(s){if(fa&&!fa[s.ai])return;if(lineSet&&!lineSet[s.line])return;if(!lineSet&&S.spSel&&!S.spSel[s.i])return;cnt[spoolStatusAt(s,w)]++});
+  S.cnt=cnt;drawLegend();drawKpis();drawWhen();drawTimeline();req();
+}
+
+/* ================= progress numbers ================= */
+var W8={0:.20,1:.16,2:.42,3:.12,4:.10};
+function numbers(w,fa,mc1Only){
+  var out={},disc=[0,1,3,4];
+  // piping by weld inch-dia
+  var sc=0,wd=0;SPOOLS.forEach(function(s){if(fa&&!fa[s.ai])return;if(mc1Only&&TPS[LINES[s.line].tp].mc!==1)return;sc+=s.scope;var st=spoolStatusAt(s,w);wd+=st==='WD'?s.scope:(w>0?Math.min(s.w,s.joints)*s.size:s.w*s.size)});
+  out[2]={pct:sc?wd/sc:0,todo:sc-wd,scope:sc};
+  disc.forEach(function(d){var n=0,b=0;['cyl','sph','box'].forEach(function(g){var B=BUILT[g];INST[g].forEach(function(r,i){if(r[10]!==d)return;if(fa&&!fa[r[11]])return;n++;if(B[i]<0||B[i]<=w)b++})});out[d]={pct:n?b/n:0}});
+  var tot=0,ws=0;[0,1,2,3,4].forEach(function(d){if(out[d]){tot+=W8[d]*out[d].pct;ws+=W8[d]}});out.all=ws?tot/ws:0;return out;
+}
+var NUM_CACHE={};
+function nums(w,key,fa,mc1){var k=w+'|'+key;if(!NUM_CACHE[k])NUM_CACHE[k]=numbers(w,fa,mc1);return NUM_CACHE[k]}
+function unitNums(w,u){var set={};(UNIT_AREAS[u]||[]).forEach(function(ai){set[ai]=1});return nums(w,'u'+u,set,false)}
+
+/* ================= UI: chips, show only, legend, KPIs ================= */
+var chipsEl=document.getElementById('chips');
+var CHIPS=[['all','Whole plant'],['GF','Green Field'],['BF','Brown Field'],'UNIT',['310','310'],['320','320'],['330','330'],['340','340'],['215','215'],['259','259'],['Racks','Racks'],['mc1','MC-01 loop']];
+CHIPS.forEach(function(c){if(typeof c==='string'){chipsEl.appendChild(el('span','lbl',c));return}var b=el('button','chip'+(c[0]==='all'?' on':''),c[1]);b.dataset.k=c[0];b.addEventListener('click',function(){setFocus(c[0])});chipsEl.appendChild(b)});
+chipsEl.appendChild(el('span','sp'));
+var again=el('button','btn','Start again');again.addEventListener('click',function(){reset()});chipsEl.appendChild(again);
+var more=el('button','btn','More');more.addEventListener('click',function(){showTab('ab')});chipsEl.appendChild(more);
+var soEl=document.getElementById('showOnly');
+[['All',-1],['Structure',0],['Civil',1],['Piping',2],['Equipment',3],['E&I',4]].forEach(function(o){var b=el('button',o[1]===-1?'on':'',o[0]);b.addEventListener('click',function(){S.show=o[1];[].forEach.call(soEl.querySelectorAll('button'),function(x){x.classList.toggle('on',x===b)});paint()});soEl.appendChild(b)});
+document.getElementById('mode').addEventListener('change',function(e){S.mode=e.target.value;paint()});
+function drawLegend(){
+  var L=document.getElementById('lgd');L.textContent='';
+  function it(swCls,col,txt,n){var s=el('span','it'),sw=el('span','sw'+(swCls?' '+swCls:''));if(col)sw.style.background=col;s.appendChild(sw);s.appendChild(document.createTextNode(' '+txt));if(n!=null){s.appendChild(document.createTextNode(' '));s.appendChild(el('b',null,fmtN(n)))}L.appendChild(s)}
+  if(S.mode==='spool'){['NR','RS','DG','ER','FU','WD'].forEach(function(k){it(k==='RS'?'h':'',k==='RS'?null:STC[k],STN[k],S.cnt[k])});it('',STC.NS,STN.NS)}
+  else{it('','#33414E','Structure');it('','#A8977A','Civil');it('','#1F6FBF','Piping');it('','#96652A','Equipment');it('','#F2CF3A','E&I');it('h',null,'In progress');it('','#F1E6B5','Not started');it('','#F6D84C','Highlighted line not started');it('','#B3B7BD','No data');it('','#DDE1E7','Existing plant')}
+}
+var kpisEl=document.getElementById('kpis');
+function focusLabel(){var f=S.focus;return f==='all'?'Whole plant':f==='GF'?'Green Field':f==='BF'?'Brown Field':f==='Racks'?'Pipe racks':f==='mc1'?'MC-01 loop':'Unit '+f}
+function drawKpis(){
+  var fa=focusAreas(),n=nums(S.w,'f'+S.focus,fa,S.focus==='mc1'),word=S.w===0?'actual':'plan';
+  kpisEl.textContent='';
+  var k0=el('div','kpi');k0.appendChild(el('div','h','Numbers for'));k0.appendChild(el('div',null,'')).appendChild(el('b',null,focusLabel()));kpisEl.appendChild(k0);
+  var k1=el('div','kpi'),h1=el('div','h','All disciplines ');h1.appendChild(el('small',null,'PMS'));k1.appendChild(h1);var v1=el('div','v',(n.all*100).toFixed(1)+' % ');v1.appendChild(el('small',null,word));k1.appendChild(v1);kpisEl.appendChild(k1);
+  [[2,'Piping'],[0,'Structure'],[3,'Equipment'],[1,'Civil'],[4,'E&I']].forEach(function(o){
+    var k=el('div','kpi'),lab=el('label','h'),cb=document.createElement('input');cb.type='checkbox';cb.checked=S.show<0||S.show===o[0];
+    cb.addEventListener('change',function(){S.show=cb.checked?-1:o[0]===S.show?-1:o[0];if(!cb.checked){S.show=-1;showOnlyAllBut(o[0])}else{S.hiddenDisc=null}paint()});
+    lab.appendChild(cb);lab.appendChild(document.createTextNode(o[1]+' '));lab.appendChild(el('small',null,'P6 progress'));k.appendChild(lab);
+    var v=el('div','v',Math.round(n[o[0]].pct*100)+' % ');v.appendChild(el('small',null,word+(o[0]===2&&S.focus!=='mc1'||o[0]===2?'  welding to go '+fmtN(n[2].todo)+' inch-dia':'')));k.appendChild(v);kpisEl.appendChild(k)});
+}
+function showOnlyAllBut(){}
+/* ================= timeline ================= */
+var tl=document.getElementById('tl'),NS='http://www.w3.org/2000/svg';
+function sv(t,a,x){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(x!=null)e.textContent=x;return e}
+function tx(w){return 30+940*w/NW}
+function drawTimeline(){
+  tl.textContent='';var y=54;
+  tl.appendChild(sv('line',{x1:tx(0),x2:tx(NW),y1:y,y2:y,stroke:'#C3CAD4','stroke-width':5,'stroke-linecap':'round'}));
+  tl.appendChild(sv('line',{x1:tx(0),x2:tx(S.w),y1:y,y2:y,stroke:'#14202E','stroke-width':5,'stroke-linecap':'round'}));
+  for(var w=0;w<=NW;w++){var d=new Date(wms(w)),nd=new Date(wms(w+1)),mclose=nd.getUTCMonth()!==d.getUTCMonth();tl.appendChild(sv('line',{x1:tx(w),x2:tx(w),y1:y-(mclose?9:4),y2:y+(mclose?9:4),stroke:'#14202E','stroke-width':mclose?1.6:1}))}
+  for(var m=0;m<7;m++){var ms=Date.UTC(2026,10+m,15),ww=(ms-CUT)/(7*DAY);tl.appendChild(sv('text',{x:tx(ww),y:80,'text-anchor':'middle','font-size':12,fill:'#4A5563'},fm(ms)))}
+  KEYD.forEach(function(k){var t=sv('path',{d:'M'+tx(k.w)+' '+(y+10)+' l5 8 l-10 0 z',fill:'#14202E'});t.appendChild(sv('title',{},k.t+' ('+fd(wms(k.w)-DAY)+')'));tl.appendChild(t)});
+  tl.appendChild(sv('text',{x:tx(0),y:14,'text-anchor':'start','font-size':12,'font-weight':700,fill:'#14202E'},'Cut-off'));
+  tl.appendChild(sv('text',{x:tx(0),y:27,'text-anchor':'start','font-size':11.5,fill:'#14202E'},'31-Oct-2026'));
+  tl.appendChild(sv('text',{x:tx(4.2),y:14,'font-size':11,fill:'#4A5563'},'tall mark = month close'));
+  tl.appendChild(sv('text',{x:tx(4.2),y:27,'font-size':11,fill:'#4A5563'},'triangle = key date'));
+  MS.forEach(function(m,i){var x=tx(m.w-.15);tl.appendChild(sv('path',{d:'M'+x+' '+(y-8)+' l8 8 l-8 8 l-8 -8 z',fill:'#fff',stroke:'#14202E','stroke-width':2}));
+    tl.appendChild(sv('text',{x:x,y:14,'text-anchor':i===2?'end':'middle','font-size':12,'font-weight':700,fill:'#14202E'},m.k));tl.appendChild(sv('text',{x:x,y:27,'text-anchor':i===2?'end':'middle','font-size':11.5,fill:'#14202E'},fd(m.ms)))});
+  tl.appendChild(sv('circle',{cx:tx(S.w),cy:y,r:8,fill:'#fff',stroke:'#14202E','stroke-width':3}));
+}
+function wFromEvent(e){var r=tl.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*1000;return clamp(Math.round((x-30)/940*NW),0,NW)}
+var tlDrag=false;
+tl.addEventListener('pointerdown',function(e){tlDrag=true;tl.setPointerCapture(e.pointerId);stop();setWeek(wFromEvent(e))});
+tl.addEventListener('pointermove',function(e){if(tlDrag)setWeek(wFromEvent(e))});
+tl.addEventListener('pointerup',function(){tlDrag=false});
+function drawWhen(){document.getElementById('whenH').textContent=S.w===0?'ACTUAL AT CUT-OFF':'PLAN, WEEK ENDING';document.getElementById('whenD').textContent=S.w===0?'31-Oct-2026':fd(wms(S.w)-DAY)}
+function setWeek(w){S.w=clamp(w,0,NW);paint()}
+var timer=null,playBtn=document.getElementById('play');
+function stop(){S.playing=false;clearInterval(timer);timer=null;playBtn.innerHTML='▶&nbsp; Play'}
+function play(){if(S.w>=NW)S.w=0;S.playing=true;playBtn.innerHTML='❚❚&nbsp; Pause';timer=setInterval(function(){if(S.w>=NW){stop();return}setWeek(S.w+1)},+document.getElementById('speed').value)}
+playBtn.addEventListener('click',function(){S.playing?stop():play()});
+document.getElementById('speed').addEventListener('change',function(){if(S.playing){stop();play()}});
+
+/* ================= camera ================= */
+var HOME={tx:192,ty:0,tz:22,r:385,az:-0.22,el:0.74},cam=Object.assign({},HOME),camAnim=null;
+function applyCam(){var ce=Math.cos(cam.el),r=cam.r*Math.max(1,1.6/camera.aspect);camera.position.set(cam.tx+r*ce*Math.sin(cam.az),cam.ty+r*Math.sin(cam.el),cam.tz+r*ce*Math.cos(cam.az));camera.lookAt(cam.tx,cam.ty,cam.tz)}
+var INSTANT=false;
+function flyTo(to,ms){if(INSTANT){Object.keys(to).forEach(function(p){cam[p]=to[p]});camAnim=null;req();return}var from=Object.assign({},cam),t0=performance.now();camAnim=function(now){var k=clamp((now-t0)/(ms||700),0,1),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;Object.keys(to).forEach(function(p){cam[p]=from[p]+(to[p]-from[p])*e});if(k>=1)camAnim=null};req()}
+function fitBox(x0,x1,z0,z1,h){var cx=(x0+x1)/2,cz=(z0+z1)/2,sz=Math.max(x1-x0,z1-z0,h||10);return {tx:cx,ty:(h||10)/3,tz:cz,r:clamp(sz*2.1+40,70,520)}}
+var dirty=true;function req(){dirty=true}
+function resize(){var w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();req()}
+new ResizeObserver(resize).observe(stage);
+/* labels */
+var labelsEl=document.getElementById('labels'),leaders=document.getElementById('leaders'),ULAB=[];
+UNITS.forEach(function(U){var d=el('div','ulab');labelsEl.appendChild(d);var ln=document.createElementNS(NS,'line');ln.setAttribute('stroke','#6b7684');ln.setAttribute('stroke-width','1');leaders.appendChild(ln);ULAB.push({U:U,el:d,ln:ln})});
+var ABOX=AREAS.map(function(){return [1e9,-1e9,1e9,-1e9,0]});
+['cyl','sph','box'].forEach(function(g){INST[g].forEach(function(r){if(r[10]===5||r[10]===1)return;var b=ABOX[r[11]];b[0]=Math.min(b[0],r[0]);b[1]=Math.max(b[1],r[0]);b[2]=Math.min(b[2],r[2]);b[3]=Math.max(b[3],r[2]);b[4]=Math.max(b[4],r[1])})});
+var AK={};var ALAB=AREAS.filter(function(a){return a.unit!=='Existing'}).map(function(a){AK[a.unit]=(AK[a.unit]||0)+1;var k=AK[a.unit]-1;var d=el('div','alab');d.appendChild(el('b',null,a.code));d.appendChild(document.createTextNode(a.name));labelsEl.appendChild(d);var ln=document.createElementNS(NS,'line');ln.setAttribute('stroke','#6b7684');ln.setAttribute('stroke-width','1');leaders.appendChild(ln);return {a:a,el:d,ln:ln,k:k}});
+var V=new THREE.Vector3();
+function placeLabels(){
+  var w=stage.clientWidth,h=stage.clientHeight,word=S.w===0?'actual':'plan',unitFocus=S.focus==='Racks'||UNITS.some(function(U){return U.u===S.focus});
+  ULAB.forEach(function(L){var U=L.U,cx=(U.x0+U.x1)/2,cz=(U.x0>230?U.z0+12:U.z1-6);
+    V.set(cx,46,cz).project(camera);var x=(V.x+1)/2*w,y=(1-V.y)/2*h,behind=V.z>1;
+    V.set(cx,6,cz).project(camera);var x2=(V.x+1)/2*w,y2=(1-V.y)/2*h;
+    var hideIt=behind||unitFocus||(S.focus!=='all'&&S.focus!=='mc1'&&S.focus!==U.u&&S.focus!==U.f);
+    L.el.style.display=L.ln.style.display=hideIt?'none':'';if(hideIt)return;
+    L.el.style.left=x+'px';L.el.style.top=y+'px';
+    var n=unitNums(S.w,U.u);L.el.textContent='';L.el.appendChild(el('b',null,'UNIT '+U.u));L.el.appendChild(document.createTextNode(Math.round(n.all*100)+' % '+word));
+    L.ln.setAttribute('x1',x);L.ln.setAttribute('y1',y);L.ln.setAttribute('x2',x2);L.ln.setAttribute('y2',y2)});
+  ALAB.forEach(function(L){var a=L.a,b=ABOX[a.i],show=unitFocus&&a.unit===S.focus&&b[0]<1e8;
+    if(show){var cx=(b[0]+b[1])/2,cz=(b[2]+b[3])/2;V.set(cx,b[4]+12+L.k*16,cz).project(camera);var x=(V.x+1)/2*w,y=(1-V.y)/2*h;show=V.z<1;V.set(cx,b[4]*.6,cz).project(camera);var x2=(V.x+1)/2*w,y2=(1-V.y)/2*h}
+    L.el.style.display=L.ln.style.display=show?'':'none';if(!show)return;L.el.style.left=x+'px';L.el.style.top=y+'px';L.ln.setAttribute('x1',x);L.ln.setAttribute('y1',y);L.ln.setAttribute('x2',x2);L.ln.setAttribute('y2',y2)});
+  // north arrow (north is +z)
+  V.set(cam.tx,0,cam.tz).project(camera);var a0=[V.x,V.y];V.set(cam.tx,0,cam.tz+30).project(camera);var ang=Math.atan2(-(V.y-a0[1]),V.x-a0[0])*180/Math.PI+90;
+  document.getElementById('narrow').setAttribute('transform','rotate('+ang+')');
+}
+function loop(now){if(camAnim)camAnim(now);if(dirty||camAnim){applyCam();renderer.render(scene,camera);placeLabels();dirty=false}requestAnimationFrame(loop)}
+
+/* pointer: orbit, pan, zoom, click */
+var ptrs={},down=null,moved=false,lastPinch=null;
+cv.addEventListener('pointerdown',function(e){cv.setPointerCapture(e.pointerId);ptrs[e.pointerId]={x:e.clientX,y:e.clientY};down={x:e.clientX,y:e.clientY};moved=false;cv.classList.add('drag');camAnim=null});
+cv.addEventListener('pointermove',function(e){var p=ptrs[e.pointerId];if(!p)return;var ids=Object.keys(ptrs);
+  if(ids.length===2){p.x=e.clientX;p.y=e.clientY;var a=ptrs[ids[0]],b=ptrs[ids[1]],d=Math.hypot(a.x-b.x,a.y-b.y);if(lastPinch)cam.r=clamp(cam.r*lastPinch/d,25,900);lastPinch=d;moved=true;req();return}
+  var dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;if(Math.abs(e.clientX-down.x)+Math.abs(e.clientY-down.y)>4)moved=true;
+  if(e.shiftKey||e.buttons===2){var k=cam.r*.0016,ca=Math.cos(cam.az),sa=Math.sin(cam.az);cam.tx+=(-ca*dx-sa*dy)*k;cam.tz+=(sa*dx-ca*dy)*k}else{cam.az-=dx*.006;cam.el=clamp(cam.el+dy*.005,.08,1.45)}req()});
+function endP(e){var wasClick=!moved&&Object.keys(ptrs).length===1;delete ptrs[e.pointerId];lastPinch=null;if(!Object.keys(ptrs).length)cv.classList.remove('drag');if(wasClick&&e.type==="pointerup")pickAt(e)}
+cv.addEventListener('pointerup',endP);cv.addEventListener('pointercancel',endP);
+cv.addEventListener('contextmenu',function(e){e.preventDefault()});
+cv.addEventListener('wheel',function(e){e.preventDefault();cam.r=clamp(cam.r*Math.exp(e.deltaY*.0012),25,900);camAnim=null;req()},{passive:false});
+
+/* picking and the item card */
+var ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),cardEl=document.getElementById('card');
+function pickAt(e){
+  var rc=cv.getBoundingClientRect();mouse.set((e.clientX-rc.left)/rc.width*2-1,-(e.clientY-rc.top)/rc.height*2+1);ray.setFromCamera(mouse,camera);
+  var objs=[];['cyl','sph','box'].forEach(function(g){objs.push(MESH[g].solid,MESH[g].hatch)});
+  var hits=ray.intersectObjects(objs,false);
+  for(var i=0;i<hits.length;i++){var h=hits[i],g=h.object.userData.g,r=INST[g][h.instanceId];if(!r||r[10]===5&&i<hits.length-1)continue;showCard(g,h.instanceId);return}
+  closeCard();
+}
+function closeCard(){cardEl.style.display='none';S.card=null}
+function row(k,v,sw){var d=el('div','r');d.appendChild(el('b',null,k+' '));if(sw){var s=el('span','sw'+(sw==='h'?' h':''));if(sw!=='h')s.style.background=sw;d.appendChild(s)}d.appendChild(document.createTextNode(v));return d}
+function showCard(g,i){
+  var r=INST[g][i],d=r[10],a=AREAS[r[11]];cardEl.textContent='';S.card=[g,i];
+  var x=el('button','x','×');x.addEventListener('click',closeCard);cardEl.appendChild(x);
+  if(d===2&&r[12]>=0){var s=SPOOLS[r[12]],L=LINES[s.line],iso=ISOS[s.iso],tp=TPS[L.tp],st=spoolStatusAt(s,S.w);
+    cardEl.appendChild(el('div','k','Piping - spool'));cardEl.appendChild(el('h4',null,'Spool '+s.id+' - '+iso.name));
+    cardEl.appendChild(el('div',null,(a.unit==='Racks'?'':'Unit '+a.unit+' - ')+a.code+' '+a.name));
+    cardEl.appendChild(row('Line',L.no));cardEl.appendChild(row('Size',s.size+' in - '+s.len.toFixed(2)+' m long - '+L.sys));
+    cardEl.appendChild(row('Spool status',STN[st]+(S.w?' (plan at '+fd(wms(S.w)-DAY)+')':' (site record at cut-off)'),st==='RS'?'h':STC[st]));
+    cardEl.appendChild(row('Erected',s.erected?fd(s.erected):'-'));
+    cardEl.appendChild(row('Field joints',s.joints+' joints: '+s.fu+' fit-up done, '+s.w+' welded ('+fmtN(s.scope)+' inch-dia: '+fmtN(s.fu*s.size)+' fit-up, '+fmtN(s.w*s.size)+' welded)'));
+    cardEl.appendChild(row('Test pack',tp.id+' - MC-0'+tp.mc));
+    cardEl.appendChild(el('hr'));
+    var isoS=iso.spools.map(function(si){return SPOOLS[si]}),isoE=isoS.filter(function(q){return q.erected}).length,isoW=isoS.reduce(function(t,q){return t+q.w*q.size},0),isoSc=isoS.reduce(function(t,q){return t+q.scope},0);
+    cardEl.appendChild(el('div','k','ISO sheet '+iso.name));
+    cardEl.appendChild(row('Record at cut-off',isoE+' of '+isoS.length+' spools erected, '+fmtN(isoW)+' of '+fmtN(isoSc)+' inch-dia welded'));
+    cardEl.appendChild(row('Plan',s.st==='WD'?'This spool: complete':'This spool: complete by '+fd(wms(s.pw)-DAY)+' (indicative)'));
+    cardEl.appendChild(row('P6 activity',tp.p6+' - piping erection and welding'));
+    cardEl.appendChild(row('Hydrotest',tp.tested?'Done '+fd(tp.tested)+(tp.reinst?', reinstated '+fd(tp.reinst):''):'by '+fd(wms(Math.max(tp.hw,1))-DAY)));
+    cardEl.appendChild(row('Scope','MC-0'+tp.mc+' ('+fd(MS[tp.mc-1].ms)+')'));
+    var acts=el('div','acts'),z=el('button','btn','Zoom to this item'),hb=el('button','btn','Hide this item'),tb=el('button','btn','Show its test pack');
+    z.addEventListener('click',function(){flyTo({tx:r[0],ty:r[1],tz:r[2],r:46})});hb.addEventListener('click',function(){S.hidden[g+i]=1;closeCard();paint()});tb.addEventListener('click',function(){highlightTP(tp.i)});
+    acts.appendChild(z);acts.appendChild(hb);acts.appendChild(tb);cardEl.appendChild(acts);
+  }else{
+    var bw=BUILT[g][i],built=bw<0||bw<=S.w;
+    cardEl.appendChild(el('div','k',DN[d]+(d===2?' - no spool number':'')));
+    cardEl.appendChild(el('h4',null,d===5?'Existing plant':(a.unit==='Racks'?'':'Unit '+a.unit+' - ')+a.code));
+    cardEl.appendChild(el('div',null,a.name));
+    if(d!==5&&d!==2){cardEl.appendChild(row('Status',bw<0?'Built at cut-off':built?'Built by '+fd(wms(bw)-DAY)+' (plan)':'Planned complete by '+fd(wms(bw)-DAY),bw<0||built?DCOL[d].getStyle():'#F1E6B5'))}
+    if(d===2)cardEl.appendChild(row('Note','Small-bore piece (vent or drain) with no spool number on the site lists. It takes no status.'));
+    var acts2=el('div','acts'),z2=el('button','btn','Zoom to this item'),hb2=el('button','btn','Hide this item');
+    z2.addEventListener('click',function(){flyTo({tx:r[0],ty:r[1],tz:r[2],r:60})});hb2.addEventListener('click',function(){S.hidden[g+i]=1;closeCard();paint()});acts2.appendChild(z2);acts2.appendChild(hb2);cardEl.appendChild(acts2);
+  }
+  cardEl.style.display='block';
+}
+
+/* ================= focus, test packs, reset ================= */
+var bannerEl=document.getElementById('banner');
+function setBanner(t){if(!t){bannerEl.style.display='none';return}document.getElementById('bannerTxt').textContent=t;bannerEl.style.display='flex'}
+document.getElementById('bannerClear').addEventListener('click',function(){if(S.tp<0&&!S.spSel&&S.focus!=='all'){setFocus('all');return}S.tp=-1;S.spSel=null;S.mc1=false;setBanner(S.focus==='all'||S.focus==='mc1'?null:focusLabel()+' only - other Orion scope shown pale');if(S.focus==='mc1')S.focus='all';[].forEach.call(chipsEl.querySelectorAll('.chip'),function(c){c.classList.toggle('on',c.dataset.k===S.focus)});paint()});
+function setFocus(k){
+  S.tp=-1;S.spSel=null;closeCard();
+  if(k==='mc1'){S.mc1=!S.mc1;S.focus=S.mc1?'mc1':'all';setBanner(S.mc1?'MC-01 loop only - other scope shown pale':null)}else{S.mc1=false;S.focus=k;setBanner(k==='all'?null:focusLabel()+' only - other Orion scope shown pale')}
+  [].forEach.call(chipsEl.querySelectorAll('.chip'),function(c){c.classList.toggle('on',c.dataset.k===S.focus)});
+  var U=UNITS.filter(function(u){return u.u===k})[0];
+  if(U)flyTo(Object.assign(fitBox(U.x0,U.x1,U.z0,U.z1,30),{az:cam.az,el:.6}));
+  else if(k==='GF')flyTo(Object.assign(fitBox(230,385,-8,140,30),{az:cam.az,el:.6}));
+  else if(k==='BF')flyTo(Object.assign(fitBox(0,232,-86,8,30),{az:cam.az,el:.6}));
+  else flyTo(Object.assign({},HOME,{az:cam.az}));
+  paint();
+}
+function tpBounds(tp){var x0=1e9,x1=-1e9,z0=1e9,z1=-1e9,y1=0;['cyl','sph'].forEach(function(g){INST[g].forEach(function(r){if(r[10]===2&&LINES[r[13]]&&LINES[r[13]].tp===tp.i){x0=Math.min(x0,r[0]);x1=Math.max(x1,r[0]);z0=Math.min(z0,r[2]);z1=Math.max(z1,r[2]);y1=Math.max(y1,r[1])}})});return [x0,x1,z0,z1,y1]}
+function highlightTP(i){
+  var tp=TPS[i];S.tp=i;S.mc1=false;S.spSel=null;closeCard();showTab('4d');
+  setBanner('Test pack '+tp.id+': '+tp.isoN+' ISO sheets, '+tp.isoN+' drawn');
+  var b=tpBounds(tp);flyTo(Object.assign(fitBox(b[0],b[1],b[2],b[3],b[4]),{az:cam.az,el:Math.max(cam.el,.5)}));paint();
+}
+function showSpools(sel,label){S.tp=-1;S.mc1=false;S.spSel=sel;S.mode='spool';document.getElementById('mode').value='spool';showTab('4d');setBanner(label);flyTo(Object.assign({},HOME,{az:cam.az}));paint()}
+function reset(){stop();S.w=0;S.show=-1;S.focus='all';S.tp=-1;S.mc1=false;S.spSel=null;S.hidden={};closeCard();setBanner(null);
+  [].forEach.call(soEl.querySelectorAll('button'),function(x,j){x.classList.toggle('on',j===0)});[].forEach.call(chipsEl.querySelectorAll('.chip'),function(c){c.classList.toggle('on',c.dataset.k==='all')});flyTo(HOME);paint()}
+
+/* ================= tabs ================= */
+var VIEWS={ov:'vov','4d':'v4d',sp:'vsp',ht:'vht',cm:'vcm',rp:'vrp',ab:'vab'};
+function showTab(k){Object.keys(VIEWS).forEach(function(v){document.getElementById(VIEWS[v]).classList.toggle('on',v===k)});[].forEach.call(document.querySelectorAll('.tab'),function(t){t.classList.toggle('on',t.dataset.v===k)});if(k==='4d'){resize();req()}}
+[].forEach.call(document.querySelectorAll('.tab'),function(t){t.addEventListener('click',function(){showTab(t.dataset.v)})});
+
+/* ================= Overview tab ================= */
+function sumSp(f){var o={n:0,scope:0,w:0};SPOOLS.forEach(function(s){if(f&&!f(s))return;o.n++;o.scope+=s.scope;o.w+=s.w*s.size});return o}
+function overview(){
+  var P=document.getElementById('ovPage');P.textContent='';
+  var all=sumSp(),m1=sumSp(function(s){return TPS[LINES[s.line].tp].mc===1}),m2=sumSp(function(s){return TPS[LINES[s.line].tp].mc===2}),n0=nums(0,'fall',null,false);
+  var mc1TP=TPS.filter(function(t){return t.mc===1}).length;
+  P.appendChild(el('h2',null,'Orion Project - piping progress at the cut-off 31-Oct-2026'));
+  P.appendChild(el('p','note','Fictional plant and data. Piping is measured in weld inch-dia from the spool and joint lists; other disciplines from the P6 schedule. MC-01 is the client\'s priority list of '+mc1TP+' test packs; MC-02 is the rest of the scope.'));
+  var t=el('div','tiles');t.style.marginTop='10px';
+  [['All disciplines (PMS)',(n0.all*100).toFixed(1)+' %','actual at cut-off'],['Piping, weld inch-dia',fmtN(all.scope),fmtN(all.w)+' done ('+Math.round(all.w/all.scope*100)+' %), '+fmtN(all.scope-all.w)+' to go'],['MC-01 by '+fd(MS[0].ms),fmtN(m1.scope)+' inch-dia',mc1TP+' test packs, '+Math.round(m1.w/m1.scope*100)+' % welded'],['MC-02 by '+fd(MS[1].ms),fmtN(m2.scope)+' inch-dia',(TPS.length-mc1TP)+' test packs, '+Math.round(m2.w/m2.scope*100)+' % welded'],['Spools on the lists',fmtN(SPOOLS.length),fmtN(SPOOLS.filter(function(s){return s.st==='NR'}).length)+' not yet received at site']].forEach(function(x){var b=el('div','tile big');b.appendChild(el('div','lab',x[0]));b.appendChild(el('div','n',x[1]));b.appendChild(el('div','t',x[2]));t.appendChild(b)});
+  P.appendChild(t);
+  var g=el('div','grid2');P.appendChild(g);
+  // where to focus
+  var c1=el('div');g.appendChild(c1);
+  var h=el('h3',null,'Where to focus this week ');h.appendChild(el('small',null,'MC-01 test packs closest to hydrotest'));c1.appendChild(h);
+  c1.appendChild(el('p','note','Ranked by the share already welded: these packs release a hydrotest, and the degreasing loop behind it, for the least remaining work. A click lights the pack in the 4D model.'));
+  var ul=el('ul','focus');c1.appendChild(ul);
+  TPS.filter(function(tp){return tp.mc===1&&!tp.done&&tp.scope>200}).map(function(tp){return [tp,tp.scope-tp.welded]}).sort(function(a,b){return b[0].welded/b[0].scope-a[0].welded/a[0].scope||a[1]-b[1]}).slice(0,10).forEach(function(x){
+    var tp=x[0],li=el('li'),l=el('div'),nr=tp.spools.filter(function(si){return SPOOLS[si].st==='NR'}).length;l.appendChild(el('b',null,tp.id));l.appendChild(el('div','m',(tp.unit==='Racks'?'Pipe rack':'Unit '+tp.unit)+' · '+fmtN(x[1])+' inch-dia to weld · '+(tp.spools.length-tp.erected)+' spool'+(tp.spools.length-tp.erected===1?'':'s')+' to erect'+(nr?' ('+nr+' not received)':'')+' · hydrotest by '+fd(wms(Math.max(tp.hw,1))-DAY)));
+    var r=el('div'),bar=el('div','bar'),i=el('i');i.style.width=Math.round(tp.welded/tp.scope*100)+'%';bar.appendChild(i);r.appendChild(bar);r.appendChild(el('div','m',Math.round(tp.welded/tp.scope*100)+' % welded'));
+    li.appendChild(l);li.appendChild(r);li.addEventListener('click',function(){highlightTP(tp.i)});ul.appendChild(li)});
+  // by area
+  var c2=el('div');g.appendChild(c2);
+  var h2=el('h3',null,'Piping by area ');h2.appendChild(el('small',null,'weld inch-dia'));c2.appendChild(h2);
+  var tb=el('table','t'),th=el('thead'),tr=el('tr');['Area','Unit','Scope','Welded','To go','%','Spools not received'].forEach(function(x,j){tr.appendChild(el('th',j>1?'n':null,x))});th.appendChild(tr);tb.appendChild(th);var bd=el('tbody');tb.appendChild(bd);
+  AREAS.forEach(function(a){var o=sumSp(function(s){return s.ai===a.i});if(!o.n)return;var nr=SPOOLS.filter(function(s){return s.ai===a.i&&s.st==='NR'}).length;
+    var r=el('tr','click');[a.code,a.unit==='Racks'?'Rack':a.unit,fmtN(o.scope),fmtN(o.w),fmtN(o.scope-o.w),Math.round(o.w/o.scope*100)+' %',fmtN(nr)].forEach(function(x,j){r.appendChild(el('td',j>1?'n':null,x))});
+    r.addEventListener('click',function(){var set={};SPOOLS.forEach(function(s){if(s.ai===a.i)set[s.i]=1});showSpools(set,'Area '+a.code+' - '+a.name)});bd.appendChild(r)});
+  var tot=el('tr','tot');['All areas','',fmtN(all.scope),fmtN(all.w),fmtN(all.scope-all.w),Math.round(all.w/all.scope*100)+' %',fmtN(SPOOLS.filter(function(s){return s.st==='NR'}).length)].forEach(function(x,j){tot.appendChild(el('td',j>1?'n':null,x))});bd.appendChild(tot);
+  c2.appendChild(tb);c2.appendChild(el('p','note','A click on an area shows its spools in the 4D model in the colour mode "Spool status".'));
+}
+
+/* ================= Spools tab ================= */
+var SPF={mc:0,field:'',st:'',ua:'',q:''};
+function spoolPass(s,ign){var a=AREAS[s.ai],tp=TPS[LINES[s.line].tp];if(SPF.mc&&tp.mc!==SPF.mc)return false;if(SPF.field&&a.f!==SPF.field)return false;if(ign!=='st'&&SPF.st&&s.st!==SPF.st)return false;if(ign!=='ua'&&SPF.ua&&a.unit!==SPF.ua&&a.code!==SPF.ua)return false;
+  if(SPF.q){var L=LINES[s.line],iso=ISOS[s.iso],t=(s.id+' '+iso.name+' '+L.no+' '+tp.id).toLowerCase();if(t.indexOf(SPF.q)<0)return false}return true}
+function spoolsTab(){
+  var P=document.getElementById('spPage');P.textContent='';
+  var top=el('div','tools');P.appendChild(top);top.appendChild(el('span',null,'Show'));
+  function segb(opts,cur,on){var s=el('div','segb');opts.forEach(function(o){var b=el('button',o[0]===cur?'on':'',o[1]);b.addEventListener('click',function(){on(o[0])});s.appendChild(b)});return s}
+  top.appendChild(segb([[0,'All spools'],[1,'MC-01'],[2,'MC-02']],SPF.mc,function(v){SPF.mc=v;spoolsTab()}));
+  top.appendChild(segb([['','Both fields'],['GF','Green Field'],['BF','Brown Field']],SPF.field,function(v){SPF.field=v;spoolsTab()}));
+  var nt=el('p','note','Status of every spool of the site spool lists at the cut-off 31-Oct-2026 (fictional). A spool is one shop-fabricated piece with its own number; "doubled at ground" means joined to its neighbour before lifting. Pieces without a spool number (vents and drains) take no status.');nt.style.flex='1';nt.style.maxWidth='720px';top.appendChild(nt);
+  var base=SPOOLS.filter(function(s){return spoolPass(s,'st')&&spoolPass(s,'ua')});
+  var h=el('h3',null,'Spools by site status ');h.appendChild(el('small',null,fmtN(base.length)+' spools - status at the cut-off 31-Oct-2026'));P.appendChild(h);
+  var tiles=el('div','tiles');P.appendChild(tiles);
+  ST.forEach(function(k){var n=base.filter(function(s){return s.st===k}).length,b=el('div','tile big'+(SPF.st===k?' on':'')),lab=el('div','lab'),sw=el('span','sw'+(k==='RS'?' h':''));if(k!=='RS')sw.style.background=STC[k];lab.appendChild(sw);lab.appendChild(document.createTextNode(' '+STN[k]));b.appendChild(lab);b.appendChild(el('div','n',fmtN(n)));b.appendChild(el('div','t',(base.length?(n/base.length*100).toFixed(1):0)+' % of the spools'));
+    b.addEventListener('click',function(){var set={};base.forEach(function(s){if(s.st===k)set[s.i]=1});showSpools(set,STN[k]+': '+fmtN(n)+' spools')});tiles.appendChild(b)});
+  var g=el('div','grid2');g.style.marginTop='10px';P.appendChild(g);
+  var c1=el('div');g.appendChild(c1);
+  function matrix(title,keyOf,keys,labels){
+    var h3=el('h3',null,title+' ');h3.appendChild(el('small',null,'number of spools'));c1.appendChild(h3);
+    var t=el('table','t'),th=el('thead'),tr=el('tr');tr.appendChild(el('th',null,labels));ST.forEach(function(k){var x=el('th','n');var sw=el('span','sw'+(k==='RS'?' h':''));if(k!=='RS')sw.style.background=STC[k];x.appendChild(sw);x.appendChild(el('br'));x.appendChild(document.createTextNode(STN[k].replace(' at site','').replace('Welding done','Welding done')));tr.appendChild(x)});tr.appendChild(el('th','n','All'));th.appendChild(tr);t.appendChild(th);
+    var bd=el('tbody');t.appendChild(bd);var tot={};
+    keys.forEach(function(k){var r=el('tr'),rs=base.filter(function(s){return keyOf(s)===k});if(!rs.length)return;r.appendChild(el('td',null,k));
+      ST.forEach(function(st){var sel=rs.filter(function(s){return s.st===st}),td=el('td','n');tot[st]=(tot[st]||0)+sel.length;if(sel.length){var a=el('a',null,fmtN(sel.length));a.addEventListener('click',function(){var set={};sel.forEach(function(s){set[s.i]=1});showSpools(set,k+' - '+STN[st]+': '+sel.length+' spools')});td.appendChild(a)}else td.textContent='-';r.appendChild(td)});
+      var ta=el('td','n');var aa=el('a',null,fmtN(rs.length));aa.addEventListener('click',function(){var set={};rs.forEach(function(s){set[s.i]=1});showSpools(set,k+': '+rs.length+' spools')});ta.appendChild(aa);r.appendChild(ta);bd.appendChild(r)});
+    var tr2=el('tr','tot');tr2.appendChild(el('td',null,'All'));var at=0;ST.forEach(function(st){tr2.appendChild(el('td','n',fmtN(tot[st]||0)));at+=tot[st]||0});tr2.appendChild(el('td','n',fmtN(at)));bd.appendChild(tr2);c1.appendChild(t);
+  }
+  matrix('By unit and area',function(s){var a=AREAS[s.ai];return a.unit==='Racks'?'Pipe racks':'Unit '+a.unit},['Unit 310','Unit 320','Unit 330','Unit 340','Unit 215','Unit 259','Pipe racks'],'Unit / area');
+  var SZ=function(s){return s.size<=2?'Up to 2 in':s.size<=6?'3 to 6 in':s.size<=12?'8 to 12 in':s.size<=24?'14 to 24 in':'Above 24 in'};
+  matrix('By pipe size',SZ,['Up to 2 in','3 to 6 in','8 to 12 in','14 to 24 in','Above 24 in'],'Pipe size');
+  var c2=el('div');g.appendChild(c2);
+  var tools=el('div','tools');c2.appendChild(tools);
+  var q=document.createElement('input');q.type='search';q.placeholder='Search: spool, ISO, line or test pack';q.value=SPF.q;tools.appendChild(q);
+  var ss=document.createElement('select');[['','Every status']].concat(ST.map(function(k){return [k,STN[k]]})).forEach(function(o){var op=el('option',null,o[1]);op.value=o[0];ss.appendChild(op)});ss.value=SPF.st;tools.appendChild(ss);
+  var su=document.createElement('select');[['','Every unit and area']].concat(['310','320','330','340','215','259','Racks'].map(function(u){return [u,u==='Racks'?'Pipe racks':'Unit '+u]})).forEach(function(o){var op=el('option',null,o[1]);op.value=o[0];su.appendChild(op)});su.value=SPF.ua;tools.appendChild(su);
+  var cnt=el('span','cnt');tools.appendChild(cnt);var show=el('button','btn','Show the list in the 4D model');tools.appendChild(show);
+  var bx=el('div','box');c2.appendChild(bx);var t=el('table','t');bx.appendChild(t);
+  var th=el('thead'),tr=el('tr');['Spool','ISO sheet','Line (with its size)','Status at the cut-off','Erected','Test pack','For'].forEach(function(x){tr.appendChild(el('th',null,x))});th.appendChild(tr);t.appendChild(th);var bd=el('tbody');t.appendChild(bd);
+  c2.appendChild(el('p','note','Click a tile, a figure of a table or a spool of the list: the 4D model opens in the colour mode "Spool status" with these spools highlighted. The list shows the first 400 matches.'));
+  function fill(){bd.textContent='';var list=SPOOLS.filter(function(s){return spoolPass(s)});cnt.textContent=fmtN(list.length)+' of '+fmtN(SPOOLS.length)+' spools';
+    list.slice(0,400).forEach(function(s){var L=LINES[s.line],tp=TPS[L.tp],r=el('tr','click');r.appendChild(el('td',null,s.id)).style.fontWeight='700';r.appendChild(el('td',null,ISOS[s.iso].name));r.appendChild(el('td',null,L.no));
+      var td=el('td');var sw=el('span','sw'+(s.st==='RS'?' h':''));if(s.st!=='RS')sw.style.background=STC[s.st];td.appendChild(sw);td.appendChild(document.createTextNode(STN[s.st]));r.appendChild(td);
+      r.appendChild(el('td',null,s.erected?fd(s.erected):'-'));r.appendChild(el('td',null,tp.id));r.appendChild(el('td',null,'MC-0'+tp.mc));
+      r.addEventListener('click',function(){var set={};set[s.i]=1;showSpools(set,'Spool '+s.id+' of '+ISOS[s.iso].name+': 1 spool');var i0=INST.cyl.findIndex(function(rr){return rr[12]===s.i});if(i0>=0){var rr=INST.cyl[i0];flyTo({tx:rr[0],ty:rr[1],tz:rr[2],r:60});showCard('cyl',i0)}});bd.appendChild(r)});
+    show.onclick=function(){var set={};list.forEach(function(s){set[s.i]=1});showSpools(set,fmtN(list.length)+' spools of the list')}}
+  q.addEventListener('input',function(){SPF.q=q.value.trim().toLowerCase();fill()});ss.addEventListener('change',function(){SPF.st=ss.value;spoolsTab()});su.addEventListener('change',function(){SPF.ua=su.value;spoolsTab()});
+  fill();
+}
+
+/* ================= Hydrotest tab ================= */
+var HTF={mc:1,q:'',tile:null,sort:'id',dir:1};
+function hydrotestTab(){
+  var P=document.getElementById('htPage');P.textContent='';
+  var list=TPS.filter(function(t){return t.mc===HTF.mc});
+  var top=el('div','tools');P.appendChild(top);
+  top.appendChild(el('h2',null,HTF.mc===1?'MC-01 is based on the client\'s priority list: '+list.length+' test packs':'MC-02: the other '+list.length+' test packs of the site lists'));
+  var s=el('div','segb');[[1,'MC-01 test packs'],[2,'MC-02 test packs']].forEach(function(o){var b=el('button',o[0]===HTF.mc?'on':'',o[1]);b.addEventListener('click',function(){HTF.mc=o[0];HTF.tile=null;hydrotestTab()});s.appendChild(b)});top.appendChild(s);
+  var q=document.createElement('input');q.type='search';q.placeholder='Search: test pack, system, area, status or P6 activity';q.value=HTF.q;top.appendChild(q);var cnt=el('span','cnt');top.appendChild(cnt);
+  P.appendChild(el('p','note','Test packs grouped from the line list by system and area. Lines, spools and welded inch-dia as at the cut-off 31-Oct-2026; paper status from the test-pack log; planned hydrotest from the P6 activity that covers the lines of the test pack. All data fictional.'));
+  var row1=el('div','tiles');row1.style.alignItems='flex-end';P.appendChild(row1);
+  function grp(title,sub,items){var w=el('div');var h=el('h3',null,title+' ');h.appendChild(el('small',null,sub));h.style.marginTop='8px';w.appendChild(h);var t=el('div','tiles');items.forEach(function(it){t.appendChild(it)});w.appendChild(t);row1.appendChild(w)}
+  function tile(n,t,key,dash){var b=el('div','tile'+(dash?' dash':'')+(HTF.tile===key?' on':''));b.appendChild(el('div','n',fmtN(n)));b.appendChild(el('div','t',t));b.addEventListener('click',function(){HTF.tile=HTF.tile===key?null:key;hydrotestTab()});return b}
+  var pc=function(p){return list.filter(function(t){return t.paper===p}).length};
+  grp('Test-pack status','paper status',[tile(pc('Submitted'),'Submitted','p:Submitted'),tile(pc('To be Submitted'),'To be Submitted','p:To be Submitted'),tile(pc('Approved'),'Approved','p:Approved'),tile(list.filter(function(t){return t.tested}).length,'hydrotest done','tested',true),tile(list.filter(function(t){return t.reinst}).length,'reinstated','reinst',true)]);
+  var units=['310','320','330','340','215','259','Racks'];grp('By unit','test packs',units.map(function(u){var n=list.filter(function(t){return t.unit===u}).length;return n?tile(n,u==='Racks'?'Pipe racks':'Unit '+u,'u:'+u):null}).filter(Boolean));
+  var mths={};list.forEach(function(t){if(t.tested)return;var ms=wms(Math.max(t.hw,1))-DAY,k=fm(ms);(mths[k]=mths[k]||{n:0,id:0,ms:ms});mths[k].n++;mths[k].id+=t.scope});
+  grp('Planned hydrotest by month','finish of the P6 hydrotest activity',Object.keys(mths).sort(function(a,b){return mths[a].ms-mths[b].ms}).map(function(k){var b=tile(mths[k].n,'finish in '+k,'m:'+k);b.appendChild(el('div','t','P6: '+fmtN(mths[k].id)+' inch-dia'));return b}));
+  var bx=el('div','box');bx.style.marginTop='12px';P.appendChild(bx);var t=el('table','t');bx.appendChild(t);
+  var cols=[['id','Test pack (A to Z)'],['sys','System'],['area','Unit / area'],['iso','ISO sheets / drawn'],['wid','Welded of scope, inch-dia'],['pct','Welded'],['er','Spools erected'],['paper','Test-pack status'],['p6','Planned hydrotest: P6 activity'],['fin','Planned finish'],['tested','Tested'],['reinst','Reinstated'],['drawn','Lines in the 4D model']];
+  var th=el('thead'),tr=el('tr');cols.forEach(function(c){var x=el('th',null,c[1]);x.style.cursor='pointer';x.style.textDecoration='underline';x.addEventListener('click',function(){HTF.dir=HTF.sort===c[0]?-HTF.dir:1;HTF.sort=c[0];fill()});tr.appendChild(x)});th.appendChild(tr);t.appendChild(th);var bd=el('tbody');t.appendChild(bd);
+  P.appendChild(el('p','note','Click a test pack: the 4D model opens with its lines highlighted and the camera on them. Click a column head to sort; a tile filters the list. Planned finish = finish of the P6 hydrotest activity that covers the lines of the test pack.'));
+  function val(tp,k){var a=AREAS[tp.ai];return {id:tp.id,sys:tp.sys,area:a.code,iso:tp.isoN,wid:tp.welded,pct:tp.scope?tp.welded/tp.scope:0,er:tp.erected,paper:tp.paper,p6:tp.p6,fin:tp.tested?0:wms(Math.max(tp.hw,1)),tested:tp.tested,reinst:tp.reinst,drawn:1}[k]}
+  function fill(){
+    var ql=HTF.q.toLowerCase(),rows=list.filter(function(tp){var a=AREAS[tp.ai];if(HTF.tile){var p=HTF.tile.split(':');if(p[0]==='p'&&tp.paper!==p[1])return false;if(p[0]==='tested'&&!tp.tested)return false;if(p[0]==='reinst'&&!tp.reinst)return false;if(p[0]==='u'&&tp.unit!==p[1])return false;if(p[0]==='m'&&(tp.tested||fm(wms(Math.max(tp.hw,1))-DAY)!==p[1]))return false}
+      if(ql){var s=(tp.id+' '+tp.sys+' '+a.code+' '+tp.paper+' '+tp.p6).toLowerCase();if(s.indexOf(ql)<0)return false}return true});
+    rows.sort(function(x,y){var a=val(x,HTF.sort),b=val(y,HTF.sort);return (a<b?-1:a>b?1:0)*HTF.dir});
+    cnt.textContent=fmtN(rows.length)+' of '+fmtN(list.length)+' test packs in the list';bd.textContent='';
+    rows.forEach(function(tp){var a=AREAS[tp.ai],r=el('tr','click'),pct=tp.scope?Math.round(tp.welded/tp.scope*100):0;
+      [[tp.id,1],[tp.sys],[(tp.unit==='Racks'?'Rack':tp.unit)+' / '+a.code],[tp.isoN+' / '+tp.isoN],[fmtN(tp.welded)+' of '+fmtN(tp.scope)],[tp.scope?pct+' %':'-'],[tp.erected+' of '+tp.spools.length],[tp.paper],[tp.p6],[tp.tested?'-':fd(wms(Math.max(tp.hw,1))-DAY)],[tp.tested?fd(tp.tested):'-'],[tp.reinst?fd(tp.reinst):'-'],['drawn']].forEach(function(c){var td=el('td',null,c[0]);if(c[1])td.style.fontWeight='700';r.appendChild(td)});
+      r.addEventListener('click',function(){highlightTP(tp.i)});bd.appendChild(r)});
+  }
+  q.addEventListener('input',function(){HTF.q=q.value.trim();fill()});fill();
+}
+
+/* ================= About tab ================= */
+function about(){
+  var P=document.getElementById('abPage');P.textContent='';
+  P.appendChild(el('h2',null,'About the data'));
+  [ 'This is a demonstration of a 4D progress model on a fictional plant, the "Orion Project": two Green Field units (215 and 259), four Brown Field units (310 to 340) and the pipe racks between them. The plant, the line list, the spools, the test packs, the dates and every figure are generated. Nothing comes from a real project.',
+    'On a live project the same page is built from the 3D model export (every pipe piece with its line, ISO sheet and spool number), the site spool and joint lists, the test-pack log and the P6 schedule. Each piece of the model takes the status of its own spool, so the progress report and the model show the same work.',
+    'The model answers two questions a progress report alone does not: where the remaining work physically is, and which loops to finish first. A test pack that is a few joints from complete releases a hydrotest for the least work, so it comes first in the "Where to focus" list on the Overview.'].forEach(function(t){P.appendChild(el('p',null,t))});
+  var dl=el('dl');P.appendChild(dl);
+  [['Not received at site','The spool is fabricated or in fabrication, not yet delivered.'],['Received at site','Delivered to the site lay-down area.'],['Doubled at ground','Joined to its neighbour at grade before lifting.'],['Erected','Lifted and set in place.'],['Fit-up done','All field joints fitted up, welding not complete.'],['Welding done','All field joints welded.'],['No spool number in the model','Small-bore pieces (vents and drains) that the spool lists do not number.'],['MC-01 / MC-02','MC-01 is the client\'s priority list of test packs, due by '+fd(MS[0].ms)+'. MC-02 is the rest, due by '+fd(MS[1].ms)+'.'],['Play','Runs the P6 plan forward from the cut-off: spools turn "welding done" in the week their plan finishes them, and other disciplines build out bottom-up inside each area.'],['Plan summary','The in-depth plan of one unit as question, answer and source: quantities, window, rate needed, hydrotest, float and the three points where a slip moves the end date first, with the weekly piping plan.'],['Commodities by month','Planned quantities per discipline and calendar month after the cut-off.'],['Colour blindness','Every state has a word as well as a colour: in the legend, the card and the tables.']].forEach(function(x){dl.appendChild(el('dt',null,x[0]));dl.appendChild(el('dd',null,x[1]))});
+}
+
+/* ================= Plan summary (report) ================= */
+var RP={u:'330'};
+var HOL=[Date.UTC(2026,11,1),Date.UTC(2026,11,2),Date.UTC(2026,11,3),Date.UTC(2027,0,1)];
+function wdays(w){var a=wms(w-1),b=wms(w),d=6;HOL.forEach(function(x){if(x>=a&&x<b)d--});return d}
+function wdBetween(a,b){if(b<a)return -wdBetween(b,a);var n=0;for(var w=a+1;w<=b;w++)n+=wdays(w);return n}
+function wkLabel(w){var d=new Date(wms(w-1));return pad(d.getUTCDate())+'-'+MON[d.getUTCMonth()]}
+function stWeight(r){return clamp(r[7]*r[8]*r[9]*7.85*.1,.05,4)}
+function report(){
+  var P=document.getElementById('rpPage');P.textContent='';var u=RP.u,uname=u==='Racks'?'Pipe racks':'Unit '+u,F=function(w){return fd(wms(w)-DAY)},N=fmtN;
+  var tools=el('div','tools noprint');P.appendChild(tools);tools.appendChild(el('span',null,'Plan summary for'));
+  var sg=el('div','segb');['310','320','330','340','215','259','Racks'].forEach(function(k){var b=el('button',k===u?'on':'',k==='Racks'?'Pipe racks':'Unit '+k);b.addEventListener('click',function(){RP.u=k;report()});sg.appendChild(b)});tools.appendChild(sg);
+  var pb=el('button','btn','Print or save as PDF');pb.addEventListener('click',function(){window.print()});tools.appendChild(pb);
+  var shb=el('button','btn','Show '+uname+' in the 4D model');shb.addEventListener('click',function(){showTab('4d');setFocus(u)});tools.appendChild(shb);
+  var R0=el('div','rep');P.appendChild(R0);var areas=AREAS.filter(function(a){return a.unit===u});
+  R0.appendChild(el('h1',null,uname+' ('+areas.map(function(a){return a.code}).join(', ')+') - in-depth plan - summary'));
+  R0.appendChild(el('div','sub','Demo, fictional data. Issue 16-Nov-2026. Schedule ORN-AS-02, data date 31-Oct-2026, progress cut-off 31-Oct-2026. Every figure is computed from the same data as the 4D model.'));
+  var stT=0,stE=0,stLast=0;['cyl','sph','box'].forEach(function(g){INST[g].forEach(function(r,i){if(r[10]!==0||AREAS[r[11]].unit!==u)return;var t=stWeight(r);stT+=t;var b=BUILT[g][i];if(b<0)stE+=t;else stLast=Math.max(stLast,b)})});
+  var sp=SPOOLS.filter(function(s){return AREAS[s.ai].unit===u}),isoSet={},sc=0,wdn=0,fu=0,bal1=0,bal2=0,last1=0,last2=0,stc={NR:0,RS:0,DG:0,ER:0,FU:0,WD:0},wk1={},wk2={};
+  sp.forEach(function(s){isoSet[s.iso]=1;sc+=s.scope;wdn+=s.w*s.size;fu+=s.fu*s.size;stc[s.st]++;var mc=TPS[LINES[s.line].tp].mc,rem=s.scope-s.w*s.size;if(rem<=0||s.pw<1)return;
+    if(mc===1){bal1+=rem;last1=Math.max(last1,s.pw);wk1[s.pw]=(wk1[s.pw]||0)+rem}else{bal2+=rem;last2=Math.max(last2,s.pw);wk2[s.pw]=(wk2[s.pw]||0)+rem}});
+  var bal=bal1+bal2,lastAll=Math.max(last1,last2,1),wd1=Math.max(1,wdBetween(0,last1)),wdA=Math.max(1,wdBetween(0,lastAll)),peakW=1,peakV=0;
+  for(var w=1;w<=lastAll;w++){var v=(wk1[w]||0)+(wk2[w]||0);if(v>peakV){peakV=v;peakW=w}}
+  var tps=TPS.filter(function(t){return t.unit===u}),t1=tps.filter(function(t){return t.mc===1}),t2=tps.filter(function(t){return t.mc===2});
+  function htRange(list){var a=1e9,b=-1,id=0;list.forEach(function(t){if(t.tested)return;a=Math.min(a,t.hw);b=Math.max(b,t.hw);id+=t.scope});return b<0?null:[a,b,id]}
+  var h1=htRange(t1),h2=htRange(t2),pap=function(list,p){return list.filter(function(t){return t.paper===p}).length};
+  var mcW=MS[0].w,reinst1=h1?h1[1]+1:0,float1=h1?wdBetween(reinst1,mcW):0;
+  var crit=t1.filter(function(t){return !t.tested}).sort(function(a,b){return b.hw-a.hw||(b.scope-b.welded)-(a.scope-a.welded)}).slice(0,3);
+  var SRC={p6:'P6 file ORN-AS-02, data date 31-Oct-2026',lists:'Site spool and joint lists at cut-off 31-Oct-2026',tp:'Test-pack log of 07-Nov-2026',calc:'Calculated from the rows above and the P6 calendar (6-day week, public holidays out)'};
+  var rows=[['A. STRUCTURE'],
+   ['Structure quantity (P6, tonnes)','Total '+stT.toFixed(1)+' t, erected '+stE.toFixed(1)+' t, balance '+(stT-stE).toFixed(1)+' t ('+Math.round(stE/Math.max(stT,1)*100)+' % erected).',SRC.p6],
+   ['STRUCTURE COMPLETE ON',stLast?'Last structure of '+uname+': week ending '+F(stLast)+'.':'Structure complete at the cut-off.',SRC.p6],
+   ['B. PIPING'],
+   ['Piping scope (P6, inch-dia)','Total '+N(sc)+', done '+N(wdn)+', balance '+N(bal)+'. Balance = MC-01 '+N(bal1)+' + MC-02 '+N(bal2)+'.',SRC.p6],
+   ['Piping at site (joint lists)',Object.keys(isoSet).length+' ISO sheets, '+N(sp.length)+' spools. Field welds '+N(sc)+' inch-dia: welded '+N(wdn)+', fit-up done '+N(fu)+', balance to weld '+N(sc-wdn)+'.',SRC.lists],
+   ['Spools at site','Not received at site '+stc.NR+', received at site '+stc.RS+', doubled at ground '+stc.DG+', erected '+stc.ER+', fit-up done '+stc.FU+', welding done '+stc.WD+' (total '+sp.length+').',SRC.lists],
+   ['PIPING WINDOW',(bal1?'MC-01 lines: 31-Oct-2026 to '+F(last1)+' = '+wd1+' working days. ':'MC-01 lines welded. ')+'All piping: 31-Oct-2026 to '+F(lastAll)+' = '+wdA+' working days.',SRC.calc],
+   ['PIPING BALANCE AND RATE NEEDED',(bal1?'MC-01: '+N(bal1)+' inch-dia in '+wd1+' working days = '+(bal1/wd1).toFixed(1)+' per day = '+N(bal1/wd1*6)+' per 6-day week. ':'')+'All piping: '+N(bal)+' in '+wdA+' working days = '+(bal/wdA).toFixed(1)+' per day = '+N(bal/wdA*6)+' per week. Peak planned week from '+wkLabel(peakW)+': '+N(peakV)+' inch-dia. Achieved on average so far: '+N(wdn/17)+' per week (17 weeks since piping started).',SRC.calc],
+   ['PIPING DONE ON',(bal1?'MC-01 lines: '+F(last1)+'. ':'')+'All lines: '+F(lastAll)+' = piping of '+uname+' complete.',SRC.p6],
+   ['C. AFTER PIPING'],
+   ['HYDROTEST',(h1?'MC-01 test packs: '+F(h1[0])+' to '+F(h1[1])+' ('+N(h1[2])+' inch-dia). ':'MC-01 test packs tested. ')+(h2?'MC-02: '+F(h2[0])+' to '+F(h2[1])+' ('+N(h2[2])+' inch-dia).':''),SRC.p6],
+   ['Test packs',tps.length+' test packs carry lines of '+uname+': '+t1.length+' MC-01 ('+pap(t1,'Approved')+' approved, '+pap(t1,'Submitted')+' submitted, '+pap(t1,'To be Submitted')+' to be submitted) and '+t2.length+' MC-02. Hydrotest done: '+tps.filter(function(t){return t.tested}).length+', reinstated: '+tps.filter(function(t){return t.reinst}).length+'.',SRC.tp],
+   ['COMPLETION AND FLOAT',h1?'MC-01 part of '+uname+': hydrotest complete '+F(h1[1])+', drying and reinstatement by '+F(reinst1)+'. Float against MC-01 ('+fd(MS[0].ms)+'): '+float1+' working days.':'MC-01 part complete; MC-02 by '+fd(MS[1].ms)+'.',SRC.calc],
+   ['D. THE THREE POINTS WHERE A SLIP MOVES THE END DATE FIRST']];
+  crit.forEach(function(t,i){var nr=t.spools.filter(function(si){return SPOOLS[si].st==='NR'}).length;rows.push([(i+1)+'. '+t.id,'Hydrotest planned by '+F(t.hw)+'; '+N(t.scope-t.welded)+' inch-dia still to weld, '+(t.spools.length-t.erected)+' spools to erect ('+nr+' not yet received). Float against MC-01: '+wdBetween(t.hw+1,mcW)+' working days. A slip here moves the MC-01 degreasing loop first.',SRC.p6,t.i])});
+  rows.push(['NOT VERIFIED'],['Open points','(1) Demo: the plant, the lists and the dates are generated. (2) On a live project each answer names its file and data date. (3) Weekly figures follow the planned finish of each spool; single weeks can be uneven.','About the data']);
+  var t=el('table','q'),th=el('thead'),tr=el('tr');['Question','Answer','Source'].forEach(function(x){tr.appendChild(el('th',null,x))});th.appendChild(tr);t.appendChild(th);var bd=el('tbody');t.appendChild(bd);
+  rows.forEach(function(r){var tr2=el('tr');if(r.length===1){tr2.className='sec';var td=el('td',null,r[0]);td.colSpan=3;tr2.appendChild(td)}else{tr2.appendChild(el('td','k',r[0]));var a=el('td',null,r[1]);
+    if(r[3]!=null){a.appendChild(document.createTextNode(' '));var lk=el('a','noprint','Show in 4D');lk.style.cursor='pointer';lk.style.textDecoration='underline';(function(i){lk.addEventListener('click',function(){highlightTP(i)})})(r[3]);a.appendChild(lk)}
+    tr2.appendChild(a);tr2.appendChild(el('td','s',r[2]))}bd.appendChild(tr2)});
+  R0.appendChild(t);
+  var nW=lastAll,wt=el('table','wk'),hr=el('tr');hr.appendChild(el('th',null,'Piping of '+uname+' by week (inch-dia), week from Saturday'));
+  for(var w2=1;w2<=nW;w2++)hr.appendChild(el('th',null,wkLabel(w2)));hr.appendChild(el('th',null,'Total'));var th2=el('thead');th2.appendChild(hr);wt.appendChild(th2);var b2=el('tbody');wt.appendChild(b2);
+  [['MC-01 lines',wk1],['MC-02 lines',wk2],['Total',null],['Working days','wd']].forEach(function(rr){var r=el('tr',rr[0]==='Total'?'tot':''),tot=0;r.appendChild(el('td',null,rr[0]));
+    for(var w3=1;w3<=nW;w3++){var v=rr[1]==='wd'?wdays(w3):rr[1]?(rr[1][w3]||0):((wk1[w3]||0)+(wk2[w3]||0));tot+=v;r.appendChild(el('td',null,N(v)))}r.appendChild(el('td',null,N(tot)));b2.appendChild(r)});
+  var wrap=el('div');wrap.style.overflowX='auto';wrap.appendChild(wt);R0.appendChild(wrap);
+}
+
+/* ================= Commodities by month ================= */
+var CMU={u:''};
+function commodities(){
+  var P=document.getElementById('cmPage');P.textContent='';
+  var tools=el('div','tools');P.appendChild(tools);tools.appendChild(el('span',null,'Show'));
+  var sg=el('div','segb');[['','Whole plant'],['310','310'],['320','320'],['330','330'],['340','340'],['215','215'],['259','259'],['Racks','Racks']].forEach(function(o){var b=el('button',o[0]===CMU.u?'on':'',o[1]);b.addEventListener('click',function(){CMU.u=o[0];commodities()});sg.appendChild(b)});tools.appendChild(sg);
+  P.appendChild(el('p','note','Planned quantities by calendar month after the cut-off 31-Oct-2026 (fictional). Piping in weld inch-dia from the planned finish of each spool; the other disciplines from the items of the model with indicative weights and volumes.'));
+  var months=[];for(var m=0;m<7;m++)months.push({k:fm(Date.UTC(2026,10+m,1)),ms:Date.UTC(2026,10+m,1),me:Date.UTC(2026,11+m,1)});
+  function mi(w){var t=wms(w)-DAY;for(var i=0;i<months.length;i++)if(t>=months[i].ms&&t<months[i].me)return i;return months.length-1}
+  var inU=function(ai){return !CMU.u||AREAS[ai].unit===CMU.u};
+  var D=[{n:'Piping',u:'inch-dia'},{n:'Structure',u:'t',d:0,f:stWeight},{n:'Equipment',u:'items in the model',d:3,f:function(){return 1}},{n:'Civil',u:'m³',d:1,f:function(r){return r[7]*r[8]*r[9]}},{n:'E&I',u:'m of cable route',d:4,f:function(r){return Math.max(r[7],r[8],r[9])}}];
+  D.forEach(function(x){x.scope=0;x.act=0;x.m=months.map(function(){return 0})});var m1=months.map(function(){return 0}),m2=months.map(function(){return 0});
+  SPOOLS.forEach(function(s){if(!inU(s.ai))return;var p=D[0];p.scope+=s.scope;p.act+=s.w*s.size;var rem=s.scope-s.w*s.size;if(rem>0&&s.pw>0){var i=mi(s.pw);p.m[i]+=rem;(TPS[LINES[s.line].tp].mc===1?m1:m2)[i]+=rem}});
+  var byD={0:D[1],3:D[2],1:D[3],4:D[4]};
+  ['cyl','sph','box'].forEach(function(g){INST[g].forEach(function(r,i){var x=byD[r[10]];if(!x||!inU(r[11]))return;var v=x.f(r);x.scope+=v;var b=BUILT[g][i];if(b<0)x.act+=v;else x.m[mi(b)]+=v})});
+  var h=el('h3',null,'Planned quantities by month ');h.appendChild(el('small',null,CMU.u?(CMU.u==='Racks'?'pipe racks':'unit '+CMU.u):'whole plant'));P.appendChild(h);
+  var t=el('table','t'),th=el('thead'),tr=el('tr');['Discipline','Unit of measure','Scope','Actual at cut-off','Done'].concat(months.map(function(x){return x.k})).concat(['Balance']).forEach(function(x,j){tr.appendChild(el('th',j>1?'n':null,x))});th.appendChild(tr);t.appendChild(th);var bd=el('tbody');t.appendChild(bd);
+  D.forEach(function(x){var r=el('tr');[x.n,x.u,N0(x.scope),N0(x.act),Math.round(x.act/Math.max(x.scope,1e-9)*100)+' %'].concat(x.m.map(function(v){return v>0.5?N0(v):'-'})).concat([N0(x.scope-x.act)]).forEach(function(c,j){r.appendChild(el('td',j>1?'n':null,c))});bd.appendChild(r)});
+  P.appendChild(t);
+  function N0(v){return fmtN(v)}
+  var h2=el('h3',null,'Piping to weld by month ');h2.appendChild(el('small',null,'inch-dia, MC-01 lines first'));P.appendChild(h2);
+  var W=820,H=240,bw=70,gap=(W-60)/months.length,mx=Math.max.apply(null,months.map(function(_,i){return m1[i]+m2[i]}).concat([1])),svg=sv('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',class:'cm-bars'});svg.style.maxWidth='860px';
+  months.forEach(function(mo,i){var x=40+i*gap+(gap-bw)/2,h1=m1[i]/mx*150,h2v=m2[i]/mx*150,y0=205;
+    if(h1>0)svg.appendChild(sv('rect',{x:x,y:y0-h1,width:bw,height:h1,fill:'#14315F'}));
+    if(h2v>0)svg.appendChild(sv('rect',{x:x,y:y0-h1-h2v-(h1>0?2:0),width:bw,height:h2v,fill:'#7DBDEB'}));
+    var tot=m1[i]+m2[i];if(tot>0)svg.appendChild(sv('text',{x:x+bw/2,y:y0-h1-h2v-8,'text-anchor':'middle','font-weight':700},fmtN(tot)));
+    svg.appendChild(sv('text',{x:x+bw/2,y:y0+18,'text-anchor':'middle'},mo.k))});
+  svg.appendChild(sv('line',{x1:30,x2:W-10,y1:205,y2:205,stroke:'#C3CAD4'}));
+  svg.appendChild(sv('rect',{x:40,y:8,width:12,height:12,fill:'#14315F'}));svg.appendChild(sv('text',{x:58,y:18},'MC-01 lines'));
+  svg.appendChild(sv('rect',{x:150,y:8,width:12,height:12,fill:'#7DBDEB'}));svg.appendChild(sv('text',{x:168,y:18},'MC-02 lines'));
+  P.appendChild(svg);
+}
+
+/* ================= start ================= */
+window.orion={setWeek:function(w){stop();setWeek(w);applyCam();renderer.render(scene,camera);placeLabels()},
+  view:function(o){camAnim=null;if(o)Object.assign(cam,o);applyCam();renderer.render(scene,camera);placeLabels();return Object.assign({},cam)},
+  focus:function(k){INSTANT=true;setFocus(k);INSTANT=false;applyCam();renderer.render(scene,camera);placeLabels();return Object.assign({},cam)},tp:function(i){INSTANT=true;highlightTP(i);INSTANT=false;applyCam();renderer.render(scene,camera);placeLabels();return Object.assign({},cam)},mode:function(m){S.mode=m;document.getElementById('mode').value=m;paint()},
+  tab:showTab,reset:function(){reset();camAnim=null},clear:function(){document.getElementById('bannerClear').click()},card:showCard,close:closeCard,
+  TPS:TPS,SPOOLS:SPOOLS,LINES:LINES,INST:INST,HOME:HOME,fit:fitBox,bounds:function(i){return tpBounds(TPS[i])},render:function(){applyCam();renderer.render(scene,camera);placeLabels()}};
+overview();spoolsTab();hydrotestTab();commodities();report();about();
+resize();paint();applyCam();document.getElementById('load').remove();requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
