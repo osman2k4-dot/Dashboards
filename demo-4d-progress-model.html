@@ -648,7 +648,7 @@ function paint(){
       }
       if(pale){COL.copy(col||PALE).lerp(WHITE,.72);col=COL;hatch=false}
       P3.set(r[0],r[1],r[2]);Q4.set(r[3],r[4],r[5],r[6]);
-      if(thick!==1&&g!=='box')S3.set(r[7]*thick,g==='cyl'?r[8]:r[8]*thick,r[9]*thick);else S3.set(r[7],r[8],r[9]);
+      if(thick!==1&&g!=='box'){var rr=Math.max(r[7]*thick,S.tp>=0?.3:.1);S3.set(rr,g==='cyl'?r[8]:rr,rr)}else S3.set(r[7],r[8],r[9]);
       M4.compose(P3,Q4,S3);
       if(hatch){mh.setMatrixAt(nh,M4);mh.setColorAt(nh,WHITE);mapH[nh++]=i}
       else{ms.setMatrixAt(ns,M4);ms.setColorAt(ns,col);mapS[ns++]=i}
