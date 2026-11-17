@@ -1,5 +1,9 @@
 # Dashboards
 
+> **No Google accounts?** Use [`site-progress-app/`](site-progress-app/README.md): a self-hosted entry form
+> (Area → Spool → Field weld / Erected / Hold) that feeds the 4D dashboard directly. Its `/progress.csv` link
+> works anywhere the steps below say "published CSV link".
+
 ## Piping 4D Playback: live site progress
 
 `demo-piping-4d-playback.html` can take progress from site so the 3D model, S-curve,

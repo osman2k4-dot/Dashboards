@@ -774,7 +774,7 @@ function poll(){
   if(!feedUrl)return;setStat('busy','Checking the progress sheet…');
   var u=feedUrl+(feedUrl.indexOf('?')<0?'?':'&')+'_='+Date.now(); // bypass caches
   fetch(u,{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()})
-    .then(function(t){if(/^\s*</.test(t))throw new Error('the link returned a web page, not CSV. Publish the sheet as CSV.');applyFeed(t,'Live sheet')})
+    .then(function(t){if(/^\s*</.test(t))throw new Error('the link returned a web page, not CSV. Publish the sheet as CSV.');applyFeed(t,'Live feed')})
     .catch(function(e){setStat('err','Could not read the progress sheet: '+e.message+'. Showing the last good data; retrying on the next interval.')});
 }
 function goLive(url,every){
