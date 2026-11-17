@@ -1,0 +1,20 @@
+A progress report tells you piping is 42 % welded. It does not tell you which 58 % to attack first.
+
+I built a 4D progress model that joins the 3D model, the site spool and joint lists, the test-pack log and the P6 schedule, spool by spool. Watch 50 seconds (demo on fictional data).
+
+What it shows:
+• Every spool in its real position, coloured by site status: not received, received, doubled at ground, erected, fit-up done, welded.
+• Pick a unit and the balance is visible at a glance: what is still on the ground, what has not even reached site.
+• MC-01 loop view: the client's priority test packs drawn strong, everything else pale. That is the degreasing scope, in 3D.
+• Test packs ranked by how much is already welded, so the crews go where the least work releases a hydrotest.
+• One click lights a test pack in 3D: which spools to erect and weld next, and where they are.
+• A plan summary per unit: rate needed against rate achieved, float to MC-01, and the three points where a slip moves the end date first.
+• Press Play and the P6 plan runs forward to MC-01, MC-02 and completion.
+
+The numbers were always in the reports. Seeing them on the plant changes the meeting from "how much is behind" to "what do we finish first". A construction manager, a client rep or someone who never opens P6 reads it in seconds.
+
+On my live project the same model runs on the real 3D model, site lists and P6 schedule. One HTML file that opens in any browser. Built with Claude Code.
+
+Planners and construction managers: how do you decide which test packs to push first?
+
+#4DPlanning #ProjectControls #Piping #Commissioning #PrimaveraP6 #EPC
