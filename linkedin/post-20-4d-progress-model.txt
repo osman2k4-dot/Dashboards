@@ -1,6 +1,6 @@
 A progress report tells you piping is 42 % welded. It does not tell you which 58 % to attack first.
 
-I built a 4D progress model that joins the 3D model, the site spool and joint lists, the test-pack log and the P6 schedule, spool by spool. Watch 50 seconds (demo on fictional data).
+I built a 4D progress model that joins the 3D model, the site spool and joint lists, the test-pack log and the P6 schedule, spool by spool. Watch it in under a minute (demo on fictional data).
 
 What it shows:
 • Every spool in its real position, coloured by site status: not received, received, doubled at ground, erected, fit-up done, welded.
