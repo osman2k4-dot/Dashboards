@@ -103,6 +103,21 @@ ol.behind .m{display:block;font-size:11.5px;color:var(--ink2)}
 ol.behind .why{display:block;font-size:11.5px;color:#8a5a12}
 ol.behind li.empty{border:0;grid-column:1/-1;font-size:12px;color:var(--muted);padding:4px 0}
 .foot{margin-top:14px;font-size:12.5px;color:var(--muted);border-left:2px solid var(--line);padding-left:12px;max-width:110ch;line-height:1.55}
+.feed{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:0 0 10px}
+.feed .frow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.feed .ft{font-size:12.5px;font-weight:700}
+.feed .dot{width:9px;height:9px;border-radius:50%;background:#94a3b8;flex:none}
+.feed .dot.live{background:var(--good);box-shadow:0 0 0 3px #dcfce7}
+.feed .dot.err{background:var(--crit);box-shadow:0 0 0 3px #fee2e2}
+.feed .dot.busy{background:var(--warn)}
+.feed .fs{font-size:12.5px;color:var(--ink2);min-width:0}
+.feed .fx{font-size:11.5px;color:#8a5a12;background:#fff7ec;border:1px solid #f3ddb8;border-radius:8px;padding:5px 9px;margin-top:8px}
+.feed form{display:none;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
+.feed form.open{display:flex}
+.feed input[type=url]{flex:1;min-width:220px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:12.5px;font-family:inherit;color:var(--text);background:#fff}
+.feed .help{flex-basis:100%;font-size:11.5px;color:var(--muted);line-height:1.5}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.pri:hover{background:var(--accent-dark)}
 @media (max-width:1100px){.split{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(3,1fr)}ol.behind{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:640px){.wrap{padding:12px 16px 40px}.kpis{grid-template-columns:repeat(2,1fr)}.lgd{min-width:0;font-size:11px;padding:7px 9px}.hud .wk{font-size:19px}.hint{display:none}.stage{height:60vh;min-height:340px}ol.behind{grid-template-columns:1fr}.alab span{display:none}.alab{font-size:10.5px;padding:2px 6px}}
 </style>
@@ -112,11 +127,33 @@ ol.behind li.empty{border:0;grid-column:1/-1;font-size:12px;color:var(--muted);p
   <header class="top">
     <h1>Piping 4D Playback <span class="sub">· Plan vs Actual</span></h1>
     <span class="chip">Orion Project · Units 215 &amp; 259 · Green Field</span>
-    <span class="chip date">Data date 19-Jul-2026</span>
+    <span class="chip date" id="ddChip">Data date 19-Jul-2026</span>
     <span class="spacer"></span>
     <a class="btn" href="index.html">← All dashboards</a>
   </header>
   <div class="note">⚠ Demo with fictional data: the plant layout, line numbers, spools and schedule are generated for the fictional "Orion Project". Structure and logic mirror a live EPC piping 4D review.</div>
+
+  <section class="feed" id="feed" aria-label="Site progress feed">
+    <div class="frow">
+      <span class="dot" id="fDot"></span>
+      <span class="ft">Site progress</span>
+      <span class="fs" id="fStat" role="status">Demo actuals built into the page. Connect the planner's progress sheet to go live.</span>
+      <span class="spacer"></span>
+      <button class="btn" id="fRefresh" type="button" hidden>↻ Refresh now</button>
+      <button class="btn" id="fTpl" type="button">⬇ Progress template</button>
+      <label class="btn" for="fFile" style="cursor:pointer">Load CSV</label>
+      <input type="file" id="fFile" accept=".csv,text/csv" hidden>
+      <button class="btn pri" id="fConn" type="button" aria-expanded="false">Connect sheet</button>
+    </div>
+    <form id="fForm">
+      <input type="url" id="fUrl" placeholder="Published CSV link, e.g. https://docs.google.com/spreadsheets/d/e/…/pub?output=csv" aria-label="Published CSV link">
+      <select id="fEvery" aria-label="Refresh interval"><option value="60">Every 1 min</option><option value="300" selected>Every 5 min</option><option value="900">Every 15 min</option></select>
+      <button class="btn pri" type="submit">Go live</button>
+      <button class="btn" type="button" id="fOff">Disconnect</button>
+      <div class="help">Sheet columns: <b>Spool ID</b> · <b>Erected date</b> (blank if not erected) · <b>Hold reason</b> (optional). In Google Sheets: File → Share → Publish to web → choose the sheet → <b>CSV</b> → copy the link here. The model, S-curve and KPIs re-read it on the interval above; the data date is the latest erected date in the sheet.</div>
+    </form>
+    <div class="fx" id="fIssues" hidden></div>
+  </section>
 
   <section class="kpis" aria-live="polite">
     <div class="kpi"><div class="l">Planned progress</div><div class="v" id="kPlan">–</div><div class="s" id="kPlanS"></div></div>
@@ -324,7 +361,10 @@ spools.forEach(function(s){
   s.hold=null;
   if(s.plan<=DD&&R()<(s.ai===2?0.07:0.03)){act=null;s.hold=pick(HOLDS)}
   s.actual=(act!=null&&act<=DD)?act:null;
+  s.demo={actual:s.actual,hold:s.hold};
 });
+var DEMO_DD=DD, BYID={};
+spools.forEach(function(s){BYID[s.id.toUpperCase()]=s});
 var TOTAL_IM=spools.reduce(function(t,s){return t+s.im},0);
 
 // ---------- state ----------
@@ -537,6 +577,7 @@ function render(){
   var due=spools.filter(function(s){return inScope(s)&&s.plan<=tt}),late=due.filter(function(s){return s.actual==null||s.actual>tt});
   $('kBeh').textContent=String(late.length);$('kBehS').textContent='of '+due.length+' spools due by week '+tt;
   drawCurve(c);drawAreas();drawBehind(late,tt);
+  var dd=new Date(START+(DD*7-1)*DAY);$('ddChip').textContent='Data date '+pad(dd.getUTCDate())+'-'+MON[dd.getUTCMonth()]+'-'+dd.getUTCFullYear();
   scrub.value=t;scrub.setAttribute('aria-valuetext','Week '+t+', week ending '+weDate(Math.max(t,1)));
   req();
 }
@@ -659,6 +700,108 @@ document.addEventListener('keydown',function(e){
   else if(e.key==='.'||e.key===']'){stop();state.t=Math.min(WEEKS,state.t+1);render()}
 });
 
+
+// ---------- live site progress feed ----------
+// The planner maintains one row per spool: Spool ID, Erected date, Hold reason.
+// Source: a Google Sheet / Excel Online / SharePoint list published as CSV, or a CSV file.
+var MONIX={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+function parseCSV(txt){
+  var rows=[],row=[],f='',q=false,i,c;
+  txt=txt.replace(/^﻿/,'');
+  for(i=0;i<txt.length;i++){c=txt[i];
+    if(q){if(c==='"'){if(txt[i+1]==='"'){f+='"';i++}else q=false}else f+=c}
+    else if(c==='"')q=true;
+    else if(c===','||c===';'||c==='\t'){row.push(f);f=''}
+    else if(c==='\n'||c==='\r'){if(c==='\r'&&txt[i+1]==='\n')i++;row.push(f);rows.push(row);row=[];f=''}
+    else f+=c}
+  if(f!==''||row.length){row.push(f);rows.push(row)}
+  return rows.filter(function(r){return r.some(function(v){return v.trim()!==''})});
+}
+function parseDate(v){
+  v=String(v||'').trim();if(!v)return null;var m,y;
+  if((m=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)))return Date.UTC(+m[1],m[2]-1,+m[3]);
+  if((m=v.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})$/))){y=+m[3];if(y<100)y+=2000;return Date.UTC(y,m[2]-1,+m[1])} // day first
+  if((m=v.match(/^(\d{1,2})[\s\-]([A-Za-z]{3})[A-Za-z]*[\s\-,]+(\d{2,4})$/))&&MONIX[m[2].toLowerCase()]!=null){y=+m[3];if(y<100)y+=2000;return Date.UTC(y,MONIX[m[2].toLowerCase()],+m[1])}
+  if(/^\d{5}(\.\d+)?$/.test(v))return Date.UTC(1899,11,30)+Math.floor(+v)*DAY; // Excel serial
+  return NaN;
+}
+function weekOf(ms){return Math.floor((ms-START)/(7*DAY))+1}
+function isoDate(w){var d=new Date(START+(w*7-1)*DAY);return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate())}
+function col(head,re){for(var i=0;i<head.length;i++)if(re.test(head[i]))return i;return -1}
+
+function applyFeed(txt,label){
+  var rows=parseCSV(txt);if(!rows.length)throw new Error('the file is empty');
+  var head=rows[0].map(function(h){return h.trim().toLowerCase()});
+  var cId=col(head,/spool/),cDt=col(head,/erect|actual|complet|date/),cHd=col(head,/hold|remark|reason|constraint/);
+  if(cId<0||cDt<0)throw new Error('need a "Spool ID" and an "Erected date" column (found: '+rows[0].join(', ')+')');
+  var unknown=[],bad=[],future=[],seen={},latest=null,next={};
+  rows.slice(1).forEach(function(r,ri){
+    var id=String(r[cId]||'').trim().toUpperCase();if(!id)return;
+    var s=BYID[id];if(!s){unknown.push(id);return}
+    var d=parseDate(r[cDt]),hold=cHd>=0?String(r[cHd]||'').trim():'';
+    if(d!=null&&isNaN(d)){bad.push(id+' ("'+r[cDt]+'")');d=null}
+    if(d!=null&&d>Date.now()+DAY){future.push(id);d=null}
+    if(d!=null&&(latest==null||d>latest))latest=d;
+    next[s.id]={d:d,hold:hold||null};seen[s.id]=1;
+  });
+  var dd=latest!=null?clamp(weekOf(latest),1,WEEKS):DD,changed=[];
+  spools.forEach(function(s){
+    var n=next[s.id],a=n&&n.d!=null?clamp(weekOf(n.d),0,dd):null,h=n?n.hold:null;
+    if(a!==s.actual)changed.push(s);
+    s.actual=a;s.hold=a==null?h:null;
+  });
+  var followDD=state.t===DD;DD=dd;if(followDD||state.t>WEEKS)state.t=DD;
+  drawTable();render();
+  if(feedCount++>0&&changed.length&&changed.length<60)flash(changed);
+  var erected=spools.filter(function(s){return s.actual!=null}).length;
+  setStat('live',label+' · '+erected+' of '+spools.length+' spools erected · '+(changed.length?changed.length+' changed':'no changes')+' · checked '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}));
+  var iss=[];
+  if(unknown.length)iss.push(unknown.length+' spool ID(s) not in the model: '+unknown.slice(0,6).join(', ')+(unknown.length>6?'…':''));
+  if(bad.length)iss.push(bad.length+' date(s) not understood: '+bad.slice(0,4).join(', ')+(bad.length>4?'…':'')+'. Use YYYY-MM-DD or DD-MM-YYYY.');
+  if(future.length)iss.push(future.length+' erected date(s) in the future were ignored: '+future.slice(0,4).join(', '));
+  var missing=spools.length-Object.keys(seen).length;
+  if(missing)iss.push(missing+' model spool(s) are not listed in the sheet and are treated as not erected.');
+  $('fIssues').hidden=!iss.length;$('fIssues').textContent=iss.join(' · ');
+}
+function flash(list){
+  var n=0,orig=list.map(function(s){return s.meshes.map(function(m){return m.material})});
+  var iv=setInterval(function(){n++;list.forEach(function(s,k){s.meshes.forEach(function(m,i){m.material=n%2?MATNEW.good:orig[k][i]})});req();if(n>=6){clearInterval(iv);render()}},260);
+}
+function setStat(kind,txt){$('fDot').className='dot '+kind;$('fStat').textContent=txt}
+var feedCount=0,feedTimer=null,feedUrl=null,LS='orion4d.feed';
+function store(v){try{v?localStorage.setItem(LS,JSON.stringify(v)):localStorage.removeItem(LS)}catch(e){}}
+function poll(){
+  if(!feedUrl)return;setStat('busy','Checking the progress sheet…');
+  var u=feedUrl+(feedUrl.indexOf('?')<0?'?':'&')+'_='+Date.now(); // bypass caches
+  fetch(u,{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()})
+    .then(function(t){if(/^\s*</.test(t))throw new Error('the link returned a web page, not CSV. Publish the sheet as CSV.');applyFeed(t,'Live sheet')})
+    .catch(function(e){setStat('err','Could not read the progress sheet: '+e.message+'. Showing the last good data; retrying on the next interval.')});
+}
+function goLive(url,every){
+  clearInterval(feedTimer);feedUrl=url;feedCount=0;$('fRefresh').hidden=false;
+  poll();feedTimer=setInterval(poll,Math.max(30,every||300)*1000);
+}
+function disconnect(){
+  clearInterval(feedTimer);feedTimer=null;feedUrl=null;store(null);$('fRefresh').hidden=true;$('fIssues').hidden=true;
+  spools.forEach(function(s){s.actual=s.demo.actual;s.hold=s.demo.hold});DD=DEMO_DD;state.t=DD;drawTable();render();
+  setStat('','Demo actuals built into the page. Connect the planner\'s progress sheet to go live.');
+}
+$('fConn').addEventListener('click',function(){var f=$('fForm'),o=!f.classList.contains('open');f.classList.toggle('open',o);$('fConn').setAttribute('aria-expanded',String(o));if(o)$('fUrl').focus()});
+$('fForm').addEventListener('submit',function(e){e.preventDefault();var u=$('fUrl').value.trim();if(!u)return;
+  var ev=+$('fEvery').value;store({url:u,every:ev});goLive(u,ev);$('fForm').classList.remove('open');$('fConn').setAttribute('aria-expanded','false')});
+$('fOff').addEventListener('click',function(){$('fUrl').value='';disconnect();$('fForm').classList.remove('open')});
+$('fRefresh').addEventListener('click',poll);
+$('fFile').addEventListener('change',function(){var f=this.files[0];if(!f)return;var rd=new FileReader();
+  rd.onload=function(){try{clearInterval(feedTimer);feedUrl=null;$('fRefresh').hidden=true;applyFeed(rd.result,'File '+f.name)}catch(e){setStat('err','Could not use '+f.name+': '+e.message)}};
+  rd.readAsText(f);this.value=''});
+$('fTpl').addEventListener('click',function(){
+  var esc=function(v){v=String(v==null?'':v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  var lines=[['Spool ID','Erected date','Hold reason','Line','Area','Size (in)','Length (m)','Planned week','Planned w/e'].join(',')];
+  spools.forEach(function(s){var a=AREAS[s.ai];lines.push([s.id,s.actual!=null?isoDate(s.actual):'',s.hold||'',s.line,a.id+' '+a.name,s.size,s.len.toFixed(1),s.plan,isoDate(s.plan)].map(esc).join(','))});
+  var b=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download='piping-progress-template.csv';document.body.appendChild(a);a.click();a.remove();
+});
+
 // hooks for scripted screenshots: ?week=16&mode=plan&area=2&view=az,el,r
 var q=new URLSearchParams(location.search);
 if(q.has('week'))state.t=clamp(+q.get('week')||0,0,WEEKS);
@@ -669,6 +812,10 @@ window.orion4d={project:function(s){tmpV.copy(s.center).project(camera);var r=cv
 drawTable();resize();
 if(q.has('area')){state.area=+q.get('area');areaSel.value=String(state.area)}
 render();applyCam();loadEl.remove();requestAnimationFrame(loop);
+var saved=null;try{saved=JSON.parse(localStorage.getItem(LS)||'null')}catch(e){}
+var qf=q.get('feed');
+if(qf){var qe=+q.get('every')||300;goLive(qf,qe);$('fUrl').value=qf;if($('fEvery').querySelector('option[value="'+qe+'"]'))$('fEvery').value=String(qe)}
+else if(saved&&saved.url){$('fUrl').value=saved.url;$('fEvery').value=String(saved.every||300);goLive(saved.url,saved.every)}
 })();
 </script>
 </body>
