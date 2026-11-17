@@ -1,0 +1,485 @@
+# Site Progress - Power Apps canvas controls (phone layout, 640 x 1136)
+# Paste: Power Apps Studio -> Tree view -> select the screen -> Ctrl+V (paste this whole file's text).
+# Then set the screen's OnVisible to the formula in formulas/Screen-OnVisible.txt.
+# Data sources needed: Areas, Spools, Joints, Welders, SiteLog (SharePoint lists).
+- recHeader:
+    Control: Rectangle
+    Properties:
+      Fill: =RGBA(26, 86, 219, 1)
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =96
+- lblTitle:
+    Control: Label
+    Properties:
+      Text: ="Site Progress"
+      Color: =RGBA(255, 255, 255, 1)
+      FontWeight: =FontWeight.Bold
+      Size: =22
+      X: =24
+      Y: =12
+      Width: =Parent.Width - 48
+      Height: =44
+- lblWho:
+    Control: Label
+    Properties:
+      Text: =User().FullName & "  ·  piping erection & field welds"
+      Color: =RGBA(219, 230, 254, 1)
+      Size: =12
+      X: =24
+      Y: =54
+      Width: =Parent.Width - 48
+      Height: =30
+- lblStep1:
+    Control: Label
+    Properties:
+      Text: ="1 · AREA"
+      Color: =RGBA(100, 116, 139, 1)
+      FontWeight: =FontWeight.Semibold
+      Size: =11
+      X: =24
+      Y: =108
+      Width: =340
+      Height: =26
+- lblDateCap:
+    Control: Label
+    Properties:
+      Text: ="WORK DATE"
+      Color: =RGBA(100, 116, 139, 1)
+      FontWeight: =FontWeight.Semibold
+      Size: =11
+      X: =Parent.Width - 244
+      Y: =108
+      Width: =220
+      Height: =26
+- ddArea:
+    Control: Classic/DropDown
+    Properties:
+      Items: =colAreas.Title
+      AllowEmptySelection: =true
+      Default: =""
+      Size: =14
+      X: =24
+      Y: =136
+      Width: =Parent.Width - 284
+      Height: =56
+      OnChange: |-
+        =Set(varArea, ddArea.Selected.Title);
+        Set(varSpool, Blank());
+        Set(varAct, "");
+        Reset(txtSearch);
+        ClearCollect(colSpools, Filter(Spools, Area = varArea))
+- dpWorkDate:
+    Control: Classic/DatePicker
+    Properties:
+      DefaultDate: =Today()
+      Format: =DateTimeFormat.ShortDate
+      Size: =14
+      X: =Parent.Width - 244
+      Y: =136
+      Width: =220
+      Height: =56
+- lblStep2:
+    Control: Label
+    Properties:
+      Text: ="2 · SPOOL NUMBER"
+      Color: =RGBA(100, 116, 139, 1)
+      FontWeight: =FontWeight.Semibold
+      Size: =11
+      Visible: =!IsBlank(varArea)
+      X: =24
+      Y: =206
+      Width: =Parent.Width - 48
+      Height: =26
+- txtSearch:
+    Control: Classic/TextInput
+    Properties:
+      HintText: ="Type part of the spool or line number"
+      Default: =""
+      Size: =14
+      Visible: =!IsBlank(varArea) && IsBlank(varSpool)
+      X: =24
+      Y: =234
+      Width: =Parent.Width - 48
+      Height: =56
+- galSpools:
+    Control: Gallery
+    Variant: Vertical
+    Properties:
+      Items: =FirstN(Filter(colSpools, IsBlank(txtSearch.Text) || Lower(Substitute(txtSearch.Text, " ", "")) in Lower(Title)), 100)
+      TemplateSize: =64
+      TemplatePadding: =0
+      BorderColor: =RGBA(226, 232, 240, 1)
+      BorderThickness: =1
+      Visible: =!IsBlank(varArea) && IsBlank(varSpool)
+      X: =24
+      Y: =300
+      Width: =Parent.Width - 48
+      Height: =Parent.Height - 420
+      OnSelect: |-
+        =Set(varSpool, ThisItem);
+        Set(varAct, "");
+        ClearCollect(colJoints, Filter(Joints, SpoolID = ThisItem.Title))
+    Children:
+      - lblSpoolId:
+          Control: Label
+          Properties:
+            Text: =ThisItem.Title
+            FontWeight: =FontWeight.Semibold
+            Size: =14
+            X: =14
+            Y: =4
+            Width: =Parent.TemplateWidth - 28
+            Height: =32
+            OnSelect: =Select(Parent)
+      - lblSpoolInfo:
+          Control: Label
+          Properties:
+            Text: |-
+              =If(!IsBlank(ThisItem.ErectedDate), "Erected " & Text(ThisItem.ErectedDate, "dd-mmm"), !IsBlank(ThisItem.HoldReason), "Hold: " & ThisItem.HoldReason, "Not erected")
+              & "   ·   FW " & Coalesce(ThisItem.JointsWelded, 0) & "/" & Coalesce(ThisItem.JointsTotal, 0)
+            Color: =If(!IsBlank(ThisItem.ErectedDate), RGBA(10, 127, 10, 1), !IsBlank(ThisItem.HoldReason), RGBA(138, 90, 18, 1), RGBA(100, 116, 139, 1))
+            Size: =11
+            X: =14
+            Y: =34
+            Width: =Parent.TemplateWidth - 28
+            Height: =26
+            OnSelect: =Select(Parent)
+      - sepSpool:
+          Control: Rectangle
+          Properties:
+            Fill: =RGBA(226, 232, 240, 1)
+            X: =0
+            Y: =Parent.TemplateHeight - 1
+            Width: =Parent.TemplateWidth
+            Height: =1
+- recSel:
+    Control: Rectangle
+    Properties:
+      Fill: =RGBA(238, 243, 254, 1)
+      Visible: =!IsBlank(varSpool)
+      X: =24
+      Y: =234
+      Width: =Parent.Width - 48
+      Height: =84
+- lblSel:
+    Control: Label
+    Properties:
+      Text: =varSpool.Title
+      FontWeight: =FontWeight.Bold
+      Size: =15
+      Visible: =!IsBlank(varSpool)
+      X: =38
+      Y: =240
+      Width: =Parent.Width - 200
+      Height: =40
+- lblSelInfo:
+    Control: Label
+    Properties:
+      Text: |-
+        =If(!IsBlank(varSpool.ErectedDate), "Erected " & Text(varSpool.ErectedDate, "dd-mmm-yyyy"), !IsBlank(varSpool.HoldReason), "Hold: " & varSpool.HoldReason, "Not erected")
+        & "   ·   FW " & CountIf(colJoints, !IsBlank(WeldDate)) & "/" & CountRows(colJoints)
+      Size: =11
+      Color: =RGBA(82, 81, 78, 1)
+      Visible: =!IsBlank(varSpool)
+      X: =38
+      Y: =278
+      Width: =Parent.Width - 200
+      Height: =32
+- btnChange:
+    Control: Classic/Button
+    Properties:
+      Text: ="Change"
+      Fill: =RGBA(255, 255, 255, 1)
+      Color: =RGBA(26, 86, 219, 1)
+      BorderColor: =RGBA(199, 215, 251, 1)
+      BorderThickness: =1
+      HoverFill: =RGBA(238, 243, 254, 1)
+      HoverColor: =RGBA(18, 57, 155, 1)
+      Size: =13
+      RadiusTopLeft: =8
+      RadiusTopRight: =8
+      RadiusBottomLeft: =8
+      RadiusBottomRight: =8
+      Visible: =!IsBlank(varSpool)
+      X: =Parent.Width - 150
+      Y: =254
+      Width: =112
+      Height: =44
+      OnSelect: |-
+        =Set(varSpool, Blank());
+        Set(varAct, "");
+        Reset(txtSearch)
+- lblStep3:
+    Control: Label
+    Properties:
+      Text: ="3 · WHAT WAS DONE"
+      Color: =RGBA(100, 116, 139, 1)
+      FontWeight: =FontWeight.Semibold
+      Size: =11
+      Visible: =!IsBlank(varSpool)
+      X: =24
+      Y: =332
+      Width: =Parent.Width - 48
+      Height: =26
+- btnActWeld:
+    Control: Classic/Button
+    Properties:
+      Text: ="Field weld"
+      Fill: =If(varAct = "Field weld", RGBA(26, 86, 219, 1), RGBA(255, 255, 255, 1))
+      Color: =If(varAct = "Field weld", RGBA(255, 255, 255, 1), RGBA(30, 41, 59, 1))
+      HoverFill: =If(varAct = "Field weld", RGBA(18, 57, 155, 1), RGBA(238, 243, 254, 1))
+      HoverColor: =If(varAct = "Field weld", RGBA(255, 255, 255, 1), RGBA(30, 41, 59, 1))
+      BorderColor: =RGBA(203, 213, 225, 1)
+      BorderThickness: =1
+      Size: =14
+      RadiusTopLeft: =10
+      RadiusTopRight: =10
+      RadiusBottomLeft: =10
+      RadiusBottomRight: =10
+      Visible: =!IsBlank(varSpool)
+      DisplayMode: =If(CountRows(colJoints) > 0 && CountIf(colJoints, IsBlank(WeldDate)) = 0, DisplayMode.Disabled, DisplayMode.Edit)
+      X: =24
+      Y: =362
+      Width: =(Parent.Width - 60) / 2
+      Height: =60
+      OnSelect: =Set(varAct, "Field weld")
+- btnActErect:
+    Control: Classic/Button
+    Properties:
+      Text: ="Erected"
+      Fill: =If(varAct = "Erected", RGBA(26, 86, 219, 1), RGBA(255, 255, 255, 1))
+      Color: =If(varAct = "Erected", RGBA(255, 255, 255, 1), RGBA(30, 41, 59, 1))
+      HoverFill: =If(varAct = "Erected", RGBA(18, 57, 155, 1), RGBA(238, 243, 254, 1))
+      HoverColor: =If(varAct = "Erected", RGBA(255, 255, 255, 1), RGBA(30, 41, 59, 1))
+      BorderColor: =RGBA(203, 213, 225, 1)
+      BorderThickness: =1
+      Size: =14
+      RadiusTopLeft: =10
+      RadiusTopRight: =10
+      RadiusBottomLeft: =10
+      RadiusBottomRight: =10
+      Visible: =!IsBlank(varSpool)
+      DisplayMode: =If(IsBlank(varSpool.ErectedDate), DisplayMode.Edit, DisplayMode.Disabled)
+      X: =36 + (Parent.Width - 60) / 2
+      Y: =362
+      Width: =(Parent.Width - 60) / 2
+      Height: =60
+      OnSelect: =Set(varAct, "Erected")
+- btnActHold:
+    Control: Classic/Button
+    Properties:
+      Text: ="Hold"
+      Fill: =If(varAct = "Hold", RGBA(26, 86, 219, 1), RGBA(255, 255, 255, 1))
+      Color: =If(varAct = "Hold", RGBA(255, 255, 255, 1), RGBA(30, 41, 59, 1))
+      HoverFill: =If(varAct = "Hold", RGBA(18, 57, 155, 1), RGBA(238, 243, 254, 1))
+      HoverColor: =If(varAct = "Hold", RGBA(255, 255, 255, 1), RGBA(30, 41, 59, 1))
+      BorderColor: =RGBA(203, 213, 225, 1)
+      BorderThickness: =1
+      Size: =14
+      RadiusTopLeft: =10
+      RadiusTopRight: =10
+      RadiusBottomLeft: =10
+      RadiusBottomRight: =10
+      Visible: =!IsBlank(varSpool)
+      DisplayMode: =If(IsBlank(varSpool.ErectedDate), DisplayMode.Edit, DisplayMode.Disabled)
+      X: =24
+      Y: =432
+      Width: =(Parent.Width - 60) / 2
+      Height: =60
+      OnSelect: =Set(varAct, "Hold")
+- btnActClear:
+    Control: Classic/Button
+    Properties:
+      Text: ="Clear hold"
+      Fill: =If(varAct = "Clear hold", RGBA(26, 86, 219, 1), RGBA(255, 255, 255, 1))
+      Color: =If(varAct = "Clear hold", RGBA(255, 255, 255, 1), RGBA(30, 41, 59, 1))
+      HoverFill: =If(varAct = "Clear hold", RGBA(18, 57, 155, 1), RGBA(238, 243, 254, 1))
+      HoverColor: =If(varAct = "Clear hold", RGBA(255, 255, 255, 1), RGBA(30, 41, 59, 1))
+      BorderColor: =RGBA(203, 213, 225, 1)
+      BorderThickness: =1
+      Size: =14
+      RadiusTopLeft: =10
+      RadiusTopRight: =10
+      RadiusBottomLeft: =10
+      RadiusBottomRight: =10
+      Visible: =!IsBlank(varSpool)
+      DisplayMode: =If(IsBlank(varSpool.HoldReason), DisplayMode.Disabled, DisplayMode.Edit)
+      X: =36 + (Parent.Width - 60) / 2
+      Y: =432
+      Width: =(Parent.Width - 60) / 2
+      Height: =60
+      OnSelect: =Set(varAct, "Clear hold")
+- lblJointCap:
+    Control: Label
+    Properties:
+      Text: ="FIELD JOINT (FW) NO."
+      Color: =RGBA(100, 116, 139, 1)
+      FontWeight: =FontWeight.Semibold
+      Size: =11
+      Visible: =varAct = "Field weld"
+      X: =24
+      Y: =508
+      Width: =Parent.Width - 48
+      Height: =26
+- ddJoint:
+    Control: Classic/DropDown
+    Properties:
+      Items: =Sort(Filter(colJoints, IsBlank(WeldDate)), Title).Title
+      AllowEmptySelection: =true
+      Default: =""
+      Size: =14
+      Visible: =varAct = "Field weld" && CountRows(colJoints) > 0
+      X: =24
+      Y: =536
+      Width: =Parent.Width - 48
+      Height: =56
+- txtJoint:
+    Control: Classic/TextInput
+    Properties:
+      HintText: ="No joints listed for this spool - type e.g. FW-01"
+      Default: =""
+      Size: =14
+      Visible: =varAct = "Field weld" && CountRows(colJoints) = 0
+      X: =24
+      Y: =536
+      Width: =Parent.Width - 48
+      Height: =56
+- lblWelderCap:
+    Control: Label
+    Properties:
+      Text: ="WELDER"
+      Color: =RGBA(100, 116, 139, 1)
+      FontWeight: =FontWeight.Semibold
+      Size: =11
+      Visible: =varAct = "Field weld"
+      X: =24
+      Y: =604
+      Width: =Parent.Width - 48
+      Height: =26
+- ddWelder:
+    Control: Classic/DropDown
+    Properties:
+      Items: =colWelders.Title
+      AllowEmptySelection: =true
+      Default: =""
+      Size: =14
+      Visible: =varAct = "Field weld"
+      X: =24
+      Y: =632
+      Width: =Parent.Width - 48
+      Height: =56
+- lblHoldCap:
+    Control: Label
+    Properties:
+      Text: ="HOLD REASON"
+      Color: =RGBA(100, 116, 139, 1)
+      FontWeight: =FontWeight.Semibold
+      Size: =11
+      Visible: =varAct = "Hold"
+      X: =24
+      Y: =508
+      Width: =Parent.Width - 48
+      Height: =26
+- ddHold:
+    Control: Classic/DropDown
+    Properties:
+      Items: |-
+        =["Material hold: valves not received", "Awaiting spool delivery from fab shop", "Isometric revision pending", "Support steel not released", "Line held for client comments", "Access / scaffolding not ready", "Other"]
+      AllowEmptySelection: =true
+      Default: =""
+      Size: =14
+      Visible: =varAct = "Hold"
+      X: =24
+      Y: =536
+      Width: =Parent.Width - 48
+      Height: =56
+- txtHoldOther:
+    Control: Classic/TextInput
+    Properties:
+      HintText: ="Describe the hold"
+      Default: =""
+      Size: =14
+      Visible: =varAct = "Hold" && ddHold.Selected.Value = "Other"
+      X: =24
+      Y: =604
+      Width: =Parent.Width - 48
+      Height: =56
+- btnSave:
+    Control: Classic/Button
+    Properties:
+      Text: =If(varBusy, "Saving…", "Save")
+      Fill: =RGBA(26, 86, 219, 1)
+      Color: =RGBA(255, 255, 255, 1)
+      HoverFill: =RGBA(18, 57, 155, 1)
+      DisabledFill: =RGBA(168, 187, 230, 1)
+      DisabledColor: =RGBA(255, 255, 255, 1)
+      FontWeight: =FontWeight.Bold
+      Size: =17
+      RadiusTopLeft: =12
+      RadiusTopRight: =12
+      RadiusBottomLeft: =12
+      RadiusBottomRight: =12
+      DisplayMode: =If(varBusy || IsBlank(varSpool) || IsBlank(varAct), DisplayMode.Disabled, DisplayMode.Edit)
+      X: =24
+      Y: =Parent.Height - 96
+      Width: =Parent.Width - 48
+      Height: =72
+      OnSelect: |-
+        =Set(varBusy, true);
+        Set(varNow, LookUp(Spools, ID = varSpool.ID));
+        Set(varJointNo, If(CountRows(colJoints) = 0, Upper(Trim(txtJoint.Text)), ddJoint.Selected.Title));
+        Set(varHoldText, If(ddHold.Selected.Value = "Other", Trim(txtHoldOther.Text), ddHold.Selected.Value));
+        Set(varErr,
+            If(
+                IsBlank(dpWorkDate.SelectedDate) || dpWorkDate.SelectedDate > Today(), "Work date is missing or in the future.",
+                varAct = "Field weld" && IsBlank(varJointNo), "Choose the field joint.",
+                varAct = "Field weld" && IsBlank(ddWelder.Selected.Title), "Choose the welder.",
+                varAct = "Field weld" && !IsBlank(LookUp(Joints, SpoolID = varSpool.Title && Title = varJointNo).WeldDate), "Joint " & varJointNo & " is already recorded as welded.",
+                varAct = "Erected" && !IsBlank(varNow.ErectedDate), varSpool.Title & " is already recorded as erected.",
+                varAct = "Hold" && IsBlank(varHoldText), "Give the hold reason.",
+                ""
+            )
+        );
+        If(
+            !IsBlank(varErr),
+            Notify(varErr, NotificationType.Error),
+            IfError(
+                If(
+                    varAct = "Field weld",
+                        If(
+                            IsBlank(LookUp(Joints, SpoolID = varSpool.Title && Title = varJointNo)),
+                            Patch(Joints, Defaults(Joints), {Title: varJointNo, SpoolID: varSpool.Title, WeldDate: dpWorkDate.SelectedDate, Welder: ddWelder.Selected.Title}),
+                            Patch(Joints, LookUp(Joints, SpoolID = varSpool.Title && Title = varJointNo), {WeldDate: dpWorkDate.SelectedDate, Welder: ddWelder.Selected.Title})
+                        );
+                        ClearCollect(colJoints, Filter(Joints, SpoolID = varSpool.Title));
+                        Patch(Spools, varNow, {JointsWelded: CountIf(colJoints, !IsBlank(WeldDate)), JointsTotal: CountRows(colJoints), LastUpdate: dpWorkDate.SelectedDate}),
+                    varAct = "Erected",
+                        Patch(Spools, varNow, {ErectedDate: dpWorkDate.SelectedDate, HoldReason: "", LastUpdate: dpWorkDate.SelectedDate}),
+                    varAct = "Hold",
+                        Patch(Spools, varNow, {HoldReason: varHoldText, LastUpdate: dpWorkDate.SelectedDate}),
+                    Patch(Spools, varNow, {HoldReason: "", LastUpdate: dpWorkDate.SelectedDate})
+                );
+                Patch(SiteLog, Defaults(SiteLog), {
+                    Title: varSpool.Title,
+                    Area: varSpool.Area,
+                    Activity: varAct,
+                    WorkDate: dpWorkDate.SelectedDate,
+                    JointNo: If(varAct = "Field weld", varJointNo, ""),
+                    Welder: If(varAct = "Field weld", ddWelder.Selected.Title, ""),
+                    HoldReason: If(varAct = "Hold", varHoldText, "")
+                });
+                Notify("Saved: " & varSpool.Title & " · " & varAct & If(varAct = "Field weld", " " & varJointNo, ""), NotificationType.Success);
+                ClearCollect(colSpools, Filter(Spools, Area = varArea));
+                Set(varSpool, LookUp(colSpools, ID = varSpool.ID));
+                Set(varAct, "");
+                Reset(ddJoint);
+                Reset(ddWelder);
+                Reset(ddHold);
+                Reset(txtHoldOther);
+                Reset(txtJoint),
+                Notify("Could not save: " & FirstError.Message, NotificationType.Error)
+            )
+        );
+        Set(varBusy, false)

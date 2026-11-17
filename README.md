@@ -1,6 +1,9 @@
 # Dashboards
 
-> **No Google accounts?** Use [`site-progress-app/`](site-progress-app/README.md): a self-hosted entry form
+> **Microsoft 365?** Use [`powerapps/`](powerapps/README.md): a Power Apps phone app on SharePoint lists. The 4D
+> dashboard reads it with your company sign-in.
+>
+> **No cloud accounts at all?** Use [`site-progress-app/`](site-progress-app/README.md): a self-hosted entry form
 > (Area → Spool → Field weld / Erected / Hold) that feeds the 4D dashboard directly. Its `/progress.csv` link
 > works anywhere the steps below say "published CSV link".
 

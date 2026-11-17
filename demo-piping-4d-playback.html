@@ -139,6 +139,7 @@ ol.behind li.empty{border:0;grid-column:1/-1;font-size:12px;color:var(--muted);p
       <span class="ft">Site progress</span>
       <span class="fs" id="fStat" role="status">Demo actuals built into the page. Connect the planner's progress sheet to go live.</span>
       <span class="spacer"></span>
+      <button class="btn pri" id="fSign" type="button" hidden>Sign in with Microsoft</button>
       <button class="btn" id="fRefresh" type="button" hidden>↻ Refresh now</button>
       <button class="btn" id="fTpl" type="button">⬇ Progress template</button>
       <label class="btn" for="fFile" style="cursor:pointer">Load CSV</label>
@@ -719,6 +720,7 @@ function parseCSV(txt){
 }
 function parseDate(v){
   v=String(v||'').trim();if(!v)return null;var m,y;
+  if(/^\d{4}-\d{2}-\d{2}T/.test(v)){var dt=new Date(v);if(!isNaN(dt))return Date.UTC(dt.getFullYear(),dt.getMonth(),dt.getDate())} // SharePoint/Graph datetimes: use the viewer's local date
   if((m=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)))return Date.UTC(+m[1],m[2]-1,+m[3]);
   if((m=v.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})$/))){y=+m[3];if(y<100)y+=2000;return Date.UTC(y,m[2]-1,+m[1])} // day first
   if((m=v.match(/^(\d{1,2})[\s\-]([A-Za-z]{3})[A-Za-z]*[\s\-,]+(\d{2,4})$/))&&MONIX[m[2].toLowerCase()]!=null){y=+m[3];if(y<100)y+=2000;return Date.UTC(y,MONIX[m[2].toLowerCase()],+m[1])}
@@ -730,7 +732,7 @@ function isoDate(w){var d=new Date(START+(w*7-1)*DAY);return d.getUTCFullYear()+
 function col(head,re){for(var i=0;i<head.length;i++)if(re.test(head[i]))return i;return -1}
 
 function applyFeed(txt,label){
-  var rows=parseCSV(txt);if(!rows.length)throw new Error('the file is empty');
+  var rows=typeof txt==='string'?parseCSV(txt):txt;if(!rows.length)throw new Error('the file is empty');
   var head=rows[0].map(function(h){return h.trim().toLowerCase()});
   var cId=col(head,/spool/),cDt=col(head,/erect|actual|complet|date/),cHd=col(head,/hold|remark|reason|constraint/);
   if(cId<0||cDt<0)throw new Error('need a "Spool ID" and an "Erected date" column (found: '+rows[0].join(', ')+')');
@@ -771,6 +773,7 @@ function setStat(kind,txt){$('fDot').className='dot '+kind;$('fStat').textConten
 var feedCount=0,feedTimer=null,feedUrl=null,LS='orion4d.feed';
 function store(v){try{v?localStorage.setItem(LS,JSON.stringify(v)):localStorage.removeItem(LS)}catch(e){}}
 function poll(){
+  if(SP.on){spPoll(false);return}
   if(!feedUrl)return;setStat('busy','Checking the progress sheet…');
   var u=feedUrl+(feedUrl.indexOf('?')<0?'?':'&')+'_='+Date.now(); // bypass caches
   fetch(u,{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()})
@@ -782,6 +785,7 @@ function goLive(url,every){
   poll();feedTimer=setInterval(poll,Math.max(30,every||300)*1000);
 }
 function disconnect(){
+  SP.on=false;$('fSign').hidden=true;
   clearInterval(feedTimer);feedTimer=null;feedUrl=null;store(null);$('fRefresh').hidden=true;$('fIssues').hidden=true;
   spools.forEach(function(s){s.actual=s.demo.actual;s.hold=s.demo.hold});DD=DEMO_DD;state.t=DD;drawTable();render();
   setStat('','Demo actuals built into the page. Connect the planner\'s progress sheet to go live.');
@@ -802,6 +806,68 @@ $('fTpl').addEventListener('click',function(){
   a.href=URL.createObjectURL(b);a.download='piping-progress-template.csv';document.body.appendChild(a);a.click();a.remove();
 });
 
+
+// ---------- Microsoft 365: read the SharePoint "Spools" list that the Power Apps form updates ----------
+// IT fills these once (Entra app registration, see powerapps/README.md), or pass them in the URL:
+//   ?spSite=https://contoso.sharepoint.com/sites/Orion&spClient=<app id>&spTenant=<tenant id>&spList=Spools
+var SP={
+  site:'',        // e.g. 'https://contoso.sharepoint.com/sites/OrionConstruction'
+  clientId:'',    // Application (client) ID of the Entra app registration
+  tenantId:'',    // Directory (tenant) ID
+  list:'Spools',
+  on:false
+};
+var MSAL_URL='https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js';
+var GRAPH='https://graph.microsoft.com/v1.0',SCOPES=['https://graph.microsoft.com/Sites.Read.All'],msalApp=null,spSiteId=null;
+function loadScript(src){return new Promise(function(res,rej){var e=document.createElement('script');e.src=src;e.onload=res;e.onerror=function(){rej(new Error('could not load the Microsoft sign-in library'))};document.head.appendChild(e)})}
+function spInit(){
+  if(msalApp)return Promise.resolve();
+  return loadScript(MSAL_URL).then(function(){
+    msalApp=new msal.PublicClientApplication({auth:{clientId:SP.clientId,authority:'https://login.microsoftonline.com/'+(SP.tenantId||'organizations'),
+      redirectUri:new URL('auth.html',location.href).href},cache:{cacheLocation:'localStorage'}});
+    return msalApp.initialize();
+  });
+}
+function spToken(interactive){
+  return spInit().then(function(){
+    var acc=msalApp.getAllAccounts()[0];
+    if(acc)return msalApp.acquireTokenSilent({scopes:SCOPES,account:acc}).catch(function(e){
+      if(interactive)return msalApp.acquireTokenPopup({scopes:SCOPES,account:acc});throw {login:true}});
+    if(interactive)return msalApp.loginPopup({scopes:SCOPES}).then(function(r){msalApp.setActiveAccount(r.account);return r});
+    throw {login:true};
+  }).then(function(r){return r.accessToken});
+}
+function gget(url,tok){
+  return fetch(url,{headers:{Authorization:'Bearer '+tok}}).then(function(r){
+    if(r.ok)return r.json();
+    return r.json().catch(function(){return {}}).then(function(j){throw new Error((j.error&&j.error.message)||('HTTP '+r.status))});
+  });
+}
+function spPoll(interactive){
+  var tok;setStat('busy','Reading the SharePoint progress list…');
+  return spToken(interactive).then(function(t){
+    tok=t;$('fSign').hidden=true;
+    if(spSiteId)return spSiteId;
+    var u=new URL(/^https?:/.test(SP.site)?SP.site:'https://'+SP.site),path=u.pathname.replace(/\/+$/,'');
+    return gget(GRAPH+'/sites/'+u.hostname+(path?':'+path:''),tok).then(function(j){return spSiteId=j.id});
+  }).then(function(id){
+    var rows=[['Spool ID','Erected date','Hold reason']];
+    function page(url){return gget(url,tok).then(function(j){
+      (j.value||[]).forEach(function(it){var f=it.fields||{};rows.push([f.Title||'',f.ErectedDate||'',f.HoldReason||''])});
+      return j['@odata.nextLink']?page(j['@odata.nextLink']):rows})}
+    return page(GRAPH+'/sites/'+id+'/lists/'+encodeURIComponent(SP.list)+'/items?$expand=fields($select=Title,ErectedDate,HoldReason)&$top=999');
+  }).then(function(rows){applyFeed(rows,'SharePoint · '+SP.list)})
+  .catch(function(e){
+    if(e&&e.login){$('fSign').hidden=false;setStat('','Live progress is in SharePoint. Sign in with your company account to load it.');return}
+    setStat('err','Could not read SharePoint: '+((e&&(e.errorMessage||e.message))||e)+'. Showing the last good data; retrying on the next interval.');
+  });
+}
+function spStart(every){
+  SP.on=true;$('fRefresh').hidden=false;clearInterval(feedTimer);
+  spPoll(false);feedTimer=setInterval(poll,Math.max(30,every||300)*1000);
+}
+$('fSign').addEventListener('click',function(){spPoll(true)});
+
 // hooks for scripted screenshots: ?week=16&mode=plan&area=2&view=az,el,r
 var q=new URLSearchParams(location.search);
 if(q.has('week'))state.t=clamp(+q.get('week')||0,0,WEEKS);
@@ -814,7 +880,9 @@ if(q.has('area')){state.area=+q.get('area');areaSel.value=String(state.area)}
 render();applyCam();loadEl.remove();requestAnimationFrame(loop);
 var saved=null;try{saved=JSON.parse(localStorage.getItem(LS)||'null')}catch(e){}
 var qf=q.get('feed');
+['site','clientId','tenantId','list'].forEach(function(k){var v=q.get('sp'+k.charAt(0).toUpperCase()+k.slice(1).replace('Id',''));if(v)SP[k]=v});
 if(qf){var qe=+q.get('every')||300;goLive(qf,qe);$('fUrl').value=qf;if($('fEvery').querySelector('option[value="'+qe+'"]'))$('fEvery').value=String(qe)}
+else if(SP.site&&SP.clientId){spStart(+q.get('every')||300)}
 else if(saved&&saved.url){$('fUrl').value=saved.url;$('fEvery').value=String(saved.every||300);goLive(saved.url,saved.every)}
 })();
 </script>

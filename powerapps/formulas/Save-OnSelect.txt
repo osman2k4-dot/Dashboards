@@ -1,0 +1,57 @@
+// btnSave.OnSelect
+Set(varBusy, true);
+Set(varNow, LookUp(Spools, ID = varSpool.ID));
+Set(varJointNo, If(CountRows(colJoints) = 0, Upper(Trim(txtJoint.Text)), ddJoint.Selected.Title));
+Set(varHoldText, If(ddHold.Selected.Value = "Other", Trim(txtHoldOther.Text), ddHold.Selected.Value));
+Set(varErr,
+    If(
+        IsBlank(dpWorkDate.SelectedDate) || dpWorkDate.SelectedDate > Today(), "Work date is missing or in the future.",
+        varAct = "Field weld" && IsBlank(varJointNo), "Choose the field joint.",
+        varAct = "Field weld" && IsBlank(ddWelder.Selected.Title), "Choose the welder.",
+        varAct = "Field weld" && !IsBlank(LookUp(Joints, SpoolID = varSpool.Title && Title = varJointNo).WeldDate), "Joint " & varJointNo & " is already recorded as welded.",
+        varAct = "Erected" && !IsBlank(varNow.ErectedDate), varSpool.Title & " is already recorded as erected.",
+        varAct = "Hold" && IsBlank(varHoldText), "Give the hold reason.",
+        ""
+    )
+);
+If(
+    !IsBlank(varErr),
+    Notify(varErr, NotificationType.Error),
+    IfError(
+        If(
+            varAct = "Field weld",
+                If(
+                    IsBlank(LookUp(Joints, SpoolID = varSpool.Title && Title = varJointNo)),
+                    Patch(Joints, Defaults(Joints), {Title: varJointNo, SpoolID: varSpool.Title, WeldDate: dpWorkDate.SelectedDate, Welder: ddWelder.Selected.Title}),
+                    Patch(Joints, LookUp(Joints, SpoolID = varSpool.Title && Title = varJointNo), {WeldDate: dpWorkDate.SelectedDate, Welder: ddWelder.Selected.Title})
+                );
+                ClearCollect(colJoints, Filter(Joints, SpoolID = varSpool.Title));
+                Patch(Spools, varNow, {JointsWelded: CountIf(colJoints, !IsBlank(WeldDate)), JointsTotal: CountRows(colJoints), LastUpdate: dpWorkDate.SelectedDate}),
+            varAct = "Erected",
+                Patch(Spools, varNow, {ErectedDate: dpWorkDate.SelectedDate, HoldReason: "", LastUpdate: dpWorkDate.SelectedDate}),
+            varAct = "Hold",
+                Patch(Spools, varNow, {HoldReason: varHoldText, LastUpdate: dpWorkDate.SelectedDate}),
+            Patch(Spools, varNow, {HoldReason: "", LastUpdate: dpWorkDate.SelectedDate})
+        );
+        Patch(SiteLog, Defaults(SiteLog), {
+            Title: varSpool.Title,
+            Area: varSpool.Area,
+            Activity: varAct,
+            WorkDate: dpWorkDate.SelectedDate,
+            JointNo: If(varAct = "Field weld", varJointNo, ""),
+            Welder: If(varAct = "Field weld", ddWelder.Selected.Title, ""),
+            HoldReason: If(varAct = "Hold", varHoldText, "")
+        });
+        Notify("Saved: " & varSpool.Title & " · " & varAct & If(varAct = "Field weld", " " & varJointNo, ""), NotificationType.Success);
+        ClearCollect(colSpools, Filter(Spools, Area = varArea));
+        Set(varSpool, LookUp(colSpools, ID = varSpool.ID));
+        Set(varAct, "");
+        Reset(ddJoint);
+        Reset(ddWelder);
+        Reset(ddHold);
+        Reset(txtHoldOther);
+        Reset(txtJoint),
+        Notify("Could not save: " & FirstError.Message, NotificationType.Error)
+    )
+);
+Set(varBusy, false)

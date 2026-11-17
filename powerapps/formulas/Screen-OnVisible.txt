@@ -1,0 +1,7 @@
+// Screen OnVisible (or App.OnStart). Loads the small lookup lists once.
+ClearCollect(colAreas, Sort(Areas, SortOrder, SortOrder.Ascending));
+ClearCollect(colWelders, Sort(Filter(Welders, Active = true), Title, SortOrder.Ascending));
+Set(varArea, Blank());
+Set(varSpool, Blank());
+Set(varAct, "");
+Set(varBusy, false)
