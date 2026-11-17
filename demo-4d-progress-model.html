@@ -648,7 +648,7 @@ function paint(){
       }
       if(pale){COL.copy(col||PALE).lerp(WHITE,.72);col=COL;hatch=false}
       P3.set(r[0],r[1],r[2]);Q4.set(r[3],r[4],r[5],r[6]);
-      if(thick!==1&&g!=='box'){var rr=Math.max(r[7]*thick,S.tp>=0?.3:.1);S3.set(rr,g==='cyl'?r[8]:rr,rr)}else S3.set(r[7],r[8],r[9]);
+      if(thick!==1&&g!=='box'){var rr=Math.max(r[7]*thick,S.tp>=0?Math.max(.12,(S.tpR||200)*.0017):.1);S3.set(rr,g==='cyl'?r[8]:rr,rr)}else S3.set(r[7],r[8],r[9]);
       M4.compose(P3,Q4,S3);
       if(hatch){mh.setMatrixAt(nh,M4);mh.setColorAt(nh,WHITE);mapH[nh++]=i}
       else{ms.setMatrixAt(ns,M4);ms.setColorAt(ns,col);mapS[ns++]=i}
@@ -847,7 +847,7 @@ function tpBounds(tp){var x0=1e9,x1=-1e9,z0=1e9,z1=-1e9,y1=0;['cyl','sph'].forEa
 function highlightTP(i){
   var tp=TPS[i];S.tp=i;S.mc1=false;S.spSel=null;S.focus='all';[].forEach.call(chipsEl.querySelectorAll('.chip'),function(c){c.classList.toggle('on',c.dataset.k==='all')});closeCard();showTab('4d');
   setBanner('Test pack '+tp.id+': '+tp.isoN+' ISO sheets, '+tp.isoN+' drawn');
-  var b=tpBounds(tp);flyTo(Object.assign(fitBox(b[0],b[1],b[2],b[3],b[4]),{az:cam.az,el:Math.max(cam.el,.5)}));paint();
+  var b=tpBounds(tp),fb=fitBox(b[0],b[1],b[2],b[3],b[4]);S.tpR=fb.r;flyTo(Object.assign(fb,{az:cam.az,el:Math.max(cam.el,.5)}));paint();
 }
 function showSpools(sel,label){S.tp=-1;S.mc1=false;S.spSel=sel;S.mode='spool';document.getElementById('mode').value='spool';showTab('4d');setBanner(label);flyTo(Object.assign({},HOME,{az:cam.az}));paint()}
 function reset(){stop();S.w=0;S.show=-1;S.focus='all';S.tp=-1;S.mc1=false;S.spSel=null;S.hidden={};closeCard();setBanner(null);
