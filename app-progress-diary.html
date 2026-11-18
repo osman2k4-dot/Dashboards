@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Site Progress & Daily Diary</title>
+<meta name="description" content="Area planners enter daily quantities, manpower and equipment; the Excel workbook and the site daily diary are updated automatically.">
+<style>
+/* Layout: app bar with date navigation, tab strip, one working surface per tab. Light theme only, matching the portfolio. */
+:root{
+  --bg:#f4f6f9; --card:#fff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb; --line-2:#d1d5db;
+  --primary:#1a56db; --primary-dark:#12399b; --primary-soft:#e2eafc; --navy:#10264f;
+  --cyan:#0aa2c0; --orange:#e08a1e; --orange-soft:#fdf0e0; --green:#16a34a; --green-soft:#d9f3ea; --red:#dc2626; --red-soft:#fde8e8;
+  --paper:#fffdf8; --rule:#c9ced6; --excel:#107c41; --excel-soft:#e3f3ea;
+  --font:'Segoe UI',system-ui,-apple-system,sans-serif; --mono:ui-monospace,'Cascadia Mono',Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14.5px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{background:#fff;border:1px solid var(--line-2);border-radius:7px;padding:6px 9px;min-width:0}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+input[type=number]{text-align:right;font-variant-numeric:tabular-nums}
+textarea{width:100%;resize:vertical;min-height:72px}
+.btn{background:var(--primary);color:#fff;border:0;border-radius:8px;padding:8px 16px;font-weight:700;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--primary-dark)}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line-2)}
+.btn.ghost:hover{background:#f3f4f6}
+.btn.small{padding:5px 11px;font-size:12.5px}
+.btn.danger{background:#fff;color:var(--red);border:1px solid #f3c1c1}
+.btn.excel{background:var(--excel)}
+.btn.excel:hover{background:#0b5f31}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.server-mode .local-only,.local-mode .server-only{display:none!important}
+.server-mode .master input,.server-mode .master select{background:#f3f4f6;color:var(--muted)}
+.server-mode .master .btn{display:none}
+.hd span.ro{color:#b06a10;font-weight:600}
+
+/* App bar */
+.appbar{background:linear-gradient(135deg,var(--navy) 0%,#143a73 55%,var(--primary) 100%);color:#fff;padding:14px 20px 0}
+.appbar .top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;max-width:1180px;margin:0 auto}
+.brand .kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9adeec;font-weight:700}
+.brand h1{font-size:20px;font-weight:800;line-height:1.2;text-wrap:balance}
+.brand .sub{font-size:12.5px;color:#cfe0f5}
+.datenav{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:6px 8px;flex-wrap:wrap}
+.datenav button{background:transparent;border:0;color:#fff;font-size:18px;line-height:1;padding:4px 8px;border-radius:6px;cursor:pointer}
+.datenav button:hover{background:rgba(255,255,255,.15)}
+.datenav input[type=date]{background:#fff;color:var(--ink);border:0;padding:5px 8px;font-weight:600}
+.datenav .daylabel{font-size:12.5px;color:#cfe0f5;min-width:150px}
+.datenav .daylabel b{color:#fff}
+.tabs{display:flex;gap:4px;max-width:1180px;margin:14px auto 0;overflow-x:auto}
+.tab{background:transparent;border:0;color:#cfe0f5;padding:10px 16px;font-weight:700;font-size:13.5px;border-radius:9px 9px 0 0;cursor:pointer;white-space:nowrap}
+.tab:hover{color:#fff;background:rgba(255,255,255,.08)}
+.tab[aria-selected=true]{background:var(--bg);color:var(--navy)}
+.linkpill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);margin-top:6px}
+.linkpill::before{content:"";width:7px;height:7px;border-radius:50%;background:#f7b955}
+.linkpill.on::before{background:#4ade80}
+
+main{max-width:1180px;margin:0 auto;padding-block:20px 40px;padding-inline:16px}
+.panel[hidden]{display:none}
+
+/* Entry panel */
+.entry-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.entry-head h2{font-size:18px;font-weight:750}
+.entry-head p{color:var(--muted);font-size:13px;max-width:640px}
+.areapick{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.areapick label{font-size:12.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.areapick select{font-weight:700;min-width:220px}
+.status{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 10px;border-radius:99px;background:var(--primary-soft);color:var(--primary)}
+.chip.ok{background:var(--green-soft);color:#0b7a53}
+.chip.warn{background:var(--orange-soft);color:#b06a10}
+.chip.bad{background:var(--red-soft);color:var(--red)}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+
+.grid2{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 6px rgba(16,38,79,.05)}
+.card,.stack,.grid2>*,.linkbox>*,.charts>*,.setup-grid>*,.flow>*{min-width:0}
+.card .hd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.card .hd h3{font-size:15px;font-weight:750}
+.card .hd span{font-size:12.5px;color:var(--muted)}
+.card .bd{padding:14px 18px}
+.stack{display:grid;gap:18px}
+
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:7px 10px;text-align:left;vertical-align:middle;border-bottom:1px solid var(--line)}
+th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.dim{color:var(--muted)}
+tr.disc td{background:#f8fafc;font-weight:750;color:var(--navy);padding-top:10px;font-size:13px;letter-spacing:.02em}
+tr.disc td .pct{float:right;font-weight:600;color:var(--muted);font-size:12.5px}
+td input[type=number]{width:92px}
+td input[type=text]{width:100%;min-width:140px}
+td.mine{background:#f5f8ff}
+.bar{height:6px;background:#eef1f5;border-radius:3px;position:relative;overflow:visible;min-width:90px}
+.bar i{display:block;height:100%;background:var(--primary);border-radius:3px}
+.bar b{position:absolute;top:-3px;width:2px;height:12px;background:var(--orange);border-radius:1px}
+.bar.done i{background:var(--green)}
+
+.mp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 14px}
+.mp-grid label{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--muted)}
+.mp-grid input{width:100%}
+.total{display:flex;justify-content:space-between;font-weight:700;padding-top:10px;margin-top:10px;border-top:1px dashed var(--line-2)}
+.total small{font-weight:500;color:var(--muted)}
+.wx{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.wx label,.field label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
+.field{display:grid;gap:12px}
+.field label span.hint{font-size:11.5px;color:var(--muted)}
+
+/* Diary */
+.diary-tools{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.diary-tools .left{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.diary{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:34px 40px;max-width:900px;margin:0 auto;box-shadow:0 2px 14px rgba(16,38,79,.08);font-size:13.5px;line-height:1.55}
+@media (max-width:600px){.diary{padding:22px 18px}}
+.diary .dh{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;border-bottom:2px solid var(--navy);padding-bottom:12px;margin-bottom:14px}
+.diary .dh h2{font-size:19px;font-weight:800;color:var(--navy);letter-spacing:.02em}
+.diary .dh .proj{color:var(--muted);font-size:12.5px;margin-top:2px}
+.diary .ref{text-align:right;font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+.diary .ref b{display:block;font-size:15px}
+.diary .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px 14px;background:#fff;border:1px solid var(--rule);border-radius:4px;padding:10px 14px;margin-bottom:16px}
+.diary .meta div{font-size:12.5px;color:var(--muted)}
+.diary .meta div b{display:block;color:var(--ink);font-size:13.5px;font-weight:650}
+.diary h4{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);margin:18px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--rule)}
+.diary table{font-size:13px}
+.diary th,.diary td{padding:5px 8px;border-bottom:1px solid #e4e7ec}
+.diary tr.disc td{background:transparent;border-bottom:1px solid var(--rule);padding-top:9px}
+.diary p{margin:4px 0 6px}
+.diary p.narr{margin:2px 0 8px 0}
+.diary .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.diary .kpi div{background:#fff;border:1px solid var(--rule);border-radius:4px;padding:8px 12px}
+.diary .kpi div span{font-size:11.5px;color:var(--muted);display:block}
+.diary .kpi div b{font-size:18px;font-variant-numeric:tabular-nums;font-weight:750}
+.diary .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:700px){.diary .two{grid-template-columns:1fr}}
+.diary .sig{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:30px}
+@media (max-width:600px){.diary .sig{grid-template-columns:1fr}}
+.diary .sig div{border-top:1px solid var(--ink);padding-top:6px;font-size:12px;color:var(--muted)}
+.diary .sig div b{display:block;color:var(--ink)}
+.diary .empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.diary .empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:6px}
+.diary small.area{color:var(--muted)}
+.pos{color:#0b7a53;font-weight:700}.neg{color:var(--red);font-weight:700}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:9px 16px;border-radius:9px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:9;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Dashboard */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 18px;box-shadow:0 1px 6px rgba(16,38,79,.05)}
+.kpi span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.kpi b{display:block;font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2;margin-top:4px}
+.kpi small{font-size:12.5px;color:var(--muted)}
+.charts{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:18px}
+@media (max-width:900px){.charts{grid-template-columns:1fr}}
+.chartbox{position:relative;height:300px}
+.legend{display:flex;gap:16px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:14px;height:0;border-top:2px solid var(--primary);vertical-align:middle;margin-right:6px}
+.legend i.plan{border-top:2px dashed var(--muted)}
+.legend i.box{height:10px;background:var(--primary);border:0;border-radius:2px}
+.disc-table td:first-child{font-weight:650}
+
+/* Excel panel */
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;align-items:stretch}
+.flow .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;position:relative}
+.flow .step .n{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.flow .step h3{font-size:14.5px;margin:4px 0 4px}
+.flow .step p{font-size:12.5px;color:var(--muted)}
+.flow .step.x{border-color:#b7dcc4;background:var(--excel-soft)}
+.flow .step.x .n{color:var(--excel)}
+.linkbox{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:900px){.linkbox{grid-template-columns:1fr}}
+.linkstate{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:#f8fafc;border:1px solid var(--line);font-size:13px}
+.linkstate .dot{width:10px;height:10px;border-radius:50%;background:var(--orange);flex:none}
+.linkstate.on .dot{background:var(--green)}
+.linkstate b{display:block}
+.sheets{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.sheet{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12.5px;background:#fff}
+.sheet b{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:3px}
+.sheet b::before{content:"";width:10px;height:10px;border-radius:2px;background:var(--excel)}
+.sheet.f b::before{background:var(--orange)}
+.sheet span{color:var(--muted)}
+.filein{position:relative;overflow:hidden;display:inline-block}
+.filein input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* Setup */
+.setup-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+.inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.inline input[type=text]{flex:1;min-width:140px}
+.taglist{display:flex;gap:6px;flex-wrap:wrap}
+.taglist span{background:#f3f4f6;border:1px solid var(--line);border-radius:99px;padding:3px 6px 3px 11px;font-size:12.5px;display:inline-flex;gap:6px;align-items:center}
+.taglist button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0 4px}
+.taglist button:hover{color:var(--red)}
+.setup td input[type=text]{min-width:120px}
+.setup td input.w-s{width:76px}
+.setup td input[type=date]{width:138px}
+.note{background:var(--orange-soft);border:1px solid #f3ddb8;color:#8a5a12;font-size:12.5px;padding:10px 14px;border-radius:9px}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="top">
+    <div class="brand">
+      <div class="kicker">Project Controls · Progress &amp; Daily Diary</div>
+      <h1 id="projTitle">Project</h1>
+      <div class="sub" id="projSub"></div>
+      <div class="linkpill" id="linkPill">Excel workbook not linked</div>
+    </div>
+    <div class="datenav">
+      <button id="prevDay" title="Previous day" aria-label="Previous day">‹</button>
+      <input type="date" id="date">
+      <button id="nextDay" title="Next day" aria-label="Next day">›</button>
+      <div class="daylabel" id="dayLabel"></div>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="entry" aria-selected="true">Enter progress</button>
+    <button class="tab" role="tab" data-tab="diary" aria-selected="false">Daily diary</button>
+    <button class="tab" role="tab" data-tab="dash" aria-selected="false">Dashboard</button>
+    <button class="tab" role="tab" data-tab="excel" aria-selected="false">Excel workbook</button>
+    <button class="tab" role="tab" data-tab="setup" aria-selected="false">Setup</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ENTRY -->
+  <section class="panel" id="panel-entry">
+    <div class="entry-head">
+      <div>
+        <h2>Daily progress entry</h2>
+        <p>Pick your area, enter today's quantities, manpower and equipment. The Excel workbook and the daily diary update as you type; other areas' entries are shown greyed for context.</p>
+      </div>
+      <div class="areapick"><label for="area">My area</label><select id="area"></select><span class="chip" id="entryChip">No entry yet</span><span class="status" id="saveStatus"></span></div>
+    </div>
+    <div class="grid2">
+      <div class="stack">
+        <div class="card">
+          <div class="hd"><h3>Quantities installed today</h3><span id="qtyHint"></span></div>
+          <div class="tablewrap"><table id="qtyTable">
+            <thead><tr><th>Activity</th><th>Unit</th><th class="num">Scope</th><th class="num">Cum. to yesterday</th><th class="num">Other areas today</th><th class="num">My area today</th><th class="num">Cum. %</th><th>Progress</th><th>Location / remark</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+        <div class="card">
+          <div class="hd"><h3>Delays, HSE and look-ahead for my area</h3><span>Appears verbatim in the diary under your area</span></div>
+          <div class="bd field">
+            <label>Delays, constraints and instructions received <textarea id="delays" placeholder="e.g. Crane 250T stood down 10:00–13:30 due to wind > 38 km/h. Awaiting client approval of spool revision PR-01-R2."></textarea></label>
+            <label>HSE <span class="hint">Toolbox talk topic, observations, incidents, permits</span><textarea id="hse" placeholder="e.g. Toolbox talk: hot-work permits. 2 observations closed. No incidents."></textarea></label>
+            <label>Plan for tomorrow <textarea id="lookahead" placeholder="e.g. Continue steel erection Row C; pour foundation F-412 (180 m³)."></textarea></label>
+          </div>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <div class="hd"><h3>Shift &amp; weather</h3><span>Site-wide, shared by all areas</span></div>
+          <div class="bd wx">
+            <label>Weather AM <select id="wxAm"></select></label>
+            <label>Weather PM <select id="wxPm"></select></label>
+            <label>Max temp (°C) <input type="number" id="temp" min="-20" max="60"></label>
+            <label>Working hours <input type="text" id="hours" placeholder="07:00–18:00"></label>
+            <label style="grid-column:1/-1">Entered by (area planner) <input type="text" id="by" placeholder="Name"></label>
+          </div>
+        </div>
+        <div class="card">
+          <div class="hd"><h3>Manpower in my area</h3><span>Headcount by trade</span></div>
+          <div class="bd"><div class="mp-grid" id="mpGrid"></div><div class="total"><span>My area <small id="mpSite"></small></span><span id="mpTotal">0</span></div></div>
+        </div>
+        <div class="card">
+          <div class="hd"><h3>Major equipment in my area</h3><span>Units working</span></div>
+          <div class="bd"><div class="mp-grid" id="eqGrid"></div><div class="total"><span>My area <small id="eqSite"></small></span><span id="eqTotal">0</span></div></div>
+        </div>
+        <div class="inline" style="justify-content:flex-end">
+          <button class="btn ghost" id="copyYesterday">Copy manpower &amp; equipment from previous day</button>
+          <button class="btn" id="goDiary">Open today's diary →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIARY -->
+  <section class="panel" id="panel-diary" hidden>
+    <div class="diary-tools">
+      <div class="left"><span class="chip" id="diaryChip">Generated</span><span class="status">Generated from the progress log for this date. Edit an area's entry to change it.</span></div>
+      <div class="inline"><button class="btn ghost" id="copyDiary">Copy diary as text</button><button class="btn ghost" id="backToEntry">← Edit entry</button></div>
+    </div>
+    <article class="diary" id="diary"></article>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section class="panel" id="panel-dash" hidden>
+    <div class="kpis" id="kpis"></div>
+    <div class="charts">
+      <div class="card">
+        <div class="hd"><h3>Overall progress S-curve</h3><div class="legend"><span><i class="plan"></i>Planned</span><span><i></i>Actual</span></div></div>
+        <div class="bd"><div class="chartbox"><canvas id="scurve"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="hd"><h3>Manpower, last 30 working days</h3><div class="legend"><span><i class="box"></i>Total headcount, all areas</span></div></div>
+        <div class="bd"><div class="chartbox"><canvas id="mpChart"></canvas></div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <div class="hd"><h3>Progress by discipline</h3><span>Weighted by activity weight · plan marker in orange</span></div>
+      <div class="tablewrap"><table class="disc-table" id="discTable">
+        <thead><tr><th>Discipline</th><th class="num">Weight</th><th class="num">Actual %</th><th class="num">Plan %</th><th class="num">Variance</th><th style="width:30%">Progress</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <div class="hd"><h3>Today by area</h3><span id="areaDateLbl"></span></div>
+      <div class="tablewrap"><table id="areaTable">
+        <thead><tr><th>Area</th><th>Entered by</th><th class="num">Activities progressed</th><th class="num">Manpower</th><th class="num">Equipment</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- EXCEL -->
+  <section class="panel" id="panel-excel" hidden>
+    <div class="stack">
+      <div class="flow">
+        <div class="step"><div class="n">Step 1</div><h3>Area planners enter progress</h3><p>Each planner picks their area and enters quantities, manpower, equipment and notes for the day.</p></div>
+        <div class="step x"><div class="n">Step 2 · Excel</div><h3>Workbook updates itself</h3><p>Every entry is written as a row in the <b>Progress Log</b>, <b>Manpower Log</b>, <b>Equipment Log</b> and <b>Site Notes</b> sheets of the linked .xlsx file.</p></div>
+        <div class="step x"><div class="n">Step 3 · Excel</div><h3>Formulas roll it up</h3><p>The <b>Summary</b> sheet uses SUMIFS on the logs, so cumulative quantities and % complete recalculate in Excel for any date typed in cell B1.</p></div>
+        <div class="step"><div class="n">Step 4</div><h3>Daily diary is produced</h3><p>The <b>Daily Diary</b> sheet and the diary page here are generated from the same log. Nobody writes the diary by hand.</p></div>
+      </div>
+      <div class="linkbox">
+        <div class="card server-only">
+          <div class="hd"><h3>SharePoint workbook</h3><span>Updated by the progress server</span></div>
+          <div class="bd stack" style="gap:12px">
+            <div class="linkstate on" id="spState"><div class="dot"></div><div><b id="spFile">—</b><span id="spMsg"></span></div></div>
+            <div class="inline"><a class="btn excel" id="spOpen" href="#" target="_blank" rel="noopener">Open workbook in SharePoint</a><button class="btn ghost" id="spRefresh">Refresh from SharePoint</button><button class="btn ghost" id="spDiary">Write this day's diary now</button></div>
+            <p style="font-size:12.5px;color:var(--muted)">Every change here is sent to the server, which replaces your area's rows for the day in the log tables. The Daily Diary sheet is rewritten a few seconds after the last change and again at the daily cut-off.</p>
+          </div>
+        </div>
+        <div class="card local-only">
+          <div class="hd"><h3>Linked workbook</h3><span>Auto-saves on every change</span></div>
+          <div class="bd stack" style="gap:12px">
+            <div class="linkstate" id="linkState"><div class="dot"></div><div><b>Not linked</b><span id="linkMsg">Link a workbook and every entry is written to it automatically.</span></div></div>
+            <div class="inline">
+              <button class="btn excel" id="linkNew">Create &amp; link a new workbook</button>
+              <button class="btn ghost" id="linkExisting">Open &amp; link an existing workbook</button>
+            </div>
+            <p id="fsNote" style="font-size:12.5px;color:var(--muted)"></p>
+            <div class="inline">
+              <button class="btn ghost" id="downloadXlsx">Download workbook (.xlsx)</button>
+              <span class="btn ghost filein">Import from an Excel file<input type="file" id="importFile" accept=".xlsx,.xlsm,.xls" aria-label="Import from Excel file"></span>
+            </div>
+            <p style="font-size:12.5px;color:var(--muted)">Import reads the log sheets back in, so planners who type directly into the workbook stay in sync with the app.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="hd"><h3>Sheets in the workbook</h3><span id="rowCounts"></span></div>
+          <div class="bd sheets">
+            <div class="sheet"><b>Progress Log</b><span>Date · Area · Activity · Qty · Remark · Entered by. One row per entry.</span></div>
+            <div class="sheet"><b>Manpower Log</b><span>Date · Area · Trade · Nos</span></div>
+            <div class="sheet"><b>Equipment Log</b><span>Date · Area · Equipment · Units</span></div>
+            <div class="sheet"><b>Site Notes</b><span>Date · Area · Weather · Hours · Delays · HSE · Look-ahead</span></div>
+            <div class="sheet"><b>Activities</b><span>Scope, unit, weight and plan dates per activity</span></div>
+            <div class="sheet f"><b>Summary</b><span>Formula-driven. Type any date in B1: cumulative, % complete, plan % and variance recalculate.</span></div>
+            <div class="sheet f"><b>Daily Diary</b><span>The diary for the selected date, laid out for printing.</span></div>
+            <div class="sheet f"><b>Diary Log</b><span>One line per day: ref, weather, manpower, actual vs plan, delays.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETUP -->
+  <section class="panel setup" id="panel-setup" hidden>
+    <div class="setup-grid">
+      <div class="note local-only">Not connected to a server: this browser holds fictional example data plus whatever you link or import. For several planners entering at the same time, connect to the progress server below so the workbook on SharePoint becomes the master.</div>
+      <div class="card">
+        <div class="hd"><h3>SharePoint sync</h3><span id="apiStatus">Not connected · data stays in this browser</span></div>
+        <div class="bd stack" style="gap:10px">
+          <div class="mp-grid"><label>Server URL <input type="text" id="apiUrl" placeholder="https://progress.yourcompany.com — empty = this site"></label><label>Access key <input type="password" id="apiKey" placeholder="APP_KEY from the server" autocomplete="off"></label></div>
+          <div class="inline"><button class="btn" id="apiConnect">Connect</button><button class="btn ghost server-only" id="apiDisconnect">Disconnect</button></div>
+          <p style="font-size:12.5px;color:var(--muted)">When connected, the app loads everything from the workbook on SharePoint and sends each entry to it. Activities, areas, trades and equipment are then maintained in the workbook's tables, not here.</p>
+        </div>
+      </div>
+      <div class="card master">
+        <div class="hd"><h3>Project</h3></div>
+        <div class="bd mp-grid">
+          <label>Project name <input type="text" id="pName"></label>
+          <label>Client <input type="text" id="pClient"></label>
+          <label>Contractor <input type="text" id="pContractor"></label>
+          <label>Location <input type="text" id="pLocation"></label>
+          <label>Project start (Day 1) <input type="date" id="pStart"></label>
+          <label>Diary number prefix <input type="text" id="pPrefix"></label>
+          <label>Rest day(s) <select id="pRest"></select></label>
+        </div>
+      </div>
+      <div class="card master">
+        <div class="hd"><h3>Areas &amp; area planners</h3><span>One line per area; the planner's name is pre-filled when they pick the area</span></div>
+        <div class="tablewrap"><table id="areaSetup"><thead><tr><th>Area</th><th>Area planner</th><th></th></tr></thead><tbody></tbody></table></div>
+        <div class="bd inline"><input type="text" id="newArea" placeholder="Area name, e.g. Area 440 – Utilities"><input type="text" id="newAreaBy" placeholder="Planner name"><button class="btn small ghost" id="addArea">Add area</button></div>
+      </div>
+      <div class="card master">
+        <div class="hd"><h3>Activities &amp; scope</h3><button class="btn small" id="addAct">+ Add activity</button></div>
+        <div class="tablewrap"><table id="actTable">
+          <thead><tr><th>Discipline</th><th>Activity</th><th>Unit</th><th class="num">Scope qty</th><th class="num">Weight</th><th>Plan start</th><th>Plan finish</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+        <div class="bd" style="color:var(--muted);font-size:12.5px">Weight is the activity's share of overall progress (man-hours or cost). Plan dates give the straight-line planned curve for each activity.</div>
+      </div>
+      <div class="card master">
+        <div class="hd"><h3>Manpower trades</h3></div>
+        <div class="bd stack" style="gap:10px"><div class="taglist" id="tradeList"></div><div class="inline"><input type="text" id="newTrade" placeholder="Add a trade, e.g. Insulator"><button class="btn small ghost" id="addTrade">Add</button></div></div>
+      </div>
+      <div class="card master">
+        <div class="hd"><h3>Equipment list</h3></div>
+        <div class="bd stack" style="gap:10px"><div class="taglist" id="eqList"></div><div class="inline"><input type="text" id="newEq" placeholder="Add equipment, e.g. Hydrotest pump"><button class="btn small ghost" id="addEq">Add</button></div></div>
+      </div>
+      <div class="card">
+        <div class="hd"><h3>Backup &amp; reset</h3></div>
+        <div class="bd stack" style="gap:10px">
+          <div class="inline"><button class="btn ghost" id="copyBackup">Copy all data as JSON</button><button class="btn ghost local-only" id="restoreBtn">Restore from pasted JSON</button><button class="btn danger local-only" id="resetBtn">Reset to example data</button></div>
+          <textarea class="local-only" id="backupBox" placeholder="Paste a JSON backup here, then click Restore." style="min-height:90px;font-family:var(--mono);font-size:12px"></textarea>
+          <p class="server-only" style="font-size:12.5px;color:var(--muted)">The JSON copy is useful to seed a new workbook (server: <code>node scripts/init-workbook.js --seed backup.json</code>).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+(function(){
+'use strict';
+const STORE_KEY='progress-diary-v2';
+const WEATHER=['Sunny','Partly cloudy','Overcast','Light rain','Rain','Dust / haze','High wind'];
+const DAY=86400000;
+const fmtN=(n,d=0)=>Number(n||0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtQ=(n)=>fmtN(n,Math.abs(n%1)>0.001?1:0);
+const pct=(n)=>(n*100).toFixed(1)+'%';
+const iso=(d)=>d.toISOString().slice(0,10);
+const parse=(s)=>new Date(s+'T00:00:00Z');
+const addDays=(s,n)=>iso(new Date(parse(s).getTime()+n*DAY));
+const REST_OPTIONS=[['5','Friday (Gulf week)'],['0','Sunday'],['5,6','Friday & Saturday'],['6,0','Saturday & Sunday'],['','No rest day']];
+let restDays=[5]; // weekday numbers; set from project.restDays after load
+const isWeekend=(s)=>restDays.includes(parse(s).getUTCDay());
+const longDate=(s)=>parse(s).toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'long',year:'numeric',timeZone:'UTC'});
+const today=iso(new Date());
+const $=(id)=>document.getElementById(id);
+const esc=(s)=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- Example data (fictional) ---------- */
+function seeded(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+function blankArea(by){return {by:by||'',qty:{},remarks:{},manpower:{},equip:{},delays:'',hse:'',lookahead:''};}
+function blankEntry(){return {wxAm:'Sunny',wxPm:'Sunny',temp:'',hours:'07:00–18:00',areas:{}};}
+function exampleState(){
+  const start=addDays(today,-68); // ~10 weeks into the job
+  const d=(n)=>addDays(start,n);
+  const acts=[
+    ['Civil','Concrete pouring','m³',4200,9,0,110],['Civil','Rebar fixing','MT',520,6,0,100],['Civil','Formwork','m²',9800,5,0,100],['Civil','Backfilling','m³',6500,3,20,130],
+    ['Structural steel','Steel erection','MT',1850,12,30,160],['Structural steel','Bolting & torquing','nos',24000,4,35,165],['Structural steel','Grating & handrail','m²',3200,3,60,190],
+    ['Mechanical','Equipment erection','nos',46,8,45,170],['Mechanical','Alignment & grouting','nos',46,3,60,185],
+    ['Piping','Spool fabrication','inch-dia',38000,10,10,170],['Piping','Piping erection','inch-dia',42000,12,40,220],['Piping','Field welding','inch-dia',18500,8,45,225],['Piping','Hydrotest','packages',120,3,120,260],
+    ['E&I','Cable tray','m',12400,3,50,180],['E&I','Cable pulling','m',86000,6,70,230],['E&I','Termination','nos',9600,4,100,250],['E&I','Instrument installation','nos',1250,3,90,240],
+    ['Scaffolding','Scaffold erection','m³',95000,4,15,230],
+    ['Painting & insulation','Painting','m²',28000,3,60,240],['Painting & insulation','Insulation','m²',14500,2,110,260],
+  ].map((a,i)=>({id:'A'+String(i+1).padStart(2,'0'),discipline:a[0],name:a[1],unit:a[2],scope:a[3],weight:a[4],planStart:d(a[5]),planFinish:d(a[6])}));
+  const areas=[{name:'Area 410 – Compressor shelter',by:'A. Rahman'},{name:'Area 420 – Pipe rack PR-01',by:'S. Pereira'},{name:'Area 430 – Pipe rack PR-02 & SS-2',by:'M. Al-Harbi'},{name:'Fab shop',by:'K. Nair'}];
+  const trades=['Civil labour','Steel fixer','Carpenter','Rigger','Erector','Fitter','Welder','Electrician','Instrument tech','Scaffolder','Painter','Foreman','HSE officer'];
+  const equipment=['Crawler crane 250T','Mobile crane 50T','Boom truck','Telehandler','Manlift','Excavator','Concrete pump','Welding machine'];
+  // which areas an activity can happen in
+  const where={Civil:[0,1,2],'Structural steel':[0,1,2],Mechanical:[0],Piping:[0,1,2,3],'E&I':[1,2],Scaffolding:[0,1,2],'Painting & insulation':[1,3]};
+  const remarksPool={Civil:['Foundation F-401','Foundation F-408','Footings grid 3–5','Shelter slab'],'Structural steel':['Row B','Row C','Level 2 beams','Bracing'],Mechanical:['K-401 skid','E-402 A/B'],Piping:['Level 1','Level 2','Line 12"-P-4012','Header 24"'],'E&I':['Tray T-21','Feeder SS-2 to PR-01','JB-410'],Scaffolding:['Access towers','Hanging scaffold level 2'],'Painting & insulation':['Primer coat','Top coat']};
+  const rnd=seeded(20260803);
+  const entries={};
+  const delaysPool=['Crawler crane 250T stood down 10:00–13:30, wind gusts above 38 km/h.','Concrete pour F-408 postponed: batching plant breakdown reported 06:40.','Awaiting client approval of spool revision PR-01-R2; 3 spools on hold.','Access restricted by civil works; steel erection re-sequenced to Row C.','Permit to work delayed 1 h 20 min due to gas test in adjacent live unit.','','','',''];
+  const hsePool=['Toolbox talk: working at height. No incidents.','Toolbox talk: lifting operations and exclusion zones. 1 near-miss reported (dropped bolt, no injury).','Toolbox talk: heat stress. No incidents.','Toolbox talk: hot-work permits. 2 observations closed. No incidents.','HSE walkdown with client. 4 observations raised, 3 closed same day.'];
+  const base={'Civil labour':60,'Steel fixer':28,'Carpenter':22,'Rigger':18,'Erector':24,'Fitter':30,'Welder':26,'Electrician':16,'Instrument tech':8,'Scaffolder':34,'Painter':10,'Foreman':14,'HSE officer':4};
+  const eqBase={'Crawler crane 250T':1,'Mobile crane 50T':2,'Boom truck':2,'Telehandler':3,'Manlift':4,'Excavator':2,'Concrete pump':1,'Welding machine':14};
+  const share=[0.3,0.35,0.25,0.1];
+  let cur=start, cum={};
+  while(cur<today){
+    if(!isWeekend(cur)){
+      const e=blankEntry();e.wxAm=WEATHER[rnd()<.75?0:1];e.wxPm=WEATHER[rnd()<.6?0:(rnd()<.6?1:6)];e.temp=Math.round(36+rnd()*8);
+      const dayIdx=(parse(cur)-parse(start))/DAY;
+      areas.forEach(a=>{e.areas[a.name]=blankArea(a.by);});
+      acts.forEach(a=>{
+        const s=(parse(a.planStart)-parse(start))/DAY, f=(parse(a.planFinish)-parse(start))/DAY;
+        if(dayIdx<s-2||dayIdx>f) return;
+        const dur=(f-s)*6/7;
+        const rate=a.scope/dur*(0.55+rnd()*0.75);
+        const left=a.scope-(cum[a.id]||0); if(left<=0) return;
+        let q=Math.min(left,rate); if(q<=0) return;
+        const pool=where[a.discipline];const n=rnd()<.6?1:2;
+        const picked=[...pool].sort(()=>rnd()-.5).slice(0,n);
+        picked.forEach((ai,i)=>{let part=q/n*(i===0?1.1:0.9);part=(a.unit==='nos'||a.unit==='packages')?Math.round(part):Math.round(part*10)/10;if(part<=0)return;
+          const ar=e.areas[areas[ai].name];ar.qty[a.id]=part;cum[a.id]=(cum[a.id]||0)+part;
+          if(rnd()<.5){const l=remarksPool[a.discipline];ar.remarks[a.id]=l[Math.floor(rnd()*l.length)];}});
+      });
+      const ramp=Math.min(1,0.35+dayIdx/60);
+      areas.forEach((a,ai)=>{const ar=e.areas[a.name];
+        trades.forEach(t=>{const v=Math.round(base[t]*ramp*share[ai]*(0.8+rnd()*0.4));if(v>0)ar.manpower[t]=v;});
+        equipment.forEach(q=>{const v=Math.round(eqBase[q]*share[ai]*(0.7+rnd()*0.8)+(rnd()<.3?1:0));if(v>0)ar.equip[q]=v;});
+        ar.delays=delaysPool[Math.floor(rnd()*delaysPool.length)];
+        ar.hse=rnd()<.5?hsePool[Math.floor(rnd()*hsePool.length)]:'';
+        ar.lookahead=['Continue steel erection Row C; spool erection level 2.','Pour F-412 (180 m³); backfill grid 3–5.','Cable tray T-22; pull feeders SS-2 to PR-01.','Fabricate spools for PR-02 header; fit-up 24" line.'][ai];
+      });
+      entries[cur]=e;
+    }
+    cur=addDays(cur,1);
+  }
+  // Today: two areas have entered, two have not yet (mid-morning on site)
+  {
+    const t=blankEntry();t.temp=38;
+    const y=entries[lastWorkingDayBefore(today,entries)];
+    const a1=blankArea('A. Rahman'),a2=blankArea('S. Pereira');
+    if(y){Object.assign(a1.manpower,y.areas[areas[0].name].manpower);Object.assign(a1.equip,y.areas[areas[0].name].equip);Object.assign(a2.manpower,y.areas[areas[1].name].manpower);Object.assign(a2.equip,y.areas[areas[1].name].equip);}
+    a1.qty.A05=5.2;a1.qty.A08=1;a1.remarks.A08='K-401 skid set on foundation';a1.qty.A18=240;a1.hse='Toolbox talk: hand and finger injuries. No incidents.';a1.lookahead='Alignment of K-401; continue shelter steel.';
+    a2.qty.A05=9;a2.remarks.A05='Row C';a2.qty.A06=320;a2.qty.A11=142;a2.remarks.A11='Level 2';a2.qty.A18=400;a2.delays='Awaiting client approval of spool revision PR-01-R2; 3 spools on hold.';
+    t.areas[areas[0].name]=a1;t.areas[areas[1].name]=a2;
+    entries[today]=t;
+  }
+  return {v:2,project:{name:'Unit 400 Gas Processing Train 2',client:'Example Energy Co.',contractor:'Demo EPC Contractors LLC',location:'Ras Site, Industrial City',start,prefix:'DD-U400',restDays:'5'},areas,activities:acts,trades,equipment,entries};
+}
+function lastWorkingDayBefore(date,entries){let d=addDays(date,-1);for(let i=0;i<14;i++){if(entries[d]&&hasContent(entries[d]))return d;d=addDays(d,-1);}return null;}
+
+/* ---------- State ---------- */
+let state=load();
+let curDate=today;
+let curArea=null;
+function applyRestDays(){const v=state.project.restDays==null?'5':String(state.project.restDays);restDays=v===''?[]:v.split(',').map(Number);}
+applyRestDays();
+function load(){try{const s=localStorage.getItem(STORE_KEY);if(s){const o=JSON.parse(s);if(o&&o.v===2&&o.activities&&o.entries&&o.areas)return o;}}catch(e){}return exampleState();}
+let saveTimer=null;
+function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(state));$('saveStatus').textContent='Saved '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}catch(e){$('saveStatus').textContent='Could not save in this browser';}scheduleWorkbook();}
+function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(save,300);}
+function entry(date,create){let e=state.entries[date];if(!e&&create){e=state.entries[date]=blankEntry();}return e;}
+function areaOf(e,area,create){if(!e)return null;let a=e.areas[area];if(!a&&create){const def=state.areas.find(x=>x.name===area);a=e.areas[area]=blankArea(def?def.by:'');}return a||null;}
+function areaHasContent(a){return !!a&&(Object.values(a.qty).some(v=>v>0)||Object.values(a.manpower).some(v=>v>0)||Object.values(a.equip).some(v=>v>0)||!!a.delays||!!a.hse||!!a.lookahead);}
+function hasContent(e){return !!e&&Object.values(e.areas).some(areaHasContent);}
+
+/* ---------- Calculations ---------- */
+function qtyOn(e,actId,exceptArea){let s=0;if(!e)return 0;for(const an in e.areas){if(an===exceptArea)continue;s+=Number(e.areas[an].qty[actId]||0);}return s;}
+function cumBefore(actId,date){let s=0;for(const d in state.entries){if(d<date)s+=qtyOn(state.entries[d],actId);}return s;}
+function cumThrough(actId,date){return cumBefore(actId,date)+qtyOn(state.entries[date],actId);}
+function totalWeight(acts){return acts.reduce((s,a)=>s+Number(a.weight||0),0)||1;}
+function actualPct(date,acts=state.activities){const W=totalWeight(acts);return acts.reduce((s,a)=>s+Number(a.weight||0)*Math.min(1,cumThrough(a.id,date)/(Number(a.scope)||1)),0)/W;}
+function planFrac(a,date){const s=parse(a.planStart),f=parse(a.planFinish),t=parse(date);if(!(s<f))return t>=f?1:0;return Math.max(0,Math.min(1,(t-s)/(f-s)));}
+function planPct(date,acts=state.activities){const W=totalWeight(acts);return acts.reduce((s,a)=>s+Number(a.weight||0)*planFrac(a,date),0)/W;}
+function dayNo(date){return Math.floor((parse(date)-parse(state.project.start))/DAY)+1;}
+function disciplines(){const seen=[];state.activities.forEach(a=>{if(!seen.includes(a.discipline))seen.push(a.discipline);});return seen;}
+function sum(o){return Object.values(o||{}).reduce((s,v)=>s+Number(v||0),0);}
+function siteSum(e,key){let s=0;if(!e)return 0;for(const an in e.areas)s+=sum(e.areas[an][key]);return s;}
+function byTrade(e,key,list){const out={};list.forEach(t=>{out[t]=0;for(const an in (e?e.areas:{}))out[t]+=Number(e.areas[an][key][t]||0);});return out;}
+function workingDays(from,to){const out=[];let d=from;while(d<=to){if(!isWeekend(d))out.push(d);d=addDays(d,1);}return out;}
+function sortedDates(){return Object.keys(state.entries).sort();}
+
+/* ---------- Header & date ---------- */
+function renderHeader(){
+  $('projTitle').textContent=state.project.name||'Project';
+  $('projSub').textContent=[state.project.contractor,state.project.location].filter(Boolean).join(' · ');
+  $('date').value=curDate;
+  const n=dayNo(curDate);
+  $('dayLabel').innerHTML=`<b>${parse(curDate).toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',timeZone:'UTC'})}</b> · Day ${n>0?n:'–'} · Week ${n>0?Math.ceil(n/7):'–'}${isWeekend(curDate)?' · <b>Rest day</b>':''}`;
+}
+function setDate(d){if(!d)return;curDate=d;renderAll();}
+$('date').addEventListener('change',e=>setDate(e.target.value));
+$('prevDay').addEventListener('click',()=>setDate(addDays(curDate,-1)));
+$('nextDay').addEventListener('click',()=>setDate(addDays(curDate,1)));
+
+/* ---------- Tabs ---------- */
+let activeTab='entry';
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+function showTab(t){activeTab=t;document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!=='panel-'+t);if(t==='dash')renderDash();if(t==='diary')renderDiary();if(t==='setup')renderSetup();if(t==='excel')renderExcel();try{localStorage.setItem(STORE_KEY+'-tab',t);}catch(e){}}
+$('goDiary').addEventListener('click',()=>showTab('diary'));
+$('backToEntry').addEventListener('click',()=>showTab('entry'));
+
+/* ---------- Entry panel ---------- */
+function ensureArea(){if(!state.areas.length)state.areas.push({name:'Site',by:''});if(!curArea||!state.areas.some(a=>a.name===curArea))curArea=state.areas[0].name;}
+function renderEntry(){
+  ensureArea();
+  const sel=$('area');sel.innerHTML=state.areas.map(a=>`<option value="${esc(a.name)}"${a.name===curArea?' selected':''}>${esc(a.name)}</option>`).join('');
+  const e=state.entries[curDate]||blankEntry();
+  const ar=(e.areas&&e.areas[curArea])||blankArea((state.areas.find(a=>a.name===curArea)||{}).by);
+  const chip=$('entryChip');
+  const others=Object.keys(e.areas||{}).filter(an=>an!==curArea&&areaHasContent(e.areas[an])).length;
+  if(areaHasContent(ar)){chip.textContent=curDate<today?'Filed':'Entered';chip.className='chip ok';}
+  else if(isWeekend(curDate)){chip.textContent='Rest day';chip.className='chip warn';}
+  else{chip.textContent=curDate>today?'Future date':'No entry for my area';chip.className='chip '+(curDate<today?'bad':'');}
+  $('qtyHint').textContent=`Site overall ${pct(actualPct(curDate))} vs plan ${pct(planPct(curDate))} · ${others} other area${others===1?'':'s'} entered today`;
+  const tb=$('qtyTable').querySelector('tbody');tb.innerHTML='';
+  disciplines().forEach(disc=>{
+    const acts=state.activities.filter(a=>a.discipline===disc);
+    const tr=document.createElement('tr');tr.className='disc';tr.dataset.disc=disc;tr.innerHTML=`<td colspan="9"><span class="dn">${esc(disc)}</span><span class="pct">${pct(actualPct(curDate,acts))} · plan ${pct(planPct(curDate,acts))}</span></td>`;tb.appendChild(tr);
+    acts.forEach(a=>{
+      const before=cumBefore(a.id,curDate),otherQ=qtyOn(e,a.id,curArea),mine=ar.qty[a.id]??'',cum=before+otherQ+Number(mine||0),p=Math.min(1,cum/(Number(a.scope)||1)),plan=planFrac(a,curDate);
+      const row=document.createElement('tr');
+      row.innerHTML=`<td>${esc(a.name)}</td><td>${esc(a.unit)}</td><td class="num">${fmtN(a.scope)}</td><td class="num">${fmtQ(before)}</td><td class="num dim">${otherQ?fmtQ(otherQ):'–'}</td>
+        <td class="num mine"><input type="number" id="q-${a.id}" min="0" step="any" value="${mine}" data-act="${a.id}" aria-label="${esc(a.name)} quantity today"></td>
+        <td class="num" id="p-${a.id}">${pct(p)}</td>
+        <td><div class="bar${p>=1?' done':''}" title="Actual ${pct(p)} · plan ${pct(plan)}"><i id="b-${a.id}" style="width:${p*100}%"></i><b style="left:calc(${plan*100}% - 1px)"></b></div></td>
+        <td><input type="text" id="r-${a.id}" value="${esc(ar.remarks[a.id]||'')}" data-rem="${a.id}" placeholder="Tag / grid / remark" aria-label="${esc(a.name)} remark"></td>`;
+      tb.appendChild(row);
+    });
+  });
+  tb.querySelectorAll('input[data-act]').forEach(inp=>inp.addEventListener('input',()=>{
+    const en=areaOf(entry(curDate,true),curArea,true);const v=inp.value===''?'':Number(inp.value);if(v==='')delete en.qty[inp.dataset.act];else en.qty[inp.dataset.act]=v;
+    const a=state.activities.find(x=>x.id===inp.dataset.act);const cum=cumThrough(a.id,curDate),p=Math.min(1,cum/(Number(a.scope)||1));
+    $('p-'+a.id).textContent=pct(p);const bar=$('b-'+a.id);bar.style.width=(p*100)+'%';bar.parentElement.classList.toggle('done',p>=1);
+    refreshDiscHeaders();touch();
+  }));
+  tb.querySelectorAll('input[data-rem]').forEach(inp=>inp.addEventListener('input',()=>{const en=areaOf(entry(curDate,true),curArea,true);if(inp.value)en.remarks[inp.dataset.rem]=inp.value;else delete en.remarks[inp.dataset.rem];touch();}));
+
+  ['wxAm','wxPm'].forEach(id=>{const s=$(id);s.innerHTML=WEATHER.map(w=>`<option${e[id]===w?' selected':''}>${w}</option>`).join('');});
+  $('temp').value=e.temp??'';$('hours').value=e.hours||'';$('by').value=ar.by||'';$('delays').value=ar.delays||'';$('hse').value=ar.hse||'';$('lookahead').value=ar.lookahead||'';
+
+  const mp=$('mpGrid');mp.innerHTML=state.trades.map(t=>`<label>${esc(t)}<input type="number" min="0" step="1" data-trade="${esc(t)}" value="${ar.manpower[t]??''}"></label>`).join('');
+  $('mpTotal').textContent=fmtN(sum(ar.manpower));$('mpSite').textContent=`· site total ${fmtN(siteSum(e,'manpower'))}`;
+  mp.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>{const en=areaOf(entry(curDate,true),curArea,true);if(inp.value==='')delete en.manpower[inp.dataset.trade];else en.manpower[inp.dataset.trade]=Number(inp.value);$('mpTotal').textContent=fmtN(sum(en.manpower));$('mpSite').textContent=`· site total ${fmtN(siteSum(state.entries[curDate],'manpower'))}`;touch();}));
+  const eq=$('eqGrid');eq.innerHTML=state.equipment.map(t=>`<label>${esc(t)}<input type="number" min="0" step="1" data-eq="${esc(t)}" value="${ar.equip[t]??''}"></label>`).join('');
+  $('eqTotal').textContent=fmtN(sum(ar.equip));$('eqSite').textContent=`· site total ${fmtN(siteSum(e,'equip'))}`;
+  eq.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>{const en=areaOf(entry(curDate,true),curArea,true);if(inp.value==='')delete en.equip[inp.dataset.eq];else en.equip[inp.dataset.eq]=Number(inp.value);$('eqTotal').textContent=fmtN(sum(en.equip));$('eqSite').textContent=`· site total ${fmtN(siteSum(state.entries[curDate],'equip'))}`;touch();}));
+}
+function refreshDiscHeaders(){document.querySelectorAll('#qtyTable tr.disc').forEach(tr=>{const acts=state.activities.filter(a=>a.discipline===tr.dataset.disc);tr.querySelector('.pct').textContent=`${pct(actualPct(curDate,acts))} · plan ${pct(planPct(curDate,acts))}`;});$('qtyHint').textContent=`Site overall ${pct(actualPct(curDate))} vs plan ${pct(planPct(curDate))}`;}
+function touch(){const chip=$('entryChip');const ar=areaOf(state.entries[curDate],curArea);if(areaHasContent(ar)){chip.textContent=curDate<today?'Filed':'Entered';chip.className='chip ok';}scheduleSave();queueSync();}
+$('area').addEventListener('change',()=>{curArea=$('area').value;try{localStorage.setItem(STORE_KEY+'-area',curArea);}catch(e){}renderEntry();});
+['wxAm','wxPm','temp','hours'].forEach(id=>$(id).addEventListener('input',()=>{const en=entry(curDate,true);en[id]=id==='temp'?($(id).value===''?'':Number($(id).value)):$(id).value;touch();}));
+['by','delays','hse','lookahead'].forEach(id=>$(id).addEventListener('input',()=>{const en=areaOf(entry(curDate,true),curArea,true);en[id]=$(id).value;touch();}));
+$('copyYesterday').addEventListener('click',()=>{const y=lastWorkingDayBefore(curDate,state.entries);const ya=y&&state.entries[y].areas[curArea];if(!ya){toast('No previous entry for this area to copy from');return;}const en=areaOf(entry(curDate,true),curArea,true);en.manpower={...ya.manpower};en.equip={...ya.equip};if(!en.by)en.by=ya.by;const e=state.entries[curDate];if(!e.hours)e.hours=state.entries[y].hours;save();queueSync();renderEntry();toast('Copied from '+y);});
+
+/* ---------- Diary ---------- */
+function diaryModel(date){
+  const e=state.entries[date];if(!hasContent(e))return null;
+  const prev=lastWorkingDayBefore(date,state.entries);
+  const areasIn=state.areas.map(a=>a.name).filter(an=>areaHasContent(e.areas[an]));
+  Object.keys(e.areas).forEach(an=>{if(!areasIn.includes(an)&&areaHasContent(e.areas[an]))areasIn.push(an);});
+  const mp=siteSum(e,'manpower'),mpPrev=prev?siteSum(state.entries[prev],'manpower'):null;
+  const act=actualPct(date),plan=planPct(date),actPrev=prev?actualPct(prev):0;
+  const discs=disciplines().map(disc=>{
+    const acts=state.activities.filter(a=>a.discipline===disc);
+    const lines=acts.map(a=>{const q=qtyOn(e,a.id);if(!(q>0))return null;const cum=cumThrough(a.id,date);
+      const parts=areasIn.filter(an=>Number(e.areas[an].qty[a.id])>0).map(an=>({area:an,q:Number(e.areas[an].qty[a.id]),rem:e.areas[an].remarks[a.id]||''}));
+      return {a,q,cum,p:Math.min(1,cum/(Number(a.scope)||1)),parts};}).filter(Boolean);
+    return {disc,lines,act:actualPct(date,acts),plan:planPct(date,acts)};
+  }).filter(d=>d.lines.length);
+  const filed=sortedDates().filter(d=>d<=date&&hasContent(state.entries[d])).length;
+  const by=[...new Set(areasIn.map(an=>e.areas[an].by).filter(Boolean))];
+  return {e,prev,mp,mpPrev,act,plan,actPrev,discs,filed,areasIn,by,ref:`${state.project.prefix||'DD'}-${String(filed).padStart(4,'0')}`};
+}
+const shortArea=(an)=>an.split(' – ')[0];
+function narrative(d){
+  const parts=d.lines.map(l=>{
+    const where=l.parts.map(p=>`${shortArea(p.area)}${p.rem?' '+p.rem:''}${l.parts.length>1?' '+fmtQ(p.q):''}`).join(', ');
+    return `${l.a.name.toLowerCase()} ${fmtQ(l.q)} ${l.a.unit} at ${where} (cum. ${fmtQ(l.cum)} of ${fmtN(l.a.scope)}, ${pct(l.p)})`;});
+  const s=parts.join('; ');return s.charAt(0).toUpperCase()+s.slice(1)+'.';
+}
+function renderDiary(){
+  const m=diaryModel(curDate),box=$('diary'),chip=$('diaryChip');
+  if(!m){chip.textContent='No entry';chip.className='chip bad';box.innerHTML=`<div class="empty"><b>No diary for ${longDate(curDate)}</b>${isWeekend(curDate)?'This is a rest day. ':''}Enter quantities or manpower for any area on this date and the diary will be generated here.</div>`;return;}
+  chip.textContent=curDate<today?'Filed':'Draft, today';chip.className='chip ok';
+  const {e,mp,mpPrev,act,plan,actPrev,discs,areasIn}=m,P=state.project,n=dayNo(curDate);
+  const varr=act-plan,sign=v=>(v>=0?'+':'−')+Math.abs(v*100).toFixed(1)+'%';
+  const mpT=byTrade(e,'manpower',state.trades),eqT=byTrade(e,'equip',state.equipment);
+  const mpRows=state.trades.filter(t=>mpT[t]>0).map(t=>`<tr><td>${esc(t)}</td>${areasIn.map(an=>`<td class="num dim">${e.areas[an].manpower[t]||'–'}</td>`).join('')}<td class="num"><b>${fmtN(mpT[t])}</b></td></tr>`).join('');
+  const eqRows=state.equipment.filter(t=>eqT[t]>0).map(t=>`<tr><td>${esc(t)}</td>${areasIn.map(an=>`<td class="num dim">${e.areas[an].equip[t]||'–'}</td>`).join('')}<td class="num"><b>${fmtN(eqT[t])}</b></td></tr>`).join('');
+  const areaHead=areasIn.map(an=>`<th class="num" title="${esc(an)}">${esc(shortArea(an))}</th>`).join('');
+  const workRows=discs.map(d=>`<tr class="disc"><td colspan="5">${esc(d.disc)}<span class="pct">${pct(d.act)} · plan ${pct(d.plan)}</span></td></tr>`+
+    d.lines.map(l=>`<tr><td>${esc(l.a.name)}<br><small class="area">${l.parts.map(p=>esc(shortArea(p.area))+(p.rem?' · '+esc(p.rem):'')+(l.parts.length>1?' · '+fmtQ(p.q):'')).join(' &nbsp;|&nbsp; ')}</small></td><td>${esc(l.a.unit)}</td><td class="num">${fmtQ(l.q)}</td><td class="num">${fmtQ(l.cum)} / ${fmtN(l.a.scope)}</td><td class="num">${pct(l.p)}</td></tr>`).join('')).join('');
+  const narr=discs.map(d=>`<p class="narr"><b>${esc(d.disc)}:</b> ${esc(narrative(d))}</p>`).join('');
+  const notes=(key,none)=>{const items=areasIn.filter(an=>e.areas[an][key]).map(an=>`<p><b>${esc(shortArea(an))}:</b> ${esc(e.areas[an][key])}</p>`);return items.length?items.join(''):`<p>${none}</p>`;};
+  box.innerHTML=`
+    <div class="dh"><div><h2>Site Daily Diary</h2><div class="proj">${esc(P.name)}${P.client?' · Client: '+esc(P.client):''}${P.contractor?' · Contractor: '+esc(P.contractor):''}</div></div>
+      <div class="ref"><b>${esc(m.ref)}</b>${longDate(curDate)}</div></div>
+    <div class="meta">
+      <div>Project day<b>Day ${n} · Week ${Math.ceil(n/7)}</b></div>
+      <div>Working hours<b>${esc(e.hours||'—')}</b></div>
+      <div>Weather AM / PM<b>${esc(e.wxAm)} / ${esc(e.wxPm)}</b></div>
+      <div>Max temperature<b>${e.temp!==''&&e.temp!=null?e.temp+' °C':'—'}</b></div>
+      <div>Areas reporting<b>${areasIn.length} of ${state.areas.length}</b></div>
+      <div>Entered by<b>${esc(m.by.join(', ')||'—')}</b></div>
+    </div>
+    <h4>1. Progress summary</h4>
+    <div class="kpi">
+      <div><span>Overall actual</span><b>${pct(act)}</b></div>
+      <div><span>Overall planned</span><b>${pct(plan)}</b></div>
+      <div><span>Variance</span><b class="${varr>=0?'pos':'neg'}">${sign(varr)}</b></div>
+      <div><span>Progress today</span><b>+${(Math.max(0,act-actPrev)*100).toFixed(2)}%</b></div>
+      <div><span>Manpower</span><b>${fmtN(mp)}</b></div>
+    </div>
+    <h4>2. Work executed</h4>
+    ${narr||'<p>No quantities recorded.</p>'}
+    ${workRows?`<table><thead><tr><th>Activity · area</th><th>Unit</th><th class="num">Today</th><th class="num">Cumulative / scope</th><th class="num">%</th></tr></thead><tbody>${workRows}</tbody></table>`:''}
+    <div class="two">
+      <div><h4>3. Manpower</h4><table><thead><tr><th>Trade</th>${areaHead}<th class="num">Total</th></tr></thead><tbody>${mpRows||`<tr><td colspan="${areasIn.length+2}">Not recorded</td></tr>`}<tr><td><b>Total</b>${mpPrev!=null?` <small class="area">(prev. day ${fmtN(mpPrev)})</small>`:''}</td>${areasIn.map(an=>`<td class="num">${fmtN(sum(e.areas[an].manpower))}</td>`).join('')}<td class="num"><b>${fmtN(mp)}</b></td></tr></tbody></table></div>
+      <div><h4>4. Major equipment</h4><table><thead><tr><th>Equipment</th>${areaHead}<th class="num">Total</th></tr></thead><tbody>${eqRows||`<tr><td colspan="${areasIn.length+2}">Not recorded</td></tr>`}<tr><td><b>Total</b></td>${areasIn.map(an=>`<td class="num">${fmtN(sum(e.areas[an].equip))}</td>`).join('')}<td class="num"><b>${fmtN(siteSum(e,'equip'))}</b></td></tr></tbody></table></div>
+    </div>
+    <h4>5. Delays, constraints and instructions</h4>${notes('delays','None reported.')}
+    <h4>6. HSE</h4>${notes('hse','Not recorded.')}
+    <h4>7. Plan for next working day</h4>${notes('lookahead','Not recorded.')}
+    <div class="sig"><div><b>Prepared by</b>Planning (${esc(m.by.join(', ')||'Area planners')})</div><div><b>Reviewed by</b>Construction Manager</div><div><b>Acknowledged by</b>Client Representative</div></div>`;
+}
+function diaryText(){
+  const m=diaryModel(curDate);if(!m)return '';
+  const {e,mp,act,plan,discs,areasIn}=m,P=state.project,n=dayNo(curDate),L=[];
+  L.push(`SITE DAILY DIARY  ${m.ref}`,`${P.name}`,`${longDate(curDate)}  ·  Day ${n}, Week ${Math.ceil(n/7)}`,`Weather: ${e.wxAm} / ${e.wxPm}${e.temp!==''?`, max ${e.temp} °C`:''}  ·  Hours: ${e.hours||'—'}  ·  Entered by: ${m.by.join(', ')||'—'}`,'',
+    `1. PROGRESS SUMMARY`,`Overall actual ${pct(act)} vs planned ${pct(plan)} (variance ${((act-plan)*100).toFixed(1)}%). Manpower ${fmtN(mp)}.`,'',`2. WORK EXECUTED`);
+  discs.forEach(d=>L.push(`${d.disc} (${pct(d.act)} vs plan ${pct(d.plan)}): ${narrative(d)}`));
+  const mpT=byTrade(e,'manpower',state.trades),eqT=byTrade(e,'equip',state.equipment);
+  L.push('',`3. MANPOWER`);state.trades.filter(t=>mpT[t]>0).forEach(t=>L.push(`  ${t}: ${mpT[t]}`));L.push(`  Total: ${fmtN(mp)}`,'',`4. MAJOR EQUIPMENT`);
+  state.equipment.filter(t=>eqT[t]>0).forEach(t=>L.push(`  ${t}: ${eqT[t]}`));
+  const notes=(key,none)=>{const items=areasIn.filter(an=>e.areas[an][key]).map(an=>`  ${shortArea(an)}: ${e.areas[an][key]}`);return items.length?items:[none];};
+  L.push('',`5. DELAYS / CONSTRAINTS`,...notes('delays','None reported.'),'',`6. HSE`,...notes('hse','Not recorded.'),'',`7. PLAN FOR NEXT WORKING DAY`,...notes('lookahead','Not recorded.'));
+  return L.join('\n');
+}
+$('copyDiary').addEventListener('click',()=>copyText(diaryText()||'No diary for this date.','Diary copied'));
+function copyText(text,msg){const done=()=>toast(msg);const fallback=()=>{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){toast('Select the text and copy manually');}ta.remove();};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback);}else fallback();}
+let toastT;function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);}
+
+/* ---------- Dashboard ---------- */
+let sChart,mChart;
+const css=(v)=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function renderDash(){
+  const act=actualPct(curDate),plan=planPct(curDate),e=state.entries[curDate];
+  const prev=lastWorkingDayBefore(curDate,state.entries);
+  const wd=workingDays(state.project.start,curDate<today?curDate:today).filter(d=>d<today),filed=wd.filter(d=>hasContent(state.entries[d])).length;
+  const varr=act-plan;
+  $('kpis').innerHTML=`
+    <div class="kpi"><span>Overall progress</span><b>${pct(act)}</b><small>as of ${curDate}</small></div>
+    <div class="kpi"><span>Planned to date</span><b>${pct(plan)}</b><small>straight-line from activity dates</small></div>
+    <div class="kpi"><span>Variance</span><b class="${varr>=0?'pos':'neg'}">${(varr>=0?'+':'−')+Math.abs(varr*100).toFixed(1)}%</b><small>${varr>=0?'ahead of plan':'behind plan'}</small></div>
+    <div class="kpi"><span>Manpower</span><b>${fmtN(siteSum(e,'manpower'))}</b><small>${prev?`prev. working day ${fmtN(siteSum(state.entries[prev],'manpower'))}`:'no previous day'}</small></div>
+    <div class="kpi"><span>Diaries filed</span><b>${filed} / ${wd.length}</b><small>working days to date</small></div>`;
+  const finish=state.activities.reduce((m,a)=>a.planFinish>m?a.planFinish:m,state.project.start);
+  const labels=[],planS=[],actS=[];let d=state.project.start;const last=finish>curDate?finish:curDate;
+  const push=(x)=>{labels.push(x);planS.push(+(planPct(x)*100).toFixed(2));actS.push(x<=curDate&&x<=today?+(actualPct(x)*100).toFixed(2):null);};
+  while(d<=last){push(d);d=addDays(d,7);}
+  if(labels[labels.length-1]!==last)push(last);
+  if(!labels.includes(curDate)){const i=labels.findIndex(x=>x>curDate);const ins=i<0?labels.length:i;labels.splice(ins,0,curDate);planS.splice(ins,0,+(planPct(curDate)*100).toFixed(2));actS.splice(ins,0,+(actualPct(curDate)*100).toFixed(2));}
+  const muted=css('--muted'),line=css('--line'),primary=css('--primary');
+  const common={responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'#10264f',titleColor:'#fff',bodyColor:'#fff',padding:10,cornerRadius:6}},scales:{x:{grid:{display:false},ticks:{color:muted,maxTicksLimit:8,font:{size:11}}},y:{grid:{color:line},border:{display:false},ticks:{color:muted,font:{size:11}}}}};
+  if(sChart)sChart.destroy();
+  sChart=new Chart($('scurve'),{type:'line',data:{labels,datasets:[
+    {label:'Planned',data:planS,borderColor:muted,borderDash:[5,4],borderWidth:2,pointRadius:0,tension:.25},
+    {label:'Actual',data:actS,borderColor:primary,backgroundColor:'rgba(26,86,219,.10)',fill:true,borderWidth:2,pointRadius:ctx=>ctx.dataIndex===labels.indexOf(curDate)?4:0,pointBackgroundColor:primary,tension:.25,spanGaps:false}]},
+    options:{...common,scales:{...common.scales,y:{...common.scales.y,min:0,max:100,ticks:{...common.scales.y.ticks,callback:v=>v+'%'}}},plugins:{...common.plugins,tooltip:{...common.plugins.tooltip,callbacks:{label:c=>c.dataset.label+': '+(c.parsed.y==null?'—':c.parsed.y.toFixed(1)+'%')}}}}});
+  const mpDays=workingDays(addDays(curDate,-45),curDate).filter(x=>state.entries[x]).slice(-30);
+  if(mChart)mChart.destroy();
+  mChart=new Chart($('mpChart'),{type:'bar',data:{labels:mpDays.map(x=>x.slice(5)),datasets:[{label:'Total headcount',data:mpDays.map(x=>siteSum(state.entries[x],'manpower')),backgroundColor:primary,borderRadius:{topLeft:4,topRight:4},borderSkipped:'bottom',maxBarThickness:22}]},
+    options:{...common,plugins:{...common.plugins,tooltip:{...common.plugins.tooltip,callbacks:{title:items=>mpDays[items[0].dataIndex]}}},scales:{...common.scales,y:{...common.scales.y,beginAtZero:true}}}});
+  const tb=$('discTable').querySelector('tbody');const W=totalWeight(state.activities);
+  tb.innerHTML=disciplines().map(disc=>{const acts=state.activities.filter(a=>a.discipline===disc),a=actualPct(curDate,acts),p=planPct(curDate,acts),w=acts.reduce((s,x)=>s+Number(x.weight||0),0)/W,v=a-p;
+    return `<tr><td>${esc(disc)}</td><td class="num">${(w*100).toFixed(1)}%</td><td class="num">${pct(a)}</td><td class="num">${pct(p)}</td><td class="num ${v>=0?'pos':'neg'}">${(v>=0?'+':'−')+Math.abs(v*100).toFixed(1)}%</td><td><div class="bar${a>=1?' done':''}"><i style="width:${a*100}%"></i><b style="left:calc(${p*100}% - 1px)"></b></div></td></tr>`;}).join('')+
+    `<tr><td><b>Overall</b></td><td class="num">100%</td><td class="num"><b>${pct(act)}</b></td><td class="num"><b>${pct(plan)}</b></td><td class="num ${varr>=0?'pos':'neg'}">${(varr>=0?'+':'−')+Math.abs(varr*100).toFixed(1)}%</td><td><div class="bar"><i style="width:${act*100}%"></i><b style="left:calc(${plan*100}% - 1px)"></b></div></td></tr>`;
+  $('areaDateLbl').textContent=longDate(curDate);
+  $('areaTable').querySelector('tbody').innerHTML=state.areas.map(a=>{const ar=e&&e.areas[a.name];const has=areaHasContent(ar);const nAct=ar?Object.values(ar.qty).filter(v=>v>0).length:0;
+    return `<tr><td><b>${esc(a.name)}</b></td><td>${esc((ar&&ar.by)||a.by||'—')}</td><td class="num">${nAct}</td><td class="num">${ar?fmtN(sum(ar.manpower)):'–'}</td><td class="num">${ar?fmtN(sum(ar.equip)):'–'}</td><td>${has?'<span class="chip ok">Entered</span>':(isWeekend(curDate)?'<span class="chip warn">Rest day</span>':(curDate>today?'<span class="chip">Future</span>':'<span class="chip bad">Awaiting entry</span>'))}</td></tr>`;}).join('');
+}
+
+/* ---------- SharePoint sync (progress server) ---------- */
+// When a server URL is set, the workbook on SharePoint is the master: state is loaded from it and every
+// change to (date, area) is sent as one PUT. Changes are batched 1.5 s after the last keystroke.
+const API_STORE=STORE_KEY+'-api';
+let api={url:'',key:''};try{api={...api,...(JSON.parse(localStorage.getItem(API_STORE)||'null')||{})};}catch(e){}
+let serverMeta=null;
+const sync={pending:new Map(),timer:null,inflight:false,status:'idle',last:null,error:''};
+const serverMode=()=>!!api.url;
+async function apiFetch(path,opts={}){
+  const r=await fetch(api.url.replace(/\/$/,'')+path,{...opts,headers:{'Content-Type':'application/json','X-Api-Key':api.key||'',...(opts.headers||{})}});
+  let j=null;try{j=await r.json();}catch(e){}
+  if(!r.ok||!(j&&j.ok))throw new Error((j&&j.error)||('HTTP '+r.status));return j;
+}
+function setSyncStatus(s,msg){sync.status=s;sync.error=msg||'';if(s==='synced')sync.last=new Date();setLinkUI();}
+async function loadFromServer({fresh=false}={}){
+  setSyncStatus('loading');
+  const j=await apiFetch('/api/state'+(fresh?'?fresh=1':''));
+  state=j.state;serverMeta={file:j.file,lastWrite:j.lastWrite};applyRestDays();
+  try{localStorage.setItem(STORE_KEY,JSON.stringify(state));}catch(e){}
+  setSyncStatus('synced');renderAll();
+}
+function queueSync(){if(!serverMode())return;sync.pending.set(curDate+'|'+curArea,{date:curDate,area:curArea});clearTimeout(sync.timer);sync.timer=setTimeout(flushSync,1500);setSyncStatus('pending');}
+async function flushSync(){
+  if(!serverMode()||sync.inflight||!sync.pending.size)return;
+  const items=[...sync.pending.values()];sync.pending.clear();sync.inflight=true;setSyncStatus('saving');
+  try{
+    for(const it of items){
+      const e=state.entries[it.date];const ar=(e&&e.areas[it.area])||blankArea('');
+      const body={...ar,wxAm:e?e.wxAm:'',wxPm:e?e.wxPm:'',temp:e?e.temp:'',hours:e?e.hours:''};
+      const j=await apiFetch(`/api/entries/${it.date}/${encodeURIComponent(it.area)}`,{method:'PUT',body:JSON.stringify(body)});
+      if(serverMeta)serverMeta.lastWrite=j.lastWrite;
+    }
+    setSyncStatus('synced');
+  }catch(err){
+    items.forEach(it=>{if(!sync.pending.has(it.date+'|'+it.area))sync.pending.set(it.date+'|'+it.area,it);});
+    setSyncStatus('error',err.message);clearTimeout(sync.timer);sync.timer=setTimeout(flushSync,15000);
+  }finally{sync.inflight=false;if(sync.pending.size&&sync.status!=='error'){clearTimeout(sync.timer);sync.timer=setTimeout(flushSync,1500);}}
+}
+$('apiConnect').addEventListener('click',async()=>{
+  const url=($('apiUrl').value.trim()||(location.protocol.startsWith('http')?location.origin:'')).replace(/\/$/,'');
+  if(!url){toast('Enter the server URL');return;}
+  const prev=api;api={url,key:$('apiKey').value.trim()};
+  try{const h=await apiFetch('/api/health');try{localStorage.setItem(API_STORE,JSON.stringify(api));}catch(e){}await loadFromServer({fresh:true});toast(`Connected · ${h.file.name}`);}
+  catch(e){api=prev;setSyncStatus('idle');toast('Could not connect: '+e.message);}
+});
+$('apiDisconnect').addEventListener('click',()=>{api={url:'',key:''};try{localStorage.removeItem(API_STORE);}catch(e){}serverMeta=null;sync.pending.clear();setSyncStatus('idle');renderAll();toast('Disconnected. Data stays in this browser.');});
+$('spRefresh').addEventListener('click',()=>loadFromServer({fresh:true}).then(()=>toast('Refreshed from SharePoint')).catch(e=>toast('Refresh failed: '+e.message)));
+$('spDiary').addEventListener('click',async()=>{try{await flushSync();const j=await apiFetch(`/api/diary/${curDate}/write`,{method:'POST'});toast(`Daily Diary sheet written · ${j.ref}`);}catch(e){toast('Could not write the diary: '+e.message);}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flushSync();});
+setInterval(()=>{if(!serverMode()||sync.pending.size||sync.inflight||document.hidden)return;const f=document.activeElement;if(activeTab==='entry'&&f&&f.closest&&f.closest('#panel-entry'))return;loadFromServer().catch(()=>{});},120000);
+
+/* ---------- Excel workbook ---------- */
+const XLSX_MIME='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+let fileHandle=null,wbTimer=null,lastWrite=null;
+const fsSupported=typeof window.showSaveFilePicker==='function';
+const D=(s)=>parse(s); // real Date cells so Excel formulas can compare dates
+function logRows(){
+  const P=[['Date','Area','Activity ID','Discipline','Activity','Unit','Qty','Location / remark','Entered by']],M=[['Date','Area','Trade','Nos']],E=[['Date','Area','Equipment','Units']],N=[['Date','Area','Weather AM','Weather PM','Max °C','Working hours','Delays / constraints','HSE','Plan for tomorrow','Entered by']];
+  sortedDates().forEach(dt=>{const e=state.entries[dt];const dd=D(dt);
+    Object.keys(e.areas).forEach(an=>{const ar=e.areas[an];if(!areaHasContent(ar))return;
+      state.activities.forEach(a=>{const q=Number(ar.qty[a.id]||0);if(q>0)P.push([dd,an,a.id,a.discipline,a.name,a.unit,q,ar.remarks[a.id]||'',ar.by||'']);});
+      Object.keys(ar.manpower).forEach(t=>{if(ar.manpower[t]>0)M.push([dd,an,t,Number(ar.manpower[t])]);});
+      Object.keys(ar.equip).forEach(t=>{if(ar.equip[t]>0)E.push([dd,an,t,Number(ar.equip[t])]);});
+      N.push([dd,an,e.wxAm,e.wxPm,e.temp===''?null:e.temp,e.hours||'',ar.delays||'',ar.hse||'',ar.lookahead||'',ar.by||'']);
+    });});
+  return {P,M,E,N};
+}
+function sheet(aoa,cols){const ws=XLSX.utils.aoa_to_sheet(aoa,{cellDates:true});if(cols)ws['!cols']=cols.map(w=>({wch:w}));
+  // date number format for Date cells
+  const range=XLSX.utils.decode_range(ws['!ref']||'A1');for(let R=range.s.r;R<=range.e.r;R++)for(let C=range.s.c;C<=range.e.c;C++){const c=ws[XLSX.utils.encode_cell({r:R,c:C})];if(c&&c.t==='d')c.z='yyyy-mm-dd';}
+  return ws;}
+function buildWorkbook(){
+  const wb=XLSX.utils.book_new();
+  const P0=state.project;
+  const {P,M,E,N}=logRows();
+  XLSX.utils.book_append_sheet(wb,sheet([['Field','Value'],['Project',P0.name],['Client',P0.client],['Contractor',P0.contractor],['Location',P0.location],['Project start',D(P0.start)],['Diary prefix',P0.prefix],['Rest days',P0.restDays==null?'5':String(P0.restDays)],['Exported',new Date()],[],['Areas','Area planner'],...state.areas.map(a=>[a.name,a.by]),[],['Trades'],...state.trades.map(t=>[t]),[],['Equipment'],...state.equipment.map(t=>[t])],[26,40]),'Project');
+  XLSX.utils.book_append_sheet(wb,sheet([['ID','Discipline','Activity','Unit','Scope','Weight','Plan start','Plan finish'],...state.activities.map(a=>[a.id,a.discipline,a.name,a.unit,Number(a.scope),Number(a.weight),D(a.planStart),D(a.planFinish)])],[8,22,28,10,12,8,12,12]),'Activities');
+  XLSX.utils.book_append_sheet(wb,sheet(P,[12,30,10,20,26,10,10,30,16]),'Progress Log');
+  XLSX.utils.book_append_sheet(wb,sheet(M,[12,30,18,8]),'Manpower Log');
+  XLSX.utils.book_append_sheet(wb,sheet(E,[12,30,22,8]),'Equipment Log');
+  XLSX.utils.book_append_sheet(wb,sheet(N,[12,30,14,14,8,14,50,40,40,16]),'Site Notes');
+  // Summary: formulas on the logs, driven by the date in B1
+  const S=[['Report date',D(curDate),'','← type any date here; everything below recalculates'],['Overall',null,null,null,null,null,null,null,'Actual %','Plan %','Variance'],['ID','Discipline','Activity','Unit','Scope','Weight','Plan start','Plan finish','Cum. qty to date','Qty on date','Cum. %','Plan %','Weighted actual','Weighted plan','Manpower on date']];
+  state.activities.forEach(a=>S.push([a.id,a.discipline,a.name,a.unit,Number(a.scope),Number(a.weight),D(a.planStart),D(a.planFinish)]));
+  const ws=sheet(S,[8,22,28,10,12,8,12,12,16,12,10,10,14,14,16]);
+  const first=4,lastR=3+state.activities.length;
+  state.activities.forEach((a,i)=>{const r=first+i;
+    ws[`I${r}`]={t:'n',f:`SUMIFS('Progress Log'!$G:$G,'Progress Log'!$C:$C,$A${r},'Progress Log'!$A:$A,"<="&$B$1)`,v:cumThrough(a.id,curDate)};
+    ws[`J${r}`]={t:'n',f:`SUMIFS('Progress Log'!$G:$G,'Progress Log'!$C:$C,$A${r},'Progress Log'!$A:$A,$B$1)`,v:qtyOn(state.entries[curDate],a.id)};
+    ws[`K${r}`]={t:'n',f:`IF(E${r}>0,MIN(1,I${r}/E${r}),0)`,v:Math.min(1,cumThrough(a.id,curDate)/(Number(a.scope)||1)),z:'0.0%'};
+    ws[`L${r}`]={t:'n',f:`IF(H${r}>G${r},MAX(0,MIN(1,($B$1-G${r})/(H${r}-G${r}))),IF($B$1>=H${r},1,0))`,v:planFrac(a,curDate),z:'0.0%'};
+    ws[`M${r}`]={t:'n',f:`F${r}*K${r}`,v:Number(a.weight)*Math.min(1,cumThrough(a.id,curDate)/(Number(a.scope)||1))};
+    ws[`N${r}`]={t:'n',f:`F${r}*L${r}`,v:Number(a.weight)*planFrac(a,curDate)};
+  });
+  ws['I2']={t:'n',f:`IF(SUM(F${first}:F${lastR})>0,SUM(M${first}:M${lastR})/SUM(F${first}:F${lastR}),0)`,v:actualPct(curDate),z:'0.0%'};
+  ws['J2']={t:'n',f:`IF(SUM(F${first}:F${lastR})>0,SUM(N${first}:N${lastR})/SUM(F${first}:F${lastR}),0)`,v:planPct(curDate),z:'0.0%'};
+  ws['K2']={t:'n',f:`I2-J2`,v:actualPct(curDate)-planPct(curDate),z:'+0.0%;-0.0%'};
+  ws[`O${first}`]={t:'n',f:`SUMIFS('Manpower Log'!$D:$D,'Manpower Log'!$A:$A,$B$1)`,v:siteSum(state.entries[curDate],'manpower')};
+  ws['!ref']=`A1:O${lastR}`;
+  XLSX.utils.book_append_sheet(wb,ws,'Summary');
+  // Daily Diary for the selected date
+  const m=diaryModel(curDate);const DD=[];let kpiRow=0;
+  DD.push(['SITE DAILY DIARY',null,null,null,m?m.ref:''],[P0.name,null,null,null,longDate(curDate)],[`Client: ${P0.client||'—'}`,null,null,null,`Contractor: ${P0.contractor||'—'}`],[]);
+  if(!m){DD.push(['No entry for this date.']);}
+  else{const {e,mp,act,plan,discs,areasIn}=m,n=dayNo(curDate);
+    DD.push(['Project day',`Day ${n} · Week ${Math.ceil(n/7)}`,'Working hours',e.hours||'—'],['Weather AM / PM',`${e.wxAm} / ${e.wxPm}`,'Max temp',e.temp===''?'—':`${e.temp} °C`],['Areas reporting',`${areasIn.length} of ${state.areas.length}`,'Entered by',m.by.join(', ')],[]);
+    DD.push(['1. PROGRESS SUMMARY'],['Overall actual',act,'Overall planned',plan,'Variance',act-plan,'Manpower',mp],[]);kpiRow=DD.length-1;
+    DD.push(['2. WORK EXECUTED'],['Discipline / activity','Area · remark','Unit','Today','Cumulative','Scope','%']);
+    discs.forEach(d=>{DD.push([d.disc,null,null,null,null,null,d.act]);d.lines.forEach(l=>DD.push([`   ${l.a.name}`,l.parts.map(p=>shortArea(p.area)+(p.rem?' '+p.rem:'')+(l.parts.length>1?' '+fmtQ(p.q):'')).join(' | '),l.a.unit,l.q,l.cum,Number(l.a.scope),l.p]));});
+    DD.push([],['3. MANPOWER',...areasIn.map(shortArea),'Total']);const mpT=byTrade(e,'manpower',state.trades);
+    state.trades.filter(t=>mpT[t]>0).forEach(t=>DD.push([t,...areasIn.map(an=>Number(e.areas[an].manpower[t]||0)),mpT[t]]));DD.push(['Total',...areasIn.map(an=>sum(e.areas[an].manpower)),mp]);
+    DD.push([],['4. MAJOR EQUIPMENT',...areasIn.map(shortArea),'Total']);const eqT=byTrade(e,'equip',state.equipment);
+    state.equipment.filter(t=>eqT[t]>0).forEach(t=>DD.push([t,...areasIn.map(an=>Number(e.areas[an].equip[t]||0)),eqT[t]]));
+    const notes=(title,key,none)=>{DD.push([],[title]);const items=areasIn.filter(an=>e.areas[an][key]);if(!items.length)DD.push([none]);items.forEach(an=>DD.push([shortArea(an),e.areas[an][key]]));};
+    notes('5. DELAYS, CONSTRAINTS AND INSTRUCTIONS','delays','None reported.');notes('6. HSE','hse','Not recorded.');notes('7. PLAN FOR NEXT WORKING DAY','lookahead','Not recorded.');
+    DD.push([],['Prepared by: Planning','Reviewed by: Construction Manager',null,'Acknowledged by: Client Representative']);
+  }
+  const wd=sheet(DD,[34,34,12,10,12,10,8,8]);
+  Object.keys(wd).forEach(k=>{if(k[0]==='!')return;const c=wd[k];if(c.t==='n'&&/^G\d+$/.test(k))c.z='0.0%';});
+  if(kpiRow){['B','D'].forEach(c=>{if(wd[c+kpiRow])wd[c+kpiRow].z='0.0%';});if(wd['F'+kpiRow])wd['F'+kpiRow].z='+0.0%;-0.0%';}
+  XLSX.utils.book_append_sheet(wb,wd,'Daily Diary');
+  // Diary Log: one row per day
+  const DL=[['Ref','Date','Day','Week','Weather AM','Weather PM','Max °C','Manpower','Actual %','Plan %','Variance','Areas reporting','Delays / constraints','HSE','Entered by']];
+  let k=0;sortedDates().forEach(dt=>{const e=state.entries[dt];if(!hasContent(e))return;k++;const areasIn=Object.keys(e.areas).filter(an=>areaHasContent(e.areas[an]));const a=actualPct(dt),p=planPct(dt),n=dayNo(dt);
+    DL.push([`${P0.prefix||'DD'}-${String(k).padStart(4,'0')}`,D(dt),n,Math.ceil(n/7),e.wxAm,e.wxPm,e.temp===''?null:e.temp,siteSum(e,'manpower'),a,p,a-p,areasIn.length,areasIn.filter(an=>e.areas[an].delays).map(an=>`${shortArea(an)}: ${e.areas[an].delays}`).join(' | '),areasIn.filter(an=>e.areas[an].hse).map(an=>`${shortArea(an)}: ${e.areas[an].hse}`).join(' | '),[...new Set(areasIn.map(an=>e.areas[an].by).filter(Boolean))].join(', ')]);});
+  const wl=sheet(DL,[12,12,6,6,14,14,8,10,10,10,10,8,60,50,24]);
+  for(let r=2;r<=DL.length;r++){['I','J','K'].forEach(c=>{if(wl[c+r])wl[c+r].z='0.0%';});}
+  XLSX.utils.book_append_sheet(wb,wl,'Diary Log');
+  wb.Workbook={CalcPr:{fullCalcOnLoad:true}};
+  return wb;
+}
+function workbookBytes(){return XLSX.write(buildWorkbook(),{bookType:'xlsx',type:'array',cellDates:true});}
+function slug(){return (state.project.name||'project').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
+function setLinkUI(){
+  document.body.classList.toggle('server-mode',serverMode());document.body.classList.toggle('local-mode',!serverMode());
+  const pill=$('linkPill');
+  if(serverMode()){
+    const t=sync.last?sync.last.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';
+    const msg={idle:'SharePoint · connected',loading:'SharePoint · loading…',pending:'SharePoint · change pending',saving:'SharePoint · saving…',synced:'SharePoint · synced'+(t?' '+t:''),error:'SharePoint · not saved: '+sync.error}[sync.status]||'SharePoint';
+    pill.className='linkpill'+(sync.status==='synced'||sync.status==='idle'?' on':'');pill.textContent=msg;
+    const f=serverMeta&&serverMeta.file;$('spFile').textContent=f?f.name:'Workbook';$('spOpen').href=f?f.webUrl:'#';
+    $('spMsg').textContent=(serverMeta&&serverMeta.lastWrite?`Last write to the workbook ${new Date(serverMeta.lastWrite).toLocaleString('en-GB')}. `:'')+(sync.status==='error'?'Changes are kept here and retried every 15 s.':'');
+    $('spState').className='linkstate'+(sync.status==='error'?'':' on');
+    $('apiStatus').textContent=`Connected to ${api.url}`;
+    return;
+  }
+  $('apiStatus').textContent='Not connected · data stays in this browser';
+  const on=!!fileHandle;pill.className='linkpill'+(on?' on':'');
+  pill.textContent=on?`Excel linked: ${fileHandle.name}${lastWrite?' · updated '+lastWrite:''}`:'Excel workbook not linked';
+  const ls=$('linkState');ls.className='linkstate'+(on?' on':'');
+  ls.querySelector('b').textContent=on?`Linked to ${fileHandle.name}`:'Not linked';
+  $('linkMsg').textContent=on?`Every change is written to the file automatically${lastWrite?' (last write '+lastWrite+')':''}. Close the file in Excel while entering, or open it read-only, so the write is not blocked.`:'Link a workbook and every entry is written to it automatically.';
+  $('linkNew').disabled=!fsSupported;$('linkExisting').disabled=!fsSupported;
+  $('fsNote').textContent=fsSupported?'Linking keeps a handle to the file for this session. After you reload the page, link it again (the data itself stays saved in the browser).':'Linking a file needs Chrome or Edge on a desktop, with this page opened from a web address or a local file. Here you can still download the workbook and import it back.';
+}
+async function writeLinked(){if(!fileHandle)return;try{const w=await fileHandle.createWritable();await w.write(workbookBytes());await w.close();lastWrite=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});setLinkUI();}catch(e){toast('Could not write to the workbook. Is it open in Excel? Close it and make another change.');}}
+function scheduleWorkbook(){if(!fileHandle)return;clearTimeout(wbTimer);wbTimer=setTimeout(writeLinked,1200);}
+$('linkNew').addEventListener('click',async()=>{try{fileHandle=await window.showSaveFilePicker({suggestedName:`${slug()}-progress-diary.xlsx`,types:[{description:'Excel workbook',accept:{[XLSX_MIME]:['.xlsx']}}]});await writeLinked();toast('Workbook created and linked');}catch(e){if(e&&e.name!=='AbortError')toast('Could not create the file: '+e.message);}});
+$('linkExisting').addEventListener('click',async()=>{try{const [h]=await window.showOpenFilePicker({types:[{description:'Excel workbook',accept:{[XLSX_MIME]:['.xlsx']}}],multiple:false});const f=await h.getFile();const buf=await f.arrayBuffer();const res=importWorkbook(buf);fileHandle=h;if(res.ok){save();renderAll();toast(`Imported ${res.rows} progress rows and linked ${h.name}`);}else{toast(res.error+' The file is linked and will be overwritten with the app data on the next change.');setLinkUI();}}catch(e){if(e&&e.name!=='AbortError')toast('Could not open the file: '+e.message);}});
+// Inside the claude.ai viewer the page saves through its downloads capability; elsewhere a normal browser download.
+let viewerDownloads=null;
+if(window.claude&&typeof window.claude.use==='function'){window.claude.use('downloads').then(d=>{viewerDownloads=d;}).catch(()=>{});}
+$('downloadXlsx').addEventListener('click',async()=>{
+  const filename=`${slug()}-progress-diary-${curDate}.xlsx`;let bytes;
+  try{bytes=workbookBytes();}catch(e){toast('Could not build the workbook: '+e.message);return;}
+  if(viewerDownloads){try{await viewerDownloads.save({filename,data:new Blob([bytes],{type:XLSX_MIME})});toast('Workbook saved');}catch(e){if(e&&e.code==='declined')return;toast(e&&e.code==='rate_limited'?'A save prompt is already open.':'Saving is not available in this view.');}return;}
+  try{const blob=new Blob([bytes],{type:XLSX_MIME});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);toast('Workbook downloaded');}catch(e){toast('Could not download: '+e.message);}
+});
+$('importFile').addEventListener('change',async(ev)=>{const f=ev.target.files[0];if(!f)return;try{const buf=await f.arrayBuffer();const res=importWorkbook(buf);if(res.ok){save();renderAll();toast(`Imported ${res.rows} progress rows from ${f.name}`);}else toast(res.error);}catch(e){toast('Could not read the file: '+e.message);}ev.target.value='';});
+function toISO(v){if(v instanceof Date&&!isNaN(v))return iso(new Date(Date.UTC(v.getFullYear(),v.getMonth(),v.getDate())));if(typeof v==='number'){const d=XLSX.SSF.parse_date_code(v);if(d)return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;}if(typeof v==='string'){const m=v.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return m[0];const d=new Date(v);if(!isNaN(d))return iso(d);}return null;}
+function importWorkbook(buf){
+  const wb=XLSX.read(buf,{type:'array',cellDates:true});
+  const need=['Activities','Progress Log'];for(const s of need)if(!wb.Sheets[s])return {ok:false,error:`The workbook has no "${s}" sheet. Import a workbook that was created by this app.`};
+  const rows=(name)=>wb.Sheets[name]?XLSX.utils.sheet_to_json(wb.Sheets[name],{defval:''}):[];
+  const acts=rows('Activities').filter(r=>r.ID).map(r=>({id:String(r.ID),discipline:String(r.Discipline||''),name:String(r.Activity||''),unit:String(r.Unit||''),scope:Number(r.Scope)||0,weight:Number(r.Weight)||0,planStart:toISO(r['Plan start'])||state.project.start,planFinish:toISO(r['Plan finish'])||state.project.start}));
+  if(!acts.length)return {ok:false,error:'The Activities sheet is empty.'};
+  const next={v:2,project:{...state.project},areas:[],activities:acts,trades:[],equipment:[],entries:{}};
+  // Project sheet (optional)
+  const pj=wb.Sheets['Project'];if(pj){const aoa=XLSX.utils.sheet_to_json(pj,{header:1,defval:''});let mode='kv';aoa.forEach(r=>{const k=r[0];if(k==='Areas'){mode='areas';return;}if(k==='Trades'){mode='trades';return;}if(k==='Equipment'){mode='eq';return;}if(k===''||k==null)return;
+    if(mode==='kv'){const map={Project:'name',Client:'client',Contractor:'contractor',Location:'location','Diary prefix':'prefix','Rest days':'restDays'};if(map[k])next.project[map[k]]=String(r[1]??'');if(k==='Project start'){const d=toISO(r[1]);if(d)next.project.start=d;}}
+    else if(mode==='areas')next.areas.push({name:String(k),by:String(r[1]??'')});else if(mode==='trades')next.trades.push(String(k));else if(mode==='eq')next.equipment.push(String(k));});}
+  const ent=(d)=>next.entries[d]||(next.entries[d]=blankEntry());
+  const area=(d,an,by)=>{const e=ent(d);const a=e.areas[an]||(e.areas[an]=blankArea(''));if(by&&!a.by)a.by=by;if(!next.areas.some(x=>x.name===an))next.areas.push({name:an,by:by||''});return a;};
+  let n=0;rows('Progress Log').forEach(r=>{const d=toISO(r.Date);const an=String(r.Area||'Site');const id=String(r['Activity ID']||'');const q=Number(r.Qty);if(!d||!id||!(q>0))return;const a=area(d,an,String(r['Entered by']||''));a.qty[id]=(a.qty[id]||0)+q;if(r['Location / remark'])a.remarks[id]=String(r['Location / remark']);n++;});
+  rows('Manpower Log').forEach(r=>{const d=toISO(r.Date),an=String(r.Area||'Site'),t=String(r.Trade||''),v=Number(r.Nos);if(!d||!t||!(v>0))return;area(d,an).manpower[t]=(area(d,an).manpower[t]||0)+v;if(!next.trades.includes(t))next.trades.push(t);});
+  rows('Equipment Log').forEach(r=>{const d=toISO(r.Date),an=String(r.Area||'Site'),t=String(r.Equipment||''),v=Number(r.Units);if(!d||!t||!(v>0))return;area(d,an).equip[t]=(area(d,an).equip[t]||0)+v;if(!next.equipment.includes(t))next.equipment.push(t);});
+  rows('Site Notes').forEach(r=>{const d=toISO(r.Date);if(!d)return;const an=String(r.Area||'Site');const e=ent(d);if(r['Weather AM'])e.wxAm=String(r['Weather AM']);if(r['Weather PM'])e.wxPm=String(r['Weather PM']);if(r['Max °C']!=='')e.temp=Number(r['Max °C']);if(r['Working hours'])e.hours=String(r['Working hours']);const a=area(d,an,String(r['Entered by']||''));a.delays=String(r['Delays / constraints']||'');a.hse=String(r.HSE||'');a.lookahead=String(r['Plan for tomorrow']||'');});
+  if(!next.trades.length)next.trades=[...state.trades];if(!next.equipment.length)next.equipment=[...state.equipment];if(!next.areas.length)next.areas=[...state.areas];
+  state=next;return {ok:true,rows:n};
+}
+function renderExcel(){const {P,M,E,N}=logRows();$('rowCounts').textContent=`${P.length-1} progress · ${M.length-1} manpower · ${E.length-1} equipment · ${N.length-1} notes rows`;setLinkUI();}
+
+/* ---------- Setup ---------- */
+function renderSetup(){
+  const P=state.project;$('pName').value=P.name||'';$('pClient').value=P.client||'';$('pContractor').value=P.contractor||'';$('pLocation').value=P.location||'';$('pStart').value=P.start||'';$('pPrefix').value=P.prefix||'';
+  const rv=P.restDays==null?'5':String(P.restDays);$('pRest').innerHTML=REST_OPTIONS.map(([v,l])=>`<option value="${v}"${v===rv?' selected':''}>${l}</option>`).join('');
+  const at=$('areaSetup').querySelector('tbody');
+  at.innerHTML=state.areas.map((a,i)=>`<tr data-i="${i}"><td><input type="text" data-k="name" value="${esc(a.name)}"></td><td><input type="text" data-k="by" value="${esc(a.by)}"></td><td><button class="btn small danger" data-del="${i}" title="Remove area">✕</button></td></tr>`).join('');
+  at.querySelectorAll('input').forEach(inp=>inp.addEventListener('change',()=>{const i=Number(inp.closest('tr').dataset.i),a=state.areas[i],k=inp.dataset.k,v=inp.value.trim();
+    if(k==='name'){if(!v||state.areas.some((x,j)=>j!==i&&x.name===v)){inp.value=a.name;return;}Object.values(state.entries).forEach(e=>{if(e.areas[a.name]){e.areas[v]=e.areas[a.name];delete e.areas[a.name];}});if(curArea===a.name)curArea=v;a.name=v;}else a.by=v;save();}));
+  at.querySelectorAll('button[data-del]').forEach(b=>b.addEventListener('click',()=>{const a=state.areas[Number(b.dataset.del)];const used=Object.values(state.entries).some(e=>areaHasContent(e.areas[a.name]));
+    if(used&&!b.dataset.sure){b.textContent='Remove with its entries?';b.dataset.sure='1';return;}
+    state.areas.splice(Number(b.dataset.del),1);Object.values(state.entries).forEach(e=>{delete e.areas[a.name];});save();renderSetup();toast('Area removed');}));
+  const tb=$('actTable').querySelector('tbody');
+  tb.innerHTML=state.activities.map(a=>`<tr data-id="${a.id}">
+    <td><input type="text" data-k="discipline" value="${esc(a.discipline)}" list="discList"></td>
+    <td><input type="text" data-k="name" value="${esc(a.name)}"></td>
+    <td><input type="text" data-k="unit" class="w-s" value="${esc(a.unit)}"></td>
+    <td class="num"><input type="number" data-k="scope" class="w-s" min="0" step="any" value="${a.scope}"></td>
+    <td class="num"><input type="number" data-k="weight" class="w-s" min="0" step="any" value="${a.weight}"></td>
+    <td><input type="date" data-k="planStart" value="${a.planStart}"></td>
+    <td><input type="date" data-k="planFinish" value="${a.planFinish}"></td>
+    <td><button class="btn small danger" data-del="${a.id}" title="Remove activity">✕</button></td></tr>`).join('')+`<datalist id="discList">${disciplines().map(d=>`<option value="${esc(d)}">`).join('')}</datalist>`;
+  tb.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>{const a=state.activities.find(x=>x.id===inp.closest('tr').dataset.id);const k=inp.dataset.k;a[k]=(k==='scope'||k==='weight')?Number(inp.value):inp.value;scheduleSave();}));
+  tb.querySelectorAll('button[data-del]').forEach(b=>b.addEventListener('click',()=>{const a=state.activities.find(x=>x.id===b.dataset.del);const used=Object.values(state.entries).some(e=>Object.values(e.areas).some(ar=>ar.qty[a.id]>0));
+    if(used&&!b.dataset.sure){b.textContent='Remove with its progress?';b.dataset.sure='1';return;}
+    state.activities=state.activities.filter(x=>x.id!==a.id);Object.values(state.entries).forEach(e=>Object.values(e.areas).forEach(ar=>{delete ar.qty[a.id];delete ar.remarks[a.id];}));save();renderSetup();toast('Activity removed');}));
+  $('tradeList').innerHTML=state.trades.map((t,i)=>`<span>${esc(t)}<button data-i="${i}" aria-label="Remove ${esc(t)}">×</button></span>`).join('');
+  $('tradeList').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{state.trades.splice(Number(b.dataset.i),1);save();renderSetup();}));
+  $('eqList').innerHTML=state.equipment.map((t,i)=>`<span>${esc(t)}<button data-i="${i}" aria-label="Remove ${esc(t)}">×</button></span>`).join('');
+  $('eqList').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{state.equipment.splice(Number(b.dataset.i),1);save();renderSetup();}));
+  $('apiUrl').value=api.url;$('apiKey').value=api.key;
+  document.querySelectorAll('#panel-setup .master input,#panel-setup .master select').forEach(el=>{el.disabled=serverMode();});
+  document.querySelectorAll('#panel-setup .master .hd span.ro').forEach(el=>el.remove());
+  if(serverMode())document.querySelectorAll('#panel-setup .master .hd').forEach(h=>{const s=document.createElement('span');s.className='ro';s.textContent='Maintained in the workbook on SharePoint';h.appendChild(s);});
+}
+[['pName','name'],['pClient','client'],['pContractor','contractor'],['pLocation','location'],['pStart','start'],['pPrefix','prefix']].forEach(([id,k])=>$(id).addEventListener('input',()=>{state.project[k]=$(id).value;scheduleSave();renderHeader();}));
+$('pRest').addEventListener('change',()=>{state.project.restDays=$('pRest').value;applyRestDays();save();renderHeader();});
+$('addArea').addEventListener('click',()=>{const v=$('newArea').value.trim();if(!v||state.areas.some(a=>a.name===v)){toast('Enter a new, unique area name');return;}state.areas.push({name:v,by:$('newAreaBy').value.trim()});$('newArea').value='';$('newAreaBy').value='';save();renderSetup();});
+$('addAct').addEventListener('click',()=>{let n=state.activities.length+1,id;do{id='A'+String(n++).padStart(2,'0');}while(state.activities.some(a=>a.id===id));const last=state.activities[state.activities.length-1];state.activities.push({id,discipline:last?last.discipline:'Civil',name:'New activity',unit:'nos',scope:100,weight:1,planStart:state.project.start,planFinish:addDays(state.project.start,90)});save();renderSetup();const row=$('actTable').querySelector(`tr[data-id="${id}"] input[data-k="name"]`);if(row){row.focus();row.select();}});
+$('addTrade').addEventListener('click',()=>{const v=$('newTrade').value.trim();if(!v||state.trades.includes(v))return;state.trades.push(v);$('newTrade').value='';save();renderSetup();});
+$('addEq').addEventListener('click',()=>{const v=$('newEq').value.trim();if(!v||state.equipment.includes(v))return;state.equipment.push(v);$('newEq').value='';save();renderSetup();});
+$('copyBackup').addEventListener('click',()=>copyText(JSON.stringify(state),'Backup copied to clipboard'));
+$('restoreBtn').addEventListener('click',()=>{try{const o=JSON.parse($('backupBox').value);if(!o.activities||!o.entries||!o.project||!o.areas)throw 0;state=o;save();$('backupBox').value='';renderAll();toast('Data restored');}catch(e){toast('That is not a valid backup. Paste the JSON copied from this app.');}});
+$('resetBtn').addEventListener('click',function(){if(!this.dataset.sure){this.textContent='Click again to erase everything and reload the example data';this.dataset.sure='1';return;}state=exampleState();save();this.textContent='Reset to example data';delete this.dataset.sure;renderAll();toast('Example data loaded');});
+
+/* ---------- Boot ---------- */
+function renderAll(){renderHeader();renderEntry();if(activeTab==='diary')renderDiary();if(activeTab==='dash')renderDash();if(activeTab==='setup')renderSetup();if(activeTab==='excel')renderExcel();setLinkUI();}
+try{curArea=localStorage.getItem(STORE_KEY+'-area');}catch(e){}
+renderAll();
+if(serverMode())loadFromServer().catch(e=>setSyncStatus('error',e.message));
+let savedTab='entry';try{savedTab=localStorage.getItem(STORE_KEY+'-tab')||'entry';}catch(e){}
+showTab(['entry','diary','dash','excel','setup'].includes(savedTab)?savedTab:'entry');
+})();
+</script>
+</body>
+</html>
