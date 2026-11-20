@@ -1,4 +1,4 @@
-"""Publish a text post to LinkedIn through the Posts API.
+"""Publish a post to LinkedIn through the Posts API.
 
 Run by .github/workflows/linkedin-post.yml, which passes everything as env vars:
   LINKEDIN_ACCESS_TOKEN  member token with the openid, profile and w_member_social scopes
@@ -7,8 +7,11 @@ Run by .github/workflows/linkedin-post.yml, which passes everything as env vars:
   POST_TEXT              the post; words starting with # become LinkedIn hashtags
   POST_FILE              optional path to a JSON post file, used instead of POST_TEXT:
                          {"text": "...", "images": [{"path": "repo/path.png", "alt": "..."}]}
+                         or {"text": "...", "video": {"path": "repo/path.mp4", "title": "..."}}
   POST_VISIBILITY        PUBLIC or CONNECTIONS
   DRY_RUN                "true" to check the token and print the request without posting
+  UPLOAD_ONLY            "true" to upload the images or video (and wait for the video to
+                         finish processing) without publishing a post; used to test uploads
 """
 import json
 import os
@@ -16,12 +19,14 @@ import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 API = "https://api.linkedin.com"
 DEFAULT_VERSION = "202607"
 MAX_LENGTH = 3000
 MAX_IMAGES = 20
+VIDEO_WAIT_SECONDS = 600
 # Characters reserved by LinkedIn's "little text" format. Left unescaped they
 # are parsed as markup, and LinkedIn can silently drop the rest of the post.
 RESERVED = set("\\|{}@[]()<>#*_~")
@@ -46,7 +51,7 @@ def call(method, url, headers, body=None, data=None):
         data = json.dumps(body).encode()
     req = urllib.request.Request(url, data=data, method=method, headers=headers)
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
+        with urllib.request.urlopen(req, timeout=120) as resp:
             raw = resp.read()
     except urllib.error.HTTPError as e:
         raise ApiError(method, url, e.code, e.read().decode(errors="replace")) from None
@@ -57,19 +62,21 @@ def call(method, url, headers, body=None, data=None):
 
 
 def load_post():
-    """Return (text, images) from POST_FILE when set, otherwise from POST_TEXT."""
+    """Return (text, images, video) from POST_FILE when set, otherwise from POST_TEXT."""
     path = os.environ.get("POST_FILE", "").strip()
     if not path:
-        return os.environ.get("POST_TEXT", "").strip(), []
+        return os.environ.get("POST_TEXT", "").strip(), [], None
     with open(path, encoding="utf-8") as f:
         spec = json.load(f)
-    images = spec.get("images", [])
+    images, video = spec.get("images", []), spec.get("video")
+    if images and video:
+        sys.exit(f"{path} has both images and a video; a LinkedIn post takes one or the other")
     if len(images) > MAX_IMAGES:
         sys.exit(f"{path} lists {len(images)} images; LinkedIn allows {MAX_IMAGES}")
-    for img in images:
-        if not os.path.isfile(img["path"]):
-            sys.exit(f"Image not found: {img['path']}")
-    return spec.get("text", "").strip(), images
+    for item in images + ([video] if video else []):
+        if not os.path.isfile(item["path"]):
+            sys.exit(f"File not found: {item['path']}")
+    return spec.get("text", "").strip(), images, video
 
 
 def upload_image(path, author, headers, auth):
@@ -80,6 +87,54 @@ def upload_image(path, author, headers, auth):
     call("PUT", init["value"]["uploadUrl"], {**auth, "Content-Type": "application/octet-stream"}, data=data)
     print(f"Uploaded {path} ({len(data) // 1024} KB) as {init['value']['image']}")
     return init["value"]["image"]
+
+
+def put_part(url, chunk, auth):
+    """Upload one video part and return its ETag. Upload URLs are pre-signed; if LinkedIn
+    rejects the bearer header on one, the part is sent again without it."""
+    octet = {"Content-Type": "application/octet-stream"}
+    try:
+        resp_headers, _ = call("PUT", url, {**auth, **octet}, data=chunk)
+    except ApiError as e:
+        if e.code not in (400, 401, 403):
+            raise
+        print(f"Part upload with the bearer header failed ({e.code}); retrying without it")
+        resp_headers, _ = call("PUT", url, octet, data=chunk)
+    etag = resp_headers.get("ETag") or resp_headers.get("etag")
+    if not etag:
+        sys.exit("LinkedIn returned no ETag for an uploaded video part")
+    return etag
+
+
+def upload_video(path, author, headers, auth):
+    """Upload an MP4 through the Videos API and wait until LinkedIn has processed it."""
+    with open(path, "rb") as f:
+        data = f.read()
+    _, init = call("POST", f"{API}/rest/videos?action=initializeUpload", headers,
+                   {"initializeUploadRequest": {"owner": author, "fileSizeBytes": len(data),
+                                                "uploadCaptions": False, "uploadThumbnail": False}})
+    value = init["value"]
+    urn = value["video"]
+    parts = value["uploadInstructions"]
+    etags = [put_part(p["uploadUrl"], data[p["firstByte"]:p["lastByte"] + 1], auth) for p in parts]
+    call("POST", f"{API}/rest/videos?action=finalizeUpload", headers,
+         {"finalizeUploadRequest": {"video": urn, "uploadToken": value.get("uploadToken", ""),
+                                    "uploadedPartIds": etags}})
+    print(f"Uploaded {path} ({len(data) // 1024} KB in {len(parts)} parts) as {urn}")
+    status_url = f"{API}/rest/videos/{urllib.parse.quote(urn, safe='')}"
+    waited = 0
+    while True:
+        _, info = call("GET", status_url, headers)
+        status = (info or {}).get("status", "UNKNOWN")
+        if status == "AVAILABLE":
+            print(f"Video processed after about {waited} s")
+            return urn
+        if status == "PROCESSING_FAILED":
+            sys.exit(f"LinkedIn could not process the video: {json.dumps(info)}")
+        if waited >= VIDEO_WAIT_SECONDS:
+            sys.exit(f"The video was still {status} after {VIDEO_WAIT_SECONDS} s; not posting")
+        time.sleep(10)
+        waited += 10
 
 
 def image_content(media):
@@ -93,7 +148,7 @@ def main():
     token = os.environ.get("LINKEDIN_ACCESS_TOKEN", "").strip()
     if not token:
         sys.exit("The LINKEDIN_ACCESS_TOKEN repository secret is not set")
-    text, images = load_post()
+    text, images, video = load_post()
     if not text:
         sys.exit("Post text is empty")
     if len(text) > MAX_LENGTH:
@@ -102,6 +157,7 @@ def main():
     version = os.environ.get("LINKEDIN_API_VERSION", "").strip() or DEFAULT_VERSION
     visibility = os.environ.get("POST_VISIBILITY", "").strip() or "PUBLIC"
     dry_run = os.environ.get("DRY_RUN") == "true"
+    upload_only = os.environ.get("UPLOAD_ONLY") == "true"
     auth = {"Authorization": f"Bearer {token}"}
 
     author = os.environ.get("LINKEDIN_AUTHOR_URN", "").strip()
@@ -127,6 +183,9 @@ def main():
         if images:
             post["content"] = image_content(
                 [{"id": f"(uploaded when posting: {i['path']})", "altText": i.get("alt", "")} for i in images])
+        if video:
+            post["content"] = {"media": {"title": video.get("title", ""),
+                                         "id": f"(uploaded when posting: {video['path']})"}}
         print("Dry run, nothing uploaded or posted. Request body:")
         print(json.dumps(post, indent=2, ensure_ascii=False))
         return
@@ -140,16 +199,23 @@ def main():
     if images:
         post["content"] = image_content(
             [{"id": upload_image(i["path"], author, headers, auth), "altText": i.get("alt", "")} for i in images])
+    if video:
+        post["content"] = {"media": {"title": video.get("title", ""),
+                                     "id": upload_video(video["path"], author, headers, auth)}}
+    if upload_only:
+        print("Upload only: the media is uploaded and nothing was posted.")
+        return
     # LinkedIn processes uploads asynchronously, so a post that references a
-    # just-uploaded image can be rejected for a few seconds.
-    for attempt in range(4 if images else 1):
-        if images:
+    # just-uploaded file can be rejected for a few seconds.
+    media = bool(images or video)
+    for attempt in range(4 if media else 1):
+        if media:
             time.sleep(5 + 10 * attempt)
         try:
             resp_headers, _ = call("POST", f"{API}/rest/posts", headers, post)
             break
         except ApiError as e:
-            if not images or attempt == 3 or e.code in (401, 403):
+            if not media or attempt == 3 or e.code in (401, 403):
                 raise
             print(f"Post not accepted yet, retrying: {e}")
     urn = resp_headers.get("x-restli-id")

@@ -26,6 +26,10 @@ on:
         description: Check the token and show the request without posting
         type: boolean
         default: false
+      upload_only:
+        description: Upload the images or video but do not publish (tests an upload)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -44,4 +48,5 @@ jobs:
           POST_FILE: ${{ inputs.post_file }}
           POST_VISIBILITY: ${{ inputs.visibility }}
           DRY_RUN: ${{ inputs.dry_run }}
+          UPLOAD_ONLY: ${{ inputs.upload_only }}
         run: python3 .github/scripts/linkedin_post.py

@@ -1,0 +1,9 @@
+{
+  "text": "Every delay dispute I have been close to came back to one question nobody settled when the contract was signed: who owns the float?\n\nThe contractor says: it is mine. I created it with my sequence and my resources.\nThe owner says: it belongs to the project. Late drawings that only use float cause no delay.\nThe contract is often silent, or says something both sides read differently.\n\nWhat happens next is predictable. Float is consumed by whoever moves first. Preferential logic, long durations, lags and constraints quietly absorb it. Late approvals absorb the rest. By the time the critical path moves, both sides have spent the same days.\n\nAnd a schedule can pass all 14 DCMA checks and still hide weeks of float. The checks test the structure of a schedule, not its honesty.\n\nWhat I recommend now:\n• Write into the contract who owns float, and what happens when it is used.\n• Report float erosion every month for the top five paths, not only the critical one.\n• Watch the near-critical paths. The path that lost 30 days of float this quarter is your next critical path.\n• Keep contemporaneous records from day one. In a dispute, the update you made at the time is worth more than any analysis made later.\n\nContractor's float, owner's float or shared: what does your contract say, and what happens on site?\n\n#ProjectControls #DelayAnalysis #Claims #ContractManagement #EPC",
+  "images": [
+    {
+      "path": "linkedin/assets/week-2026-11-23/03-float.png",
+      "alt": "Card: Who owns the float? Contractor, owner or shared. An illustrative bar chart of float by path now versus three months ago: path C fell from 36 to 6 working days. The path that lost the most float this quarter is your next critical path."
+    }
+  ]
+}

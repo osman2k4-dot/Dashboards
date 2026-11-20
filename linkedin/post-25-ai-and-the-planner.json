@@ -1,0 +1,9 @@
+{
+  "text": "AI will not replace planners. It will expose the ones whose job was only updating dates.\n\nRecently I built a complete P6 baseline with an AI coding agent: logic, BOQ quantities and man-hours, S-curves, commodity curves and a DCMA 14-point check. The mechanical part of planning took a fraction of the usual time.\n\nWhat did not shrink was the part that was always the job.\n\nThe agent does not know that the heavy crane is booked on another project in March. That one vendor always ships the last skid late. That client approvals slow down before year-end. That the supervisor on unit 2 says yes to every date.\n\nThat knowledge, and the courage to put it in the schedule and defend it in a meeting, is what an experienced planner is paid for.\n\nMy prediction after 18 years in project controls:\n• Planners who spend their week producing reports will find that work done for them.\n• Planners who spend their week questioning the plan will become more valuable, because they can now test five scenarios in an afternoon instead of one a month.\n\nTo juniors I now say: learn the work on site, learn the contract, and learn to ask “what has to be true for this date to hold?” The software part gets easier every month. The judgement part does not.\n\nIf AI builds the schedule, what should a junior planner learn first?\n\n#AI #ProjectControls #Planning #PrimaveraP6 #FutureOfWork",
+  "images": [
+    {
+      "path": "linkedin/assets/week-2026-11-23/05-ai-planner.png",
+      "alt": "Card: AI changes what a planner is for. The agent now does logic and data entry, quantities and man-hours, S-curves and commodity curves, DCMA checks and reports. The planner still does: knowing what site knows, trade-offs and scenarios, defending the date in the meeting, asking what has to be true for this date to hold."
+    }
+  ]
+}

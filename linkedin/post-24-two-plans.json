@@ -1,0 +1,9 @@
+{
+  "text": "A baseline takes three months to approve and about three months to stop being used. After 18 years I think we build most of them for the wrong audience.\n\nThe baseline is written to pass review: logic checks, DCMA, float, the client's planning specification. It passes. Then site starts working from a three-week lookahead in Excel, and the P6 file is updated once a month for the report.\n\nTwo plans. The one we report and the one we build.\n\nYou can usually tell within a few months:\n• out-of-sequence progress grows with every update\n• actual dates arrive in one batch, the day before the report\n• supervisors have never opened the level 3\n• each recovery schedule keeps the same end date with shorter durations\n\nWhat has worked for me:\n1. Build the baseline with the people who will execute it. Supervisors in the room, not only planners.\n2. Keep the logic at the level site makes decisions: area, system, test pack. Not tens of thousands of activities nobody reads.\n3. One plan. The lookahead comes out of the schedule, not typed beside it.\n4. Track out-of-sequence progress every month as a health check of the plan itself.\n\nA baseline is not a deliverable. It is the agreement on how we will build. If site does not recognise it, it is not an agreement.\n\nBe honest: on your project, does the three-week lookahead come out of P6 or out of Excel?\n\n#ProjectControls #PrimaveraP6 #Planning #Scheduling #EPC",
+  "images": [
+    {
+      "path": "linkedin/assets/week-2026-11-23/02-two-plans.png",
+      "alt": "Card: Two plans, the one we report and the one we build. Reported: P6 baseline, thousands of activities, updated monthly, opened by planners. Built: Excel lookahead, three weeks, updated daily, opened by site. Make it one plan: the lookahead comes out of the schedule."
+    }
+  ]
+}
