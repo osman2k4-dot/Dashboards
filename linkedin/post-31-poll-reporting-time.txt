@@ -1,0 +1,15 @@
+POLL (one week). Question: In a normal month, how much of your time goes on collecting progress and building reports?
+Options: Less than 25 % | 25 to 50 % | 50 to 75 % | More than 75 %
+
+Post text:
+Last week I wrote that planning teams spend their month reporting instead of planning.
+
+Then I looked for a study to back it up. How do planners really split their time between reporting and planning? I could not find one. Nobody seems to have asked.
+
+So let us make the data ourselves.
+
+Planners and project controls engineers: in a normal month, how much of your time goes on collecting progress and building reports?
+
+Tell me in the comments which side you are on: contractor, consultant or client. I will share the results next week.
+
+#ProjectControls #Planning #Construction #Scheduling

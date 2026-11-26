@@ -1,0 +1,15 @@
+VIDEO TO MAKE: about 30 seconds from the Orion 4D demo (fictional data): hydrotest register, click one test pack, the model shows only that pack, click a spool for its card.
+
+Post text:
+A test pack list tells you a pack is 72 % welded. It does not tell you where the other 28 % is.
+
+30 seconds from my 4D progress model (demo on fictional data):
+• pick a test pack from the hydrotest register
+• the model shows only that pack, coloured by spool status
+• click a spool: line, joints still to weld, planned hydrotest date
+
+A supervisor does not need the report. A supervisor needs to know which spools, and where.
+
+What would your site team ask a model like this first?
+
+#4DPlanning #ProjectControls #Piping #Construction #Commissioning
