@@ -1,0 +1,9 @@
+{
+  "text": "Every recovery schedule I have reviewed had one thing in common: the end date did not move.\n\nThe project is three months late. A recovery schedule is requested. Two weeks later it arrives, and the completion date is exactly where it was in the baseline.\n\nHow? Almost always the same way:\n• durations cut by 30 % with no change in crews or method\n• activities that were sequential now run in parallel, on the same piece of steel\n• productivity assumed at a rate the site has never achieved, not even for one week\n• the float that protected the end date is used up on paper\n\nIt gets approved because nobody wants to be the one who moves the date. Three months later we write the next recovery schedule.\n\nA real recovery plan answers four questions:\n1. What is different from now on? More crews, more shifts, a different sequence, a different method.\n2. Can the site absorb it? Supervision, access, permits, laydown, cranes.\n3. What productivity does it need, and when did we last achieve that rate?\n4. If it still does not close the gap, what is the honest date?\n\nA recovery schedule that keeps the end date without changing anything is not a recovery. It is a delay we have agreed to announce later.\n\nHave you ever seen a recovery schedule that actually recovered? What made it work?\n\n#ProjectControls #Planning #Scheduling #EPC #Construction",
+  "images": [
+    {
+      "path": "linkedin/assets/week-2026-11-30/01-recovery-schedule.png",
+      "alt": "Card: Same end date, same crews, shorter bars. A Gantt chart compares the current forecast, three months late, with a 'recovery' schedule that reaches the contract end date by cutting piping durations 30 % with the same crews and running hydrotest in parallel on the same steel. A real recovery answers: what changes from now on, can site absorb it, what rate does it need, what is the honest date?"
+    }
+  ]
+}
