@@ -16,12 +16,13 @@ Last updated: 26 Nov 2026. Working branch: `claude/kind-galileo-d2dwb7`. Posting
 | Tue 24 Nov | post-22 4D video, area vs system | https://www.linkedin.com/feed/update/urn:li:ugcPost:7530910882118258688/ |
 | Wed 25 Nov | post-23 who owns the float | https://www.linkedin.com/feed/update/urn:li:share:7531273336409083904/ |
 | Thu 26 Nov | post-24 two plans | https://www.linkedin.com/feed/update/urn:li:share:7531635613066792960/ |
+| Fri 27 Nov | post-25 AI and the planner | https://www.linkedin.com/feed/update/urn:li:share:7531975506020200448/ |
 
 ## Scheduled
 
 | Date and time (UAE) | Post file | Scheduled task |
 |---|---|---|
-| Fri 27 Nov, 11:00 | post-25 AI and the planner | trig_01AA9M61ymaiZLRGwhK17zUi |
+| None. The December posts below wait for approval. | | |
 
 ## December plan
 
